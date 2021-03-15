@@ -15,7 +15,8 @@
 #include <sstream>
 #include <iostream>
 
-#include "configure.hpp"
+//SG: #include "configure.hpp"
+#include "configure.hpp.in"
 
 
 
@@ -195,7 +196,7 @@ const char * const sGStateCompType [] ={"GSC_KINETIC","GSC_MAGNETIC","GSC_DENSIT
 
 
 // Variables used to set dimension & operational stack size:
-#undef GDIM
+//SG: #undef GDIM
 #define G_MEMLOCNULL             -1     // Memblk index NULL value (<0)
 #if defined(_G_IS1D)
   const GUSHORT GDIM = 1;               // GeoFLOW dimensionality
@@ -204,7 +205,7 @@ const char * const sGStateCompType [] ={"GSC_KINETIC","GSC_MAGNETIC","GSC_DENSIT
 #elif defined(_G_IS3D)
   const GUSHORT GDIM = 3;               // GeoFLOW dimensionality
 #else
-  # error "_G_IS1D, _G_IS2D or _G_IS3D must be defined!"
+  //SG: # error "_G_IS1D, _G_IS2D or _G_IS3D must be defined!"
 #endif
 
 // Math defs

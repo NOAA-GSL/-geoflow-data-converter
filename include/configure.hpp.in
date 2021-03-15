@@ -10,7 +10,7 @@
 //
 // To be filled in by CMake
 //
-#define GDIM ${GDIM}
+/*SG: #define GDIM ${GDIM}
 #cmakedefine GEOFLOW_USE_MPI
 #cmakedefine GEOFLOW_USE_OPENMP
 #cmakedefine GEOFLOW_USE_CUDA
@@ -24,7 +24,7 @@
 
 #cmakedefine GEOFLOW_ASSERT_HANG
 #cmakedefine GEOFLOW_ASSERT_CORE
-#cmakedefine GEOFLOW_ASSERT_STACK
+#cmakedefine GEOFLOW_ASSERT_STACK*/
 
 #if defined(GEOFLOW_USE_CBLAS) && defined(GEOFLOW_USE_CUBLAS)
 #warning "Both CBLAS and cuBLAS Selected (Defaulted to CBLAS)"
@@ -89,7 +89,7 @@
 #elif GDIM == CPP_INT_THREE
 	#define _G_IS3D
 #else
-	#error Unrecognized GDIM Value
+	//SG: #error Unrecognized GDIM Value
 #endif
 
 #endif /* GEOFLOW_CONFIG_HPP_IN_ */
