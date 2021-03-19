@@ -10,65 +10,126 @@
 #include "gfile_reader.h"
 
 #include <fstream>
-#include <iomanip>
-#include <assert.h>
 
-//using namespace std;
+GFileReader::GFileReader(const GString& filename, GUINT dataSize)
+{
+    readHeader(filename, _header, dataSize);
+}
 
-GSIZET GFileReader::readHeader(
-        GString file,
-        GHeaderInfo& header,
+void GFileReader::readHeader(
+        const GString& filename,
+        GHeaderInfo& h,
         GSIZET dataSize)
 {
-    ifstream ifs(file, ios::in | ios::binary);
+    // Open file
+    ifstream ifs(filename, ios::in | ios::binary);
     if (!ifs)
     {
-        cout << "Error: Cannot open file: " << file << endl;
+        cout << "Error: Cannot open file: " << filename << endl;
         exit(EXIT_FAILURE);
     }
 
-    ifs.read((char*)&header.version, sizeof(header.version));
-    ifs.read((char*)&header.dim, sizeof(header.dim));
-    ifs.read((char*)&header.numElems, sizeof(header.numElems));
-    typedef decltype(header.polyOrders)::value_type PORDERTYPE;
-    for (auto i = 0u; i<header.dim; ++i)
+    // Read header info
+    ifs.read((char*)&h.version, sizeof(h.version));
+    ifs.read((char*)&h.dim, sizeof(h.dim));
+    ifs.read((char*)&h.nElems, sizeof(h.nElems));
+
+    typedef decltype(h.polyOrder)::value_type PORDERTYPE;
+    for (auto i = 0u; i < h.dim; ++i)
     {
         PORDERTYPE pOrder;
         ifs.read((char*)&pOrder, sizeof(PORDERTYPE));
-        header.polyOrders.push_back(pOrder);
+        h.polyOrder.push_back(pOrder);
     }
-    ifs.read((char*)&header.gridType, sizeof(header.gridType));
-    ifs.read((char*)&header.timeCycle, sizeof(header.timeCycle));
-    ifs.read((char*)&header.timeStamp, sizeof(header.timeStamp));
-    ifs.read((char*)&header.hasMultVars, sizeof(header.hasMultVars));
+    
+    ifs.read((char*)&h.gridType, sizeof(h.gridType));
+    ifs.read((char*)&h.timeCycle, sizeof(h.timeCycle));
+    ifs.read((char*)&h.timeStamp, sizeof(h.timeStamp));
+    ifs.read((char*)&h.hasMultVars, sizeof(h.hasMultVars));
 
-    header.numHeaderBytes = ifs.tellg();
-    header.dataSize = dataSize;
+    // Derive other properties from header info
+    h.nHeaderBytes = ifs.tellg(); // curr pos in file stream
+    h.dataSize = dataSize;
+    h.nNodesPerElem = 1;
+    for (const auto& po : h.polyOrder)
+    {
+        h.nNodesPerElem *= (po + 1); // num nodes in a dim = (poly order + 1)
+    }
+    h.nNodes = h.nElems*h.nNodesPerElem;
+    h.nDataBytes = h.nNodes * sizeof(GDOUBLE); // TODO: What should thistype be
 
     ifs.close();
-
-    return header.numHeaderBytes;
 }
 
-void GFileReader::printHeader(GHeaderInfo header)
+void GFileReader::readData(const GString& filename)
 {
+    // Open file
+    ifstream ifs(filename, ios::in | ios::binary);
+    if (!ifs)
+    {
+        cout << "Error: Cannot open file: " << filename << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    // Set file stream loc to start of data and allocate mem
+    ifs.seekg(_header.nHeaderBytes);
+    _data.resize(_header.nNodes);
+
+    // Read variable data
+    if (!ifs.read((char*)_data.data(), _header.nDataBytes))
+    {
+        cout << "Error: Cannot read the requested " << _header.nDataBytes
+             << " bytes of data from file: " << filename << endl;
+        ifs.close();
+        exit(EXIT_FAILURE);
+    }
+
+    ifs.close();
+}
+
+void GFileReader::printHeader(const GHeaderInfo& h)
+{
+    // Print header info
     cout << endl;
+    cout << "-----------" << endl;
     cout << "Header Info" << endl;
     cout << "-----------" << endl;
-    cout << "IO version: " << header.version << endl;
-    cout << "Dimension: " << header.dim << endl;
-    cout << "Num elements: " << header.numElems << endl;
+    cout << "IO version: " << h.version << endl;
+    cout << "Dimension: " << h.dim << endl;
+    cout << "Num elements: " << h.nElems << endl;
     cout << "Poly orders: "; 
-    for (auto po : header.polyOrders)
+    for (const auto& po : h.polyOrder)
     {
         cout << po << " ";
     }
     cout << endl;
-    cout << "Grid type: " << header.gridType << endl;
-    cout << "Time cycle: " << header.timeCycle << endl;
-    cout << "Time stamp: " << header.timeStamp << endl;
-    cout << "Has mult fields?: " << header.hasMultVars << endl;
-    cout << "Num header bytes: " << header.numHeaderBytes << endl;
-    cout << "Data size (bytes): " << header.dataSize << endl;
+    cout << "Grid type: " << h.gridType << endl;
+    cout << "Time cycle: " << h.timeCycle << endl;
+    cout << "Time stamp: " << h.timeStamp << endl;
+    cout << "Has mult fields?: " << h.hasMultVars << endl;
+
+    // Print derived header inof
     cout << endl;
+    cout << "-------------------" << endl;
+    cout << "Derived Header Info" << endl;
+    cout << "-------------------" << endl;
+    cout << "Num nodes per element: " << h.nNodesPerElem << endl;
+    cout << "Num nodes in file: " << h.nNodes << endl;
+    cout << "Data size bytes: " << h.dataSize << endl;
+    cout << "Num header bytes: " << h.nHeaderBytes << endl;
+    cout << "Num data bytes: " << h.nDataBytes << endl;
+    cout << endl;
+}
+
+void GFileReader::printHeader()
+{
+    printHeader(_header);
+}
+
+void GFileReader::printData()
+{
+    for (auto i = 0u; i < _data.size(); ++i)
+    {
+        cout << "_data[" << i << "] is: " << _data[i] << endl;
+    }
 }

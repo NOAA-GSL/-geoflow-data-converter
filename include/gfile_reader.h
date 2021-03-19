@@ -7,8 +7,8 @@
 // Derived From : none
 //==============================================================================
 
-#ifndef GDATAREADER_H
-#define GDATAREADER_H
+#ifndef GFILEREADER_H
+#define GFILEREADER_H
 
 #include "gheader_info.h"
 
@@ -23,14 +23,21 @@ using namespace std;
 class GFileReader
 {
 public:
-    GFileReader() {}
-    static GSIZET readHeader(
-            GString file, 
-            GHeaderInfo& header,
+    GFileReader(const GString& filename, GUINT dataSize=DEFAULT_DATA_SIZE);
+    static void readHeader(
+            const GString& filename, 
+            GHeaderInfo& h, 
             GSIZET dataSize=DEFAULT_DATA_SIZE);
-    static void printHeader(GHeaderInfo header);
+    void readData(const GString& filename);
+
+    // Print helpers
+    static void printHeader(const GHeaderInfo& h);
+    void printHeader();
+    void printData();
 
 private:
+    GHeaderInfo _header;
+    vector<GDOUBLE> _data; // TODO: What should this type be?
 };
 
 #endif
