@@ -25,7 +25,7 @@ void GFileReader::readHeader(
     ifstream ifs(filename, ios::in | ios::binary);
     if (!ifs)
     {
-        cout << "Error: Cannot open file: " << filename << endl;
+        cerr << "Error: Cannot open file: " << filename << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -55,7 +55,7 @@ void GFileReader::readHeader(
     {
         h.nNodesPerElem *= (po + 1); // num nodes in a dim = (poly order + 1)
     }
-    h.nNodes = h.nElems*h.nNodesPerElem;
+    h.nNodes = h.nElems * h.nNodesPerElem;
     h.nDataBytes = h.nNodes * sizeof(GDOUBLE); // TODO: What should thistype be
 
     ifs.close();
@@ -78,7 +78,7 @@ void GFileReader::readData(const GString& filename)
     // Read variable data
     if (!ifs.read((char*)_data.data(), _header.nDataBytes))
     {
-        cout << "Error: Cannot read the requested " << _header.nDataBytes
+        cerr << "Error: Cannot read the requested " << _header.nDataBytes
              << " bytes of data from file: " << filename << endl;
         ifs.close();
         exit(EXIT_FAILURE);
