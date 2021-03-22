@@ -7,16 +7,16 @@
 // Derived From : none
 //==============================================================================
 
-#include "gfile_reader.h"
-
 #include <fstream>
 
-GFileReader::GFileReader(const GString& filename, GUINT dataSize)
+template <class T>
+GFileReader<T>::GFileReader(const GString& filename, GUINT dataSize)
 {
     readHeader(filename, _header, dataSize);
 }
 
-void GFileReader::readHeader(
+template <class T>
+void GFileReader<T>::readHeader(
         const GString& filename,
         GHeaderInfo& h,
         GSIZET dataSize)
@@ -34,12 +34,18 @@ void GFileReader::readHeader(
     ifs.read((char*)&h.dim, sizeof(h.dim));
     ifs.read((char*)&h.nElems, sizeof(h.nElems));
 
-    typedef decltype(h.polyOrder)::value_type PORDERTYPE;
+    // TODO: remove hard-coded GUINT and use decltype
+    /*typedef decltype(h.polyOrder)::value_type PORDERTYPE;
     for (auto i = 0u; i < h.dim; ++i)
     {
         PORDERTYPE pOrder;
         ifs.read((char*)&pOrder, sizeof(PORDERTYPE));
         h.polyOrder.push_back(pOrder);
+    }*/
+    h.polyOrder.resize(h.dim); // each ref dir has its own poly order
+    for (auto& p : h.polyOrder)
+    {
+        ifs.read((char*)&p, sizeof(GUINT));
     }
     
     ifs.read((char*)&h.gridType, sizeof(h.gridType));
@@ -56,12 +62,13 @@ void GFileReader::readHeader(
         h.nNodesPerElem *= (po + 1); // num nodes in a dim = (poly order + 1)
     }
     h.nNodes = h.nElems * h.nNodesPerElem;
-    h.nDataBytes = h.nNodes * sizeof(GDOUBLE); // TODO: What should thistype be
+    h.nDataBytes = h.nNodes * sizeof(T);
 
     ifs.close();
 }
 
-void GFileReader::readData(const GString& filename)
+template <class T>
+void GFileReader<T>::readData(const GString& filename)
 {
     // Open file
     ifstream ifs(filename, ios::in | ios::binary);
@@ -87,7 +94,8 @@ void GFileReader::readData(const GString& filename)
     ifs.close();
 }
 
-void GFileReader::printHeader(const GHeaderInfo& h)
+template <class T>
+void GFileReader<T>::printHeader(const GHeaderInfo& h)
 {
     // Print header info
     cout << endl;
@@ -121,12 +129,14 @@ void GFileReader::printHeader(const GHeaderInfo& h)
     cout << endl;
 }
 
-void GFileReader::printHeader()
+template <class T>
+void GFileReader<T>::printHeader()
 {
     printHeader(_header);
 }
 
-void GFileReader::printData()
+template <class T>
+void GFileReader<T>::printData()
 {
     for (auto i = 0u; i < _data.size(); ++i)
     {
