@@ -19,11 +19,12 @@ using namespace std;
  * 
  * Interface for reading a binary GeoFLOW data file. 
  */
-
+template <class T>
 class GFileReader
 {
 public:
     GFileReader(const GString& filename, GUINT dataSize=DEFAULT_DATA_SIZE);
+    ~GFileReader() {} // TODO
     static void readHeader(
             const GString& filename, 
             GHeaderInfo& h, 
@@ -37,7 +38,10 @@ public:
 
 private:
     GHeaderInfo _header;
-    vector<GDOUBLE> _data; // TODO: What should this type be?
+    vector<T> _data;
 };
 
+#include "../src/gfile_reader.ipp"
+
 #endif
+

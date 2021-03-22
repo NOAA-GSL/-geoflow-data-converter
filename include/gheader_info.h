@@ -19,17 +19,17 @@ using namespace std;
 
 struct GHeaderInfo
 {
-    // Data explicitly stored in header
-    GUINT         version;       // version num; exp order: 0=constant, 1=varies
+    // Data explicitly stored in GeoFLOW file header
+    GUINT         version;       // version num
     GUINT         dim;           // dimension of elements (2 or 3)
     GSIZET        nElems;        // number of elements
-    vector<GUINT> polyOrder;    // poly order of each dim, array of sz dim
+    vector<GUINT> polyOrder;     // poly order of each dim, array of sz dim
     GUINT         gridType;      // grid type of GeoFLOW type GElemType
     GSIZET        timeCycle;     // time cycle stamp
     GSIZET        timeStamp;     // time stamp
     GUINT         hasMultVars;   // multiple fields in file?
 
-    // Derived header data
+    // Data derived from header
     GSIZET        nHeaderBytes;  // total byte size of header
     GSIZET        nDataBytes;    // total byte size of data
     GSIZET        dataSize;      // size of data value in bytes (4 or 8)
