@@ -5,7 +5,6 @@
 int main()
 {
     GFileReader<GDOUBLE> xgridFile(TEST_FILE);
-    xgridFile.readData(TEST_FILE);
     xgridFile.printHeader();
     xgridFile.printData();
 

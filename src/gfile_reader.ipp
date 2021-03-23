@@ -10,16 +10,17 @@
 #include <fstream>
 
 template <class T>
-GFileReader<T>::GFileReader(const GString& filename, GUINT dataSize)
+GFileReader<T>::GFileReader(const GString& filename)
 {
-    readHeader(filename, _header, dataSize);
+    // Read header
+    _header = readHeader(filename);
+
+    // Read data
+    readData(filename);
 }
 
 template <class T>
-void GFileReader<T>::readHeader(
-        const GString& filename,
-        GHeaderInfo& h,
-        GSIZET dataSize)
+GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
 {
     // Open file
     ifstream ifs(filename, ios::in | ios::binary);
@@ -30,22 +31,15 @@ void GFileReader<T>::readHeader(
     }
 
     // Read header info
+    GHeaderInfo h;
     ifs.read((char*)&h.version, sizeof(h.version));
     ifs.read((char*)&h.dim, sizeof(h.dim));
     ifs.read((char*)&h.nElems, sizeof(h.nElems));
 
-    // TODO: remove hard-coded GUINT and use decltype
-    /*typedef decltype(h.polyOrder)::value_type PORDERTYPE;
-    for (auto i = 0u; i < h.dim; ++i)
-    {
-        PORDERTYPE pOrder;
-        ifs.read((char*)&pOrder, sizeof(PORDERTYPE));
-        h.polyOrder.push_back(pOrder);
-    }*/
     h.polyOrder.resize(h.dim); // each ref dir has its own poly order
     for (auto& p : h.polyOrder)
     {
-        ifs.read((char*)&p, sizeof(GUINT));
+        ifs.read((char*)&p, sizeof(h.polyOrder[0]));
     }
     
     ifs.read((char*)&h.gridType, sizeof(h.gridType));
@@ -53,18 +47,23 @@ void GFileReader<T>::readHeader(
     ifs.read((char*)&h.timeStamp, sizeof(h.timeStamp));
     ifs.read((char*)&h.hasMultVars, sizeof(h.hasMultVars));
 
-    // Derive other properties from header info
+    // Get total byte size of header
     h.nHeaderBytes = ifs.tellg(); // curr pos in file stream
-    h.dataSize = dataSize;
+    
+    // Get num nodes (incl. sub nodes) per element
+    // Num nodes in one reference direction of one element = (poly order + 1)
     h.nNodesPerElem = 1;
-    for (const auto& po : h.polyOrder)
+    for (const auto& p : h.polyOrder)
     {
-        h.nNodesPerElem *= (po + 1); // num nodes in a dim = (poly order + 1)
+        h.nNodesPerElem *= (p + 1);
     }
+
+    // Get num nodes (incl. sub nodes) in entire dataset
     h.nNodes = h.nElems * h.nNodesPerElem;
-    h.nDataBytes = h.nNodes * sizeof(T);
 
     ifs.close();
+
+    return h;
 }
 
 template <class T>
@@ -82,10 +81,11 @@ void GFileReader<T>::readData(const GString& filename)
     ifs.seekg(_header.nHeaderBytes);
     _data.resize(_header.nNodes);
 
-    // Read variable data
-    if (!ifs.read((char*)_data.data(), _header.nDataBytes))
+    // Read data
+    GSIZET nDataBytes = _header.nNodes * sizeof(T);
+    if (!ifs.read((char*)_data.data(), nDataBytes))
     {
-        cerr << "Error: Cannot read the requested " << _header.nDataBytes
+        cerr << "Error: Cannot read the requested " << nDataBytes
              << " bytes of data from file: " << filename << endl;
         ifs.close();
         exit(EXIT_FAILURE);
@@ -116,16 +116,14 @@ void GFileReader<T>::printHeader(const GHeaderInfo& h)
     cout << "Time stamp: " << h.timeStamp << endl;
     cout << "Has mult fields?: " << h.hasMultVars << endl;
 
-    // Print derived header inof
+    // Print derived header info
     cout << endl;
     cout << "-------------------" << endl;
     cout << "Derived Header Info" << endl;
     cout << "-------------------" << endl;
     cout << "Num nodes per element: " << h.nNodesPerElem << endl;
     cout << "Num nodes in file: " << h.nNodes << endl;
-    cout << "Data size bytes: " << h.dataSize << endl;
     cout << "Num header bytes: " << h.nHeaderBytes << endl;
-    cout << "Num data bytes: " << h.nDataBytes << endl;
     cout << endl;
 }
 

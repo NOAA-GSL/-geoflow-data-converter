@@ -23,18 +23,16 @@ template <class T>
 class GFileReader
 {
 public:
-    GFileReader(const GString& filename, GUINT dataSize=DEFAULT_DATA_SIZE);
-    ~GFileReader() {} // TODO
-    static void readHeader(
-            const GString& filename, 
-            GHeaderInfo& h, 
-            GSIZET dataSize=DEFAULT_DATA_SIZE);
+    GFileReader(const GString& filename);
+    ~GFileReader() {}
+    static GHeaderInfo readHeader(const GString& filename);
     void readData(const GString& filename);
 
     // Print helpers
     static void printHeader(const GHeaderInfo& h);
     void printHeader();
     void printData();
+    static void print() {}
 
 private:
     GHeaderInfo _header;

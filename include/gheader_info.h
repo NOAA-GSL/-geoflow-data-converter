@@ -31,8 +31,6 @@ struct GHeaderInfo
 
     // Data derived from header
     GSIZET        nHeaderBytes;  // total byte size of header
-    GSIZET        nDataBytes;    // total byte size of data
-    GSIZET        dataSize;      // size of data value in bytes (4 or 8)
     GUINT         nNodesPerElem; // num nodes per element (incl. sub nodes)
     GSIZET        nNodes;        // total nodes in file (incl. sub nodes)
 };
