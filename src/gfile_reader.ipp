@@ -106,9 +106,9 @@ void GFileReader<T>::printHeader(const GHeaderInfo& h)
     cout << "Dimension: " << h.dim << endl;
     cout << "Num elements: " << h.nElems << endl;
     cout << "Poly orders: "; 
-    for (const auto& po : h.polyOrder)
+    for (const auto& p : h.polyOrder)
     {
-        cout << po << " ";
+        cout << p << " ";
     }
     cout << endl;
     cout << "Grid type: " << h.gridType << endl;
