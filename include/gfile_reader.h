@@ -1,6 +1,6 @@
 //==============================================================================
 // Module       : gfile_reader.h
-// Date         : 4/17/21 (SG)
+// Date         : 3/17/21 (SG)
 // Description  : Read data from a binary GeoFLOW data file
 // Copyright    : Copyright 2021. Regents of the University of Colorado.
 //                All rights reserved.
@@ -32,7 +32,6 @@ public:
     static void printHeader(const GHeaderInfo& h);
     void printHeader();
     void printData();
-    static void print() {}
 
 private:
     GHeaderInfo _header;
