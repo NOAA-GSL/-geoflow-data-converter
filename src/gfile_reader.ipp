@@ -118,9 +118,9 @@ void GFileReader<T>::printHeader(const GHeaderInfo& h)
 
     // Print derived header info
     cout << endl;
-    cout << "-------------------" << endl;
-    cout << "Derived Header Info" << endl;
-    cout << "-------------------" << endl;
+    cout << "------------------------" << endl;
+    cout << "Derived Info from Header" << endl;
+    cout << "------------------------" << endl;
     cout << "Num nodes per element: " << h.nNodesPerElem << endl;
     cout << "Num nodes in file: " << h.nNodes << endl;
     cout << "Num header bytes: " << h.nHeaderBytes << endl;

@@ -25,8 +25,13 @@ class GFileReader
 public:
     GFileReader(const GString& filename);
     ~GFileReader() {}
+
     static GHeaderInfo readHeader(const GString& filename);
     void readData(const GString& filename);
+
+    // Accessors
+    const vector<T>& data() { return _data; }
+    const GHeaderInfo header() { return _header; }
 
     // Print helpers
     static void printHeader(const GHeaderInfo& h);
