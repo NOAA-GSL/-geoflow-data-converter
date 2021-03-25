@@ -1,10 +1,8 @@
 //==============================================================================
-// Module       : gfile_reader.h
 // Date         : 3/17/21 (SG)
-// Description  : Read header and data from a binary GeoFLOW data file
+// Description  : Reads header and data from a binary GeoFLOW data file.
 // Copyright    : Copyright 2021. Regents of the University of Colorado.
 //                All rights reserved.
-// Derived From : none
 //==============================================================================
 
 #ifndef GFILEREADER_H
@@ -14,11 +12,6 @@
 
 using namespace std;
 
-/*!
- * Class GFileReader
- * 
- * Interface for reading a binary GeoFLOW data file. 
- */
 template <class T>
 class GFileReader
 {
@@ -26,14 +19,15 @@ public:
     GFileReader(const GString& filename);
     ~GFileReader() {}
 
+    // Read
     static GHeaderInfo readHeader(const GString& filename);
     void readData(const GString& filename);
 
-    // Accessors
-    const vector<T>& data() { return _data; }
+    // Access
+    const vector<T>& data() const { return _data; }
     const GHeaderInfo header() { return _header; }
 
-    // Print helpers
+    // Print
     static void printHeader(const GHeaderInfo& h);
     void printHeader();
     void printData();

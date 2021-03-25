@@ -1,10 +1,7 @@
 //==============================================================================
-// Module       : gfile_reader.cpp
-// Date         : 3/17/21 (SG)
-// Description  : Read data from a binary GeoFLOW data file
-// Copyright    : Copyright 2021. Regents of the University of Colorado.
-//                All rights reserved.
-// Derived From : none
+// Date      : 3/17/21 (SG)
+// Copyright : Copyright 2021. Regents of the University of Colorado.
+//             All rights reserved.
 //==============================================================================
 
 #include <fstream>
