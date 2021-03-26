@@ -72,9 +72,9 @@ public:
     static T toDegrees(const T& v);
 
      /*!
-     * Convert a 3D cartesian coordinate to a lat,lon coordinate.
+     * Convert a 3D cartesian coordinate to a spherical lat,lon coordinate.
      * 
-     * @param p normalized 3D coordinate
+     * @param p a normalized 3D coordinate
      * @param radius radius of 3D coordinate
      * @return the lat,lon coordinate in radians
      */ 

@@ -6,6 +6,8 @@
 
 #include <fstream>
 
+#include "logger.h"
+
 template <class T>
 GFileReader<T>::GFileReader(const GString& filename)
 {
@@ -23,7 +25,8 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
     ifstream ifs(filename, ios::in | ios::binary);
     if (!ifs)
     {
-        cerr << "Error: Cannot open file: " << filename << endl;
+        string msg = "Cannot open file: " + filename;
+        Logger::error(__FILE__, __FUNCTION__, msg);
         exit(EXIT_FAILURE);
     }
 
@@ -70,7 +73,8 @@ void GFileReader<T>::readData(const GString& filename)
     ifstream ifs(filename, ios::in | ios::binary);
     if (!ifs)
     {
-        cout << "Error: Cannot open file: " << filename << endl;
+        string msg = "Cannot open file: " + filename;
+        Logger::error(__FILE__, __FUNCTION__, msg);
         exit(EXIT_FAILURE);
     }
 
