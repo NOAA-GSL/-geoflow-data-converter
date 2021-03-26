@@ -45,8 +45,8 @@ int main()
     // Print nodes
     for (auto i = 0u; i < h.nNodes; ++i)
     {
-        cout << "[" << i << "] - ";
-        nodes[i].printNode();
+       cout << "[" << i << "] - ";
+       nodes[i].printNode();
     }
 
     return 0;

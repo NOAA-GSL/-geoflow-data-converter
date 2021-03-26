@@ -60,10 +60,10 @@ T MathUtil::toDegrees(const T& v)
 template <typename T>
 array<T, 2> MathUtil::toLatLon(const array<T, 3>& p, T radius)
 {
-    // Compute lat, lon
+    // Compute lat,lon from 3D coordinate
     array<T, 2> latlon;
-    latlon[0] = toDegrees(asin(p[2] / radius));
-    latlon[1] = toDegrees(atan2(p[1], p[0]));
+    latlon[0] = asin(p[2] / radius);
+    latlon[1] = atan2(p[1], p[0]);
         
     return latlon;
 }
@@ -74,15 +74,28 @@ void MathUtil::xyzToLatLonRadius(GNode<T>& node)
     // Compute radius of coordinate
     T r = radius(node.pos(), array<T, 3> {0, 0, 0});
 
+/*T m = magnitude(node.pos());
+cout << "m is: " << m << " ";
+//array<T, 3> temp = {-1786579.7, 519690.56, -959322.31};
+array<T, 3> temp = {-2405525.88, 490527.71, 483042.96};
+r = 1;//2503000;
+//r = 1; // 2094;
+node.pos(temp);*/
+
+/*array<T, 3> temp = {0.9, 0.5, 0.2};
+r = 1.0;
+node.pos(temp);*/
+
     // Normalize coordinate
     array<T, 3> n = normalize(node.pos());
-    //cout << "n is: " << n[0] << ", " << n[1] << ", " << n[2] << endl;
 
-    // Compute lat,lon of coordinate
-    array<T, 2> ll = toLatLon(n, r);
+    // Compute lat,lon of coordinate and convert to degrees.
+    array<T, 2> ll = toLatLon(n, 1.0);
+    ll[0] = toDegrees(ll[0]);
+    ll[1] = toDegrees(ll[1]);
+    cout << ll[0] << ", " << ll[1] << endl;// << ",#00FF00" << endl;
    
     // Update node
     node.radius(r);
     node.latlon(ll);
-    node.latlon()[1] = 5;
 }
