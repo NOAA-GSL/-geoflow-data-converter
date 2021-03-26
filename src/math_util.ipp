@@ -27,7 +27,7 @@ array<T, 3> MathUtil::normalize(const array<T, 3>& p)
 {
     // Compute magnitude
     T mag = magnitude(p);
-    if (mag == 0)
+    if (mag == T(0))
     {
         string msg = "Cannot normalize coordinate because magnitude is 0.";
         Logger::error(__FILE__, __FUNCTION__, msg);
@@ -70,7 +70,7 @@ void MathUtil::xyzToLatLonRadius(GNode<T>& node)
     array<T, 3> n = normalize(node.pos());
 
     // Compute lat,lon of coordinate and convert to degrees.
-    array<T, 2> ll = toLatLon(n, 1.0);
+    array<T, 2> ll = toLatLon(n, T(1.0));
     ll[0] = toDegrees(ll[0]);
     ll[1] = toDegrees(ll[1]);
    

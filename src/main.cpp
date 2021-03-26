@@ -18,7 +18,7 @@
 
 int main()
 {
-    // Read x,y,z locations and their values
+    // Read x,y,z locations and the data value at that location
     GFileReader<GDATATYPE> xgrid(FILE_XGRID);
     GFileReader<GDATATYPE> ygrid(FILE_YGRID);
     GFileReader<GDATATYPE> zgrid(FILE_ZGRID);
@@ -28,7 +28,7 @@ int main()
     GHeaderInfo h = xgrid.header();
     GFileReader<GDATATYPE>::printHeader(h);
 
-    // Read x,y,z and values into a collection of GNodes
+    // Read x,y,z and value into a collection of GNodes
     vector<GNode<GDATATYPE>> nodes;
     for (auto i = 0u; i < h.nNodes; ++i)
     {

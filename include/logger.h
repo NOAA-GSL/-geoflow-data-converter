@@ -27,7 +27,7 @@ public:
      */
     static void error(const char* file, const char* func, string msg)
     {
-        cerr << "ERROR [" << file << " : " << func << "()] " << msg << endl;
+        cerr << "ERROR [" << file << "::" << func << "()] " << msg << endl;
     }
 };
 
