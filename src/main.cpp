@@ -8,6 +8,8 @@
 #include "gfile_reader.h"
 #include "gnode.h"
 #include "gface.h"
+#include "glayer.h"
+#include "gvolume.h"
 #include "math_util.h"
 
 #define GDATATYPE GDOUBLE
@@ -47,20 +49,12 @@ int main()
         nodes.push_back(node);
     }
 
-    // Print nodes
-    /*for (auto i = 0u; i < h.nNodes; ++i)
-    {
-       cout << "[" << i << "] - ";
-       nodes[i].printNode();
-    }*/
+    ////////////////////////////////////////
+    // TODO: Sort the nodes into layers etc.
+    ////////////////////////////////////////
 
-    ///////////////////////
-    // TODO: Sort the nodes
-    ///////////////////////
-
-    // Read nodes into a collection of faces
+    // Read nodes into a collection of fake faces
     vector<GFace<GDATATYPE>> faces;
-
     for (auto i = 0u; i < nodes.size(); i += NODES_PER_FACE)
     {
         GFace<GDATATYPE> face(NODES_PER_FACE);
@@ -68,12 +62,20 @@ int main()
         faces.push_back(face);
     }
 
-    // Print faces
-    for (auto i = 0u; i < faces.size(); ++i)
-    {
-       faces[i].printFaceIndices();
-       faces[i].printFaceNodes();
-    }
+    // Read faces into a collection of layers
+    vector<GLayer<GDATATYPE>> layers;
+    GLayer<GDATATYPE> layer;
+    layer.faces(faces);
+    layers.push_back(layer);
+    
+    // Read layers into a volume.
+    GVolume<GDATATYPE> volume;
+    volume.layers(layers);
+
+    // Print volume
+    volume.printVolume();
+
+    // Write UGRID file using data stored in volume
 
     return 0;
 }

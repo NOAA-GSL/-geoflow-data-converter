@@ -1,6 +1,7 @@
 //==============================================================================
 // Date         : 3/24/21 (SG)
-// Description  : Stores a polygon (face) enclosed by a set of GeoFLOW nodes.
+// Description  : Stores a face (i.e., a polygon) enclosed by a set of GeoFLOW
+//                nodes.
 // Copyright    : Copyright 2021. Regents of the University of Colorado.
 //                All rights reserved.
 //==============================================================================
@@ -63,8 +64,10 @@ public:
     }
 
     // Print
-    void printFaceNodes()
+    void printFaces()
     {
+        printIndices();
+
         cout << "Face nodes" << endl;
         for (auto n : _nodes)
         {
@@ -72,7 +75,7 @@ public:
         }
     }
 
-    void printFaceIndices()
+    void printIndices()
     {
         cout << "Face indices: ";
         for (auto i : _indices)
