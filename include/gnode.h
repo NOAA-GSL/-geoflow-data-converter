@@ -35,7 +35,7 @@ public:
     }
     ~GNode() {}
 
-    // Accessors
+    // Access
     array<T, 3> pos() const { return _pos; }
     void pos(const array<T, 3>& pos) { _pos = pos; }
     array<T, 2> latlon() const { return _latlon; }
@@ -43,7 +43,7 @@ public:
     T radius() const { return _radius; }
     void radius(const T& radius) { _radius = radius; }
 
-    // Print helpers
+    // Print
     void printNode()
     {
         cout << "Node: ";

@@ -25,7 +25,7 @@ public:
     GFace(GUINT nNodesPerFace) { _nNodesPerFace = nNodesPerFace; }
     ~GFace() {}
 
-    // Accessors
+    // Access
     vector<GNode<T>> nodes() const { return _nodes; }
     //void nodes(const vector<GNode<T>>& nodes) { _nodes = nodes; }
     void nodes(const vector<GNode<T>>& nodes, GUINT first)
@@ -52,7 +52,7 @@ public:
         }
     }
 
-    // Print helper
+    // Print
     void printFaceNodes()
     {
         cout << "Face nodes" << endl;
