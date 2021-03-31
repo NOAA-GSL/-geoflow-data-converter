@@ -7,9 +7,11 @@
 
 #include "gfile_reader.h"
 #include "gnode.h"
+#include "gface.h"
 #include "math_util.h"
 
 #define GDATATYPE GDOUBLE
+#define NODES_PER_FACE 4
 
 #define FILE_XGRID "data/xgrid.000000.out"
 #define FILE_YGRID "data/ygrid.000000.out"
@@ -28,7 +30,7 @@ int main()
     GHeaderInfo h = xgrid.header();
     GFileReader<GDATATYPE>::printHeader(h);
 
-    // Read x,y,z and value into a collection of GNodes
+    // Read x,y,z and value into a collection of nodes
     vector<GNode<GDATATYPE>> nodes;
     for (auto i = 0u; i < h.nNodes; ++i)
     {
@@ -38,15 +40,39 @@ int main()
                               val.data()[i],
                               0);
 
+        // Convert x,y,z to lat,lon,radius
         MathUtil::xyzToLatLonRadius<GDATATYPE>(node);
+
+        // Save node
         nodes.push_back(node);
     }
 
     // Print nodes
-    for (auto i = 0u; i < h.nNodes; ++i)
+    /*for (auto i = 0u; i < h.nNodes; ++i)
     {
        cout << "[" << i << "] - ";
        nodes[i].printNode();
+    }*/
+
+    ///////////////////////
+    // TODO: Sort the nodes
+    ///////////////////////
+
+    // Read nodes into a collection of faces
+    vector<GFace<GDATATYPE>> faces;
+
+    for (auto i = 0u; i < nodes.size(); i += NODES_PER_FACE)
+    {
+        GFace<GDATATYPE> face(NODES_PER_FACE);
+        face.nodes(nodes, i);
+        faces.push_back(face);
+    }
+
+    // Print faces
+    for (auto i = 0u; i < faces.size(); ++i)
+    {
+       faces[i].printFaceIndices();
+       faces[i].printFaceNodes();
     }
 
     return 0;
