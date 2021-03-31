@@ -1,8 +1,12 @@
 # GeoFLOW Data Converter
+
+## Overview
+___
 Convert [GeoFLOW](https://github.com/NOAA-GSL/GeoFLOW) (Geo FLuid Object Workbench) data to other data formats like [NetCDF-CF](http://cfconventions.org/) and [UGRID](https://github.com/ugrid-conventions/ugrid-conventions).
 
 ## To Compile
-1. Download the repo
+___
+1. Download the repository
 ```
 git clone https://github.com/silverness2/geoflow-data-converter.git
 ```
@@ -18,6 +22,7 @@ make
 ```
 
 ## To Run
+___
 ```
 ./bin/main
 ```
