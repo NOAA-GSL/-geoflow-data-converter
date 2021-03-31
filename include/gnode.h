@@ -1,6 +1,6 @@
 //==============================================================================
 // Date        : 3/23/21 (SG)
-// Description : Stores location and data value of a GeoFLOW node.
+// Description : Stores the location and data value of a GeoFLOW node.
 // Copyright   : Copyright 2021. Regents of the University of Colorado.
 //               All rights reserved.
 //==============================================================================
@@ -20,11 +20,20 @@ template <class T>
 class GNode
 {
 public:
+     /*!
+     * Constructor for initializeing a GeoFLOW node.
+     * 
+     * @param x cartesian x coordinate
+     * @param y cartesian y coordinate
+     * @param z cartesian z coordinate
+     * @param val value of variable at x,y,z coordinate
+     * @param layerID ID of layer the node resides on
+     */
     GNode(const T& x, 
           const T& y, 
           const T& z, 
           const T& val, 
-          const GSIZET& layerID=0)
+          const GSIZET layerID=0)
     {
         // Initialize
         _pos = {{x, y, z}};

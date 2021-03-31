@@ -1,10 +1,8 @@
 //==============================================================================
-// Module       : gface.h
 // Date         : 3/24/21 (SG)
-// Description  : Stores a polygon made up of a set of GeoFLOW nodes
+// Description  : Stores a polygon (face) enclosed by a set of GeoFLOW nodes.
 // Copyright    : Copyright 2021. Regents of the University of Colorado.
 //                All rights reserved.
-// Derived From : none
 //==============================================================================
 
 #ifndef GFACE_H
@@ -22,16 +20,28 @@ template <class T>
 class GFace
 {
 public:
-    GFace(GUINT nNodesPerFace) { _nNodesPerFace = nNodesPerFace; }
+     /*!
+     * Constructor for initializeing a GeoFLOW face.
+     * 
+     * @param nNodes number of nodes that enclose the face
+     */
+    GFace(GUINT nNodes) { _nNodes = nNodes; }
     ~GFace() {}
 
     // Access
     vector<GNode<T>> nodes() const { return _nodes; }
-    //void nodes(const vector<GNode<T>>& nodes) { _nodes = nodes; }
+
+    /*!
+     * Sets the nodes that enclose this face using an index into the global
+     * node list and the number of face nodes as assigned in the constructor.
+     * 
+     * @param nodes global list of all nodes
+     * @param first starting index 
+     */
     void nodes(const vector<GNode<T>>& nodes, GUINT first)
     {
         // Get last node index
-        GUINT last = first + _nNodesPerFace - 1;
+        GUINT last = first + _nNodes - 1;
         if (first > (nodes.size() - 1u) || last > (nodes.size() - 1u))
         {
             string msg = "Node access (" + to_string(first) + " to " + \
@@ -41,9 +51,9 @@ public:
             exit(EXIT_FAILURE);
         }
 
-        // Copy specified interval of nodes
+        // Copy specified interval of nodes from first to first + nNodes
         typename vector<GNode<T>>::const_iterator it = nodes.begin() + first;
-        copy(it, it + _nNodesPerFace, back_inserter(_nodes));
+        copy(it, it + _nNodes, back_inserter(_nodes));
 
         // Copy specified interval of node indices
         for (auto i = first; i <= last; ++i)
@@ -73,9 +83,9 @@ public:
     }
 
 private:
-    vector<GNode<T>> _nodes;
-    vector<GINT> _indices;
-    GUINT _nNodesPerFace;
+    vector<GNode<T>> _nodes; // set of nodes that enclose the face
+    vector<GINT> _indices;   // indices of nodes from global node list
+    GUINT _nNodes;           // number of nodes that enclose the face
 };
 
 #endif
