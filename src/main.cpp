@@ -5,77 +5,27 @@
 //                All rights reserved.
 //==============================================================================
 
-#include "gfile_reader.h"
-#include "gnode.h"
-#include "gface.h"
-#include "glayer.h"
-#include "gvolume.h"
-#include "math_util.h"
+#include "gdata_converter.h"
 
 #define GDATATYPE GDOUBLE
-#define NODES_PER_FACE 4
-
 #define FILE_XGRID "data/xgrid.000000.out"
 #define FILE_YGRID "data/ygrid.000000.out"
 #define FILE_ZGRID "data/zgrid.000000.out"
-#define FILE_VAL "data/dtotal.000000.out"
+#define FILE_VARIABLE "data/dtotal.000000.out"
 
 int main()
 {
-    // Read x,y,z locations and the data value at that location
-    GFileReader<GDATATYPE> xgrid(FILE_XGRID);
-    GFileReader<GDATATYPE> ygrid(FILE_YGRID);
-    GFileReader<GDATATYPE> zgrid(FILE_ZGRID);
-    GFileReader<GDATATYPE> values(FILE_VAL);
+    // Read GeoFLOW x,y,z grid files into a collection of nodes
+    GDataConverter<GDATATYPE> gdc(FILE_XGRID, FILE_YGRID, FILE_ZGRID);
 
-    // Get header info
-    GHeaderInfo h = xgrid.header();
-    GFileReader<GDATATYPE>::printHeader(h);
+    // Read a GeoFLOW variable file into the nodes
+    gdc.readVariable(FILE_VARIABLE);
 
-    // Read x,y,z and value into a collection of nodes and store in volume
-    vector<GNode<GDATATYPE>> nodes;
-    for (auto i = 0u; i < h.nNodes; ++i)
+    // Print nodes
+    for (auto n : gdc.nodes())
     {
-        GNode<GDATATYPE> node(xgrid.data()[i],
-                              ygrid.data()[i], 
-                              zgrid.data()[i],
-                              values.data()[i],
-                              values.elementLayerIDs()[i]);
-
-        // Convert x,y,z to lat,lon,radius
-        MathUtil::xyzToLatLonRadius<GDATATYPE>(node);
-
-        // Save node
-        nodes.push_back(node);
+        n.printNode();
     }
-
-    ////////////////////////////////////////
-    // TODO: Sort the nodes into layers etc.
-    ////////////////////////////////////////
-
-    // Read nodes into a collection of fake faces
-    vector<GFace<GDATATYPE>> faces;
-    for (auto i = 0u; i < nodes.size(); i += NODES_PER_FACE)
-    {
-        GFace<GDATATYPE> face(NODES_PER_FACE);
-        face.nodes(nodes, i);
-        faces.push_back(face);
-    }
-
-    // Read faces into a collection of layers
-    vector<GLayer<GDATATYPE>> layers;
-    GLayer<GDATATYPE> layer;
-    layer.faces(faces);
-    layers.push_back(layer);
-    
-    // Read layers into a volume.
-    GVolume<GDATATYPE> volume;
-    volume.layers(layers);
-
-    // Print volume
-    volume.printVolume();
-
-    // Write UGRID file using data stored in volume
 
     return 0;
 }
