@@ -27,18 +27,14 @@ public:
      * @param y cartesian y coordinate
      * @param z cartesian z coordinate
      * @param val value of variable at x,y,z coordinate
-     * @param layerID ID of layer the node resides on
+     * @param elemLayerID ID of layer the GeoFLOW element resides on
      */
-    GNode(const T& x, 
-          const T& y, 
-          const T& z, 
-          const T& val, 
-          const GSIZET layerID=0)
+    GNode(T x, T y, T z, T val, GSIZET elemLayerID=0)
     {
         // Initialize
         _pos = {{x, y, z}};
         _val = val;
-        _layerID = layerID;
+        _elemLayerID = elemLayerID;
         _latlon = {{0, 0}};
         _radius = 0;
     }
@@ -62,7 +58,7 @@ public:
         cout << "(lat, lon, r): (" << _latlon[0] << ", " 
                                    << _latlon[1] << ", "
                                    << _radius << ") | ";
-        cout << "layerID: (" << _layerID << ") | ";
+        cout << "elemLayerID: (" << _elemLayerID << ") | ";
         cout << "val: (" << _val << ")";
         cout << endl;
     }
@@ -72,7 +68,7 @@ private:
     array<T, 2> _latlon; // lat,lon coordinate of node
     T _val;              // data value at node
     T _radius;           // radius of node
-    GSIZET _layerID;     // layer index the node resides on
+    GSIZET _elemLayerID; // element layer index the node resides on
 };
 
 #endif

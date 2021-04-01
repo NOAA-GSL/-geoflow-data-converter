@@ -40,6 +40,7 @@ public:
 private:
     vector<GLayer<T>> _layers;
     GUINT _nLayers;
+    vector<GNode<T>> _nodes;
 };
 
 #endif

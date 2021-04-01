@@ -9,7 +9,7 @@ using namespace std;
 template <typename T>
 T MathUtil::radius(const array<T, 3>& p, const array<T, 3>& c)
 {
-    // Radius = sqrt((px-cx)^2 + (py-cy)^2 + (pz-cz)^2)
+    // Compute radius = sqrt((px-cx)^2 + (py-cy)^2 + (pz-cz)^2)
     return sqrt((p[0] - c[0]) * (p[0] - c[0]) + 
                 (p[1] - c[1]) * (p[1] - c[1]) + 
                 (p[2] - c[2]) * (p[2] - c[2]));
@@ -18,14 +18,14 @@ T MathUtil::radius(const array<T, 3>& p, const array<T, 3>& c)
 template <typename T>
 T MathUtil::magnitude(const array<T, 3>& p)
 {
-    // Magnitude = sqrt(x^2 + y^2 + z^2)
+    // Compute magnitude = sqrt(x^2 + y^2 + z^2)
     return sqrt((p[0] * p[0]) + (p[1] * p[1]) + (p[2] * p[2]));
 }
 
 template <typename T>
 array<T, 3> MathUtil::normalize(const array<T, 3>& p)
 {
-    // Compute magnitude
+    // Get magnitude
     T mag = magnitude(p);
     if (mag == T(0))
     {
@@ -46,6 +46,7 @@ array<T, 3> MathUtil::normalize(const array<T, 3>& p)
 template <typename T>
 T MathUtil::toDegrees(const T& v)
 {
+    // Compute degrees from radians
     return v * (180.0 / M_PI);
 }
 
@@ -63,13 +64,13 @@ array<T, 2> MathUtil::toLatLon(const array<T, 3>& p, T radius)
 template <typename T>
 void MathUtil::xyzToLatLonRadius(GNode<T>& node)
 {
-    // Compute radius of coordinate
+    // Get radius of coordinate
     T r = radius(node.pos(), array<T, 3> {0, 0, 0});
 
-    // Normalize coordinate
+    // Get normalized coordinate
     array<T, 3> n = normalize(node.pos());
 
-    // Compute lat,lon of coordinate and convert to degrees.
+    // Get lat,lon of coordinate and convert to degrees.
     array<T, 2> ll = toLatLon(n, T(1.0));
     ll[0] = toDegrees(ll[0]);
     ll[1] = toDegrees(ll[1]);

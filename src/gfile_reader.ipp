@@ -16,6 +16,9 @@ GFileReader<T>::GFileReader(const GString& filename)
 
     // Read data
     readData(filename);
+
+    // Set layer ID for each data value
+    setElementLayerIDs();
 }
 
 template <class T>
@@ -93,6 +96,26 @@ void GFileReader<T>::readData(const GString& filename)
     }
 
     ifs.close();
+}
+
+template <class T>
+void GFileReader<T>::setElementLayerIDs()
+{
+    // TODO:
+    // Use header's element ID array to set an element layer ID for each data
+    // value
+    // Set fake element layer IDs for now
+    for (auto i = 0u; i < _data.size(); ++i)
+    {
+        if (i < _data.size() / 2)
+        {
+            _elemLayerIDs.push_back(0);
+        }
+        else
+        {
+            _elemLayerIDs.push_back(1);
+        }
+    }
 }
 
 template <class T>

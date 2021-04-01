@@ -24,8 +24,12 @@ public:
     void readData(const GString& filename);
 
     // Access
+    const GHeaderInfo header() const { return _header; }
     const vector<T>& data() const { return _data; }
-    const GHeaderInfo header() { return _header; }
+    const vector<GSIZET>& elementLayerIDs() const { return _elemLayerIDs; }
+
+    // Compute
+    void setElementLayerIDs();
 
     // Print
     static void printHeader(const GHeaderInfo& h);
@@ -33,8 +37,9 @@ public:
     void printData();
 
 private:
-    GHeaderInfo _header;
-    vector<T> _data;
+    GHeaderInfo _header;          // GeoFLOW file's header & other meta data
+    vector<T> _data;              // GeoFLOW file's data values
+    vector<GSIZET> _elemLayerIDs; // element layer ID for each data value
 };
 
 #include "../src/gfile_reader.ipp"

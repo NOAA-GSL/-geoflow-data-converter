@@ -26,21 +26,21 @@ int main()
     GFileReader<GDATATYPE> xgrid(FILE_XGRID);
     GFileReader<GDATATYPE> ygrid(FILE_YGRID);
     GFileReader<GDATATYPE> zgrid(FILE_ZGRID);
-    GFileReader<GDATATYPE> val(FILE_VAL);
+    GFileReader<GDATATYPE> values(FILE_VAL);
 
     // Get header info
     GHeaderInfo h = xgrid.header();
     GFileReader<GDATATYPE>::printHeader(h);
 
-    // Read x,y,z and value into a collection of nodes
+    // Read x,y,z and value into a collection of nodes and store in volume
     vector<GNode<GDATATYPE>> nodes;
     for (auto i = 0u; i < h.nNodes; ++i)
     {
         GNode<GDATATYPE> node(xgrid.data()[i],
                               ygrid.data()[i], 
                               zgrid.data()[i],
-                              val.data()[i],
-                              0);
+                              values.data()[i],
+                              values.elementLayerIDs()[i]);
 
         // Convert x,y,z to lat,lon,radius
         MathUtil::xyzToLatLonRadius<GDATATYPE>(node);
