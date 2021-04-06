@@ -8,18 +8,20 @@
 #include "gdata_converter.h"
 
 #define GDATATYPE GDOUBLE
-#define FILE_XGRID "data/xgrid.000000.out"
-#define FILE_YGRID "data/ygrid.000000.out"
-#define FILE_ZGRID "data/zgrid.000000.out"
-#define FILE_VARIABLE "data/dtotal.000000.out"
+#define FILE_JSON "data/ugrid.json"
 
 int main()
 {
-    // Read GeoFLOW x,y,z grid files into a collection of nodes
-    GDataConverter<GDATATYPE> gdc(FILE_XGRID, FILE_YGRID, FILE_ZGRID);
+    // Read the json file that specifies the GeoFLOW data files and contains
+    // other metadata needed for converting the GeoFLOW dataset to a specific
+    // NetCDF file format
+    GDataConverter<GDATATYPE> gdc(FILE_JSON);
+  
+    // Read the x,y,z grid into GNodes and convert to lat,lon,radius
+    gdc.readGrid();
 
-    // Read a GeoFLOW variable file into the nodes
-    gdc.readVariable(FILE_VARIABLE);
+    // Convert x,y,z grid to lat,lon,radius and store in nodes
+    gdc.xyzToLatLonRadius();
 
     // Print nodes
     for (auto n : gdc.nodes())

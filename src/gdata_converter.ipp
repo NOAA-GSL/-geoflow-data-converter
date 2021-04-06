@@ -11,33 +11,66 @@
 #include "logger.h"
 
 template <class T>
-GDataConverter<T>::GDataConverter(const GString& xFilename,
-                                  const GString& yFilename,
-                                  const GString& zFilename)
+GDataConverter<T>::GDataConverter(const GString& filename)
+{
+    // Load the json file
+    try
+    {
+        json::read_json(filename, root);
+    }
+    catch (const boost::property_tree::json_parser_error& e)
+    {
+        std::string msg = "JSON file error: " + GString(e.what());
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+}
+
+template <class T>
+void GDataConverter<T>::readGrid()
+{
+    // Read the x,y,z GeoFLOW grid files specified in the json file
+    try
+    {
+        string x = root.get<string>("grid_filenames.x"); 
+        string y = root.get<string>("grid_filenames.y"); 
+        string z = root.get<string>("grid_filenames.z");
+
+        readGrid(x, y, z);
+    }
+    catch(const boost::property_tree::ptree_bad_path& e)
+    {
+        std::string msg = "JSON file error: " + GString(e.what());
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+}
+
+template <class T>
+void GDataConverter<T>::readGrid(const GString& xFilename,
+                                 const GString& yFilename,
+                                 const GString& zFilename)
 {
     // Read GeoFLOW x,y,z files
-    GFileReader<T> xgrid(xFilename);
-    GFileReader<T> ygrid(yFilename);
-    GFileReader<T> zgrid(zFilename);
+    GFileReader<T> x(xFilename);
+    GFileReader<T> y(yFilename);
+    GFileReader<T> z(zFilename);
 
     // Get header info. The header is the same for each x,y,z file so just
-    // use the xgrid header.
-    _header = xgrid.header();
+    // use the x grid header.
+    _header = x.header();
     GFileReader<T>::printHeader(_header);
 
     // Read location (x,y,z) and location's element layer ID into a collection
     // of nodes. The IDs are the same for each x,y,z data value so just use the
-    // IDs from xgrid.
+    // IDs from the x grid.
     vector<GNode<T>> nodes;
     for (auto i = 0u; i < _header.nNodes; ++i)
     {
-        GNode<T> node(xgrid.data()[i],
-                      ygrid.data()[i], 
-                      zgrid.data()[i],
-                      xgrid.elementLayerIDs()[i]);
-
-        // Convert x,y,z to lat,lon,radius
-        MathUtil::xyzToLatLonRadius<T>(node);
+        GNode<T> node(x.data()[i],
+                      y.data()[i], 
+                      z.data()[i],
+                      x.elementLayerIDs()[i]);
 
         // Save node
         _nodes.push_back(node);
@@ -64,4 +97,14 @@ void GDataConverter<T>::readVariable(const GString& filename)
     {
         _nodes[i].var(var.data()[i]);
     }    
+}
+
+template <class T>
+void GDataConverter<T>::xyzToLatLonRadius()
+{
+    for (auto& n : _nodes)
+    {
+        // Convert x,y,z to lat,lon,radius
+        MathUtil::xyzToLatLonRadius<T>(n);
+    } 
 }
