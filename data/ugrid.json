@@ -1,0 +1,78 @@
+{
+"output_format": "UGRID",
+"output_dir": "outs",
+"data_type": "GDOUBLE",
+"grid_filenames":
+{
+    "x": "data/xgrid.000000.out",
+    "y": "data/ygrid.000000.out",
+    "z": "data/zgrid.000000.out"
+},
+"variable_filenames":
+[
+    "data/dtotal.000000.out"
+],
+"dimensions": 
+[
+    {
+        "name": "nMeshNodes",
+        "value": null,
+        "comment": "number of nodes per mesh layer" 
+    },
+    {
+        "name": "nMeshFaces",
+        "value": null,
+        "comment": "number of faces per mesh layer"
+    },
+    {
+        "name": "nFaceNodes",
+        "value": "4",
+        "comment": "number of nodes per face"
+    },
+    {
+        "name": "meshLayers",
+        "value": null,
+        "comment": "number of mesh layers in the volume"
+    },
+    {
+        "name": "time",
+        "value": "1",
+        "comment": "file contains one timestep worth of data"
+    }
+],
+
+"variables" :
+[
+    {
+        "general_comment": "Timestamp",
+        "name": "time",
+        "type": "datatype",
+        "args":
+        [
+            "time"
+        ],
+        "attributes": [
+            {
+                "name": "long_name",
+                "value": "time",
+                "comment": null
+            },
+            {
+                "name": "units",
+                "value": null,
+                "comment": "TBD, but an example is: hours since YYYY-MM-DD HH:MM:SS"
+            },
+            {
+                "name": "calendar",
+                "value": null,
+                "comment": "TBD but an example is: standard"
+            },
+            {
+                "name": "axis",
+                "value": "T",
+                "comment": null 
+            }
+        ]
+    }
+]
+}
