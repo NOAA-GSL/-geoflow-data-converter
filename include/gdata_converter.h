@@ -69,6 +69,9 @@ public:
      */
     void xyzToLatLonRadius();
 
+    // Print
+    void printHeader();
+
 private:
     json::ptree root;        // root of json file that contains metadata
     GHeaderInfo _header;     // GeoFLOW file's header & other metadata

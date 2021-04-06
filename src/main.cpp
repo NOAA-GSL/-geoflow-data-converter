@@ -23,11 +23,14 @@ int main()
     // Convert x,y,z grid to lat,lon,radius and store in nodes
     gdc.xyzToLatLonRadius();
 
+    // Print header
+    gdc.printHeader();
+
     // Print nodes
-    for (auto n : gdc.nodes())
+    /*for (auto n : gdc.nodes())
     {
         n.printNode();
-    }
+    }*/
 
     return 0;
 }

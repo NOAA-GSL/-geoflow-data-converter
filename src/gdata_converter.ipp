@@ -16,6 +16,7 @@ GDataConverter<T>::GDataConverter(const GString& filename)
     // Load the json file
     try
     {
+        cout << "Reading JSON file: " << filename << "..." << endl;
         json::read_json(filename, root);
     }
     catch (const boost::property_tree::json_parser_error& e)
@@ -59,7 +60,6 @@ void GDataConverter<T>::readGrid(const GString& xFilename,
     // Get header info. The header is the same for each x,y,z file so just
     // use the x grid header.
     _header = x.header();
-    GFileReader<T>::printHeader(_header);
 
     // Read location (x,y,z) and location's element layer ID into a collection
     // of nodes. The IDs are the same for each x,y,z data value so just use the
@@ -102,9 +102,17 @@ void GDataConverter<T>::readVariable(const GString& filename)
 template <class T>
 void GDataConverter<T>::xyzToLatLonRadius()
 {
+    cout << "For each node, computing lat,lon,radius from x,y,z..." << endl;
+
     for (auto& n : _nodes)
     {
         // Convert x,y,z to lat,lon,radius
         MathUtil::xyzToLatLonRadius<T>(n);
     } 
+}
+
+template <class T>
+void GDataConverter<T>::printHeader()
+{
+    GFileReader<T>::printHeader(_header);
 }
