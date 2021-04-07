@@ -56,17 +56,30 @@ void GDataConverter<T>::readGrid(const GString& xFilename,
                                  const GString& yFilename,
                                  const GString& zFilename)
 {
-    // Read GeoFLOW x,y,z files
+    // Read GeoFLOW x,y,z grid files
     GFileReader<T> x(xFilename);
     GFileReader<T> y(yFilename);
     GFileReader<T> z(zFilename);
+
+    // Verify data size
+    if (!(x.data().size() == y.data().size() && 
+          y.data().size() == z.data().size()))
+    {
+        string msg = "The number of values in the x grid (" + \
+                     to_string(x.data().size()) + "), y grid (" + \
+                     to_string(y.data().size()) + ") and z grid (" + \
+                     to_string(z.data().size()) + ") differ.";
+
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
 
     // Get header info. The header is the same for each x,y,z file so just
     // use the x grid header.
     _header = x.header();
 
-    // Read location (x,y,z) and location's element layer ID into a collection
-    // of nodes. The IDs are the same for each x,y,z data value so just use the
+    // Read each x,y,z location value and element layer ID into a collection of
+    // nodes. The IDs are the same for each x,y,z triplet so just use the
     // IDs from the x grid.
     vector<GNode<T>> nodes;
     for (auto i = 0u; i < _header.nNodes; ++i)
@@ -84,9 +97,10 @@ void GDataConverter<T>::readGrid(const GString& xFilename,
 template <class T>
 void GDataConverter<T>::readVariable(const GString& filename)
 {
-    // Read GeoFLOW variable file
+    // Read a GeoFLOW variable file
     GFileReader<T> var(filename);
 
+    // Verify data size
     if (var.data().size() != _nodes.size())
     {
         string msg = "The size of " + filename + " data (" + \
