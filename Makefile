@@ -17,8 +17,8 @@ OBJ := $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 # -MMD & -MP used to generate header dependencies automatically
 CPPFLAGS := -Iinclude -MMD -MP
 CFLAGS := -g -Wall
-LDFLAGS := #-Llib # -L is a linker flag
-LDLIBS := #-lm
+LDFLAGS := -L/usr/lib/x86_64-linux-gnu # -Llib # -L is a linker flag
+LDLIBS := -lnetcdf_c++4
 CC := g++
 
 # Run these built-intargets regardless if there is a file with this name

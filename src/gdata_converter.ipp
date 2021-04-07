@@ -7,17 +7,21 @@
 #include <fstream>
 
 #include "gfile_reader.h"
+#include "g_to_netcdf.h"
 #include "math_util.h"
 #include "logger.h"
 
 template <class T>
 GDataConverter<T>::GDataConverter(const GString& filename)
 {
+    // Initialize
+    _jsonFilename = filename;
+
     // Load the json file
     try
     {
-        cout << "Reading JSON file: " << filename << "..." << endl;
-        json::read_json(filename, root);
+        cout << "Reading JSON file: " << filename << endl;
+        json::read_json(filename, _root);
     }
     catch (const boost::property_tree::json_parser_error& e)
     {
@@ -33,9 +37,9 @@ void GDataConverter<T>::readGrid()
     // Read the x,y,z GeoFLOW grid files specified in the json file
     try
     {
-        string x = root.get<string>("grid_filenames.x"); 
-        string y = root.get<string>("grid_filenames.y"); 
-        string z = root.get<string>("grid_filenames.z");
+        string x = _root.get<string>("grid_filenames.x"); 
+        string y = _root.get<string>("grid_filenames.y"); 
+        string z = _root.get<string>("grid_filenames.z");
 
         readGrid(x, y, z);
     }
@@ -102,7 +106,7 @@ void GDataConverter<T>::readVariable(const GString& filename)
 template <class T>
 void GDataConverter<T>::xyzToLatLonRadius()
 {
-    cout << "For each node, computing lat,lon,radius from x,y,z..." << endl;
+    cout << "For each node, computing lat,lon,radius from x,y,z" << endl;
 
     for (auto& n : _nodes)
     {

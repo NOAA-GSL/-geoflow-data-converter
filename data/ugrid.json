@@ -16,27 +16,27 @@
 [
     {
         "name": "nMeshNodes",
-        "value": null,
-        "comment": "number of nodes per mesh layer" 
+        "value": 0,
+        "comment": "number of nodes per mesh layer (determined at runtime)" 
     },
     {
         "name": "nMeshFaces",
-        "value": null,
-        "comment": "number of faces per mesh layer"
+        "value": 0,
+        "comment": "number of faces per mesh layer (determined at runtime)"
     },
     {
         "name": "nFaceNodes",
-        "value": "4",
+        "value": 4,
         "comment": "number of nodes per face"
     },
     {
         "name": "meshLayers",
-        "value": null,
-        "comment": "number of mesh layers in the volume"
+        "value": 0,
+        "comment": "number of mesh layers in the volume (determined at runtime)"
     },
     {
         "name": "time",
-        "value": "1",
+        "value": 1,
         "comment": "file contains one timestep worth of data"
     }
 ],

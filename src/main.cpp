@@ -17,10 +17,11 @@ int main()
     // NetCDF file format
     GDataConverter<GDATATYPE> gdc(FILE_JSON);
   
-    // Read the x,y,z grid into GNodes and convert to lat,lon,radius
+    // Read the x,y,z grid files specified in the json file into a collection
+    // of nodes
     gdc.readGrid();
 
-    // Convert x,y,z grid to lat,lon,radius and store in nodes
+    // Convert x,y,z to lat,lon,radius and store in nodes
     gdc.xyzToLatLonRadius();
 
     // Print header
@@ -31,6 +32,10 @@ int main()
     {
         n.printNode();
     }*/
+
+    // Temp for testing
+    // Write to NetCDF
+    gdc.writeData();
 
     return 0;
 }

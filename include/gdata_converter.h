@@ -16,6 +16,7 @@
 
 #include "gheader_info.h"
 #include "gnode.h"
+#include "g_to_netcdf.h"
 
 using namespace std;
 namespace json = boost::property_tree;
@@ -69,11 +70,22 @@ public:
      */
     void xyzToLatLonRadius();
 
+    /*!
+     * Write to a NetCDF file.
+     */
+    void writeData()
+    {
+        // Temp test
+        GToNetCDF g(_jsonFilename, "temp.nc", NcFile::FileMode::replace);
+        g.writeDimensions();
+    }
+
     // Print
     void printHeader();
 
 private:
-    json::ptree root;        // root of json file that contains metadata
+    GString _jsonFilename;   // JSON filename
+    json::ptree _root;       // root of JSON file that contains metadata
     GHeaderInfo _header;     // GeoFLOW file's header & other metadata
     vector<GNode<T>> _nodes; // location and variable for every node in the
                              // GeoFLOW dataset

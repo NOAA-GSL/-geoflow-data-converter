@@ -24,7 +24,7 @@ GFileReader<T>::GFileReader(const GString& filename)
 template <class T>
 GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
 {
-    cout << "Reading GeoFLOW header from file: " << filename << "..." << endl;
+    cout << "Reading GeoFLOW header from file: " << filename << endl;
 
     // Open file
     ifstream ifs(filename, ios::in | ios::binary);
@@ -74,7 +74,7 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
 template <class T>
 void GFileReader<T>::readData(const GString& filename)
 {
-    cout << "Reading GeoFLOW data from file: " << filename << "..." << endl;
+    cout << "Reading GeoFLOW data from file: " << filename << endl;
 
     // Open file
     ifstream ifs(filename, ios::in | ios::binary);
