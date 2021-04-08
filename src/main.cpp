@@ -25,7 +25,7 @@ int main()
     gdc.xyzToLatLonRadius();
 
     // Print header
-    //gdc.printHeader();
+    gdc.printHeader();
 
     // Print nodes
     /*for (auto n : gdc.nodes())

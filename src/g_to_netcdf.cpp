@@ -53,6 +53,7 @@ void GToNetCDF::writeDimensions()
     // For each object in the dimensions subtree...
     BOOST_FOREACH(pt::ptree::value_type obj, dimTree)
     {
+        // Get the values for the specified properties
         GString name = PTUtil::readProperty<GString>(obj, "name");
         GUINT value = PTUtil::readProperty<GUINT>(obj, "value");
 
@@ -73,6 +74,7 @@ void GToNetCDF::writeVariables(GBOOL doWriteAttributes)
     // For each object in the variables subtree...
     BOOST_FOREACH(pt::ptree::value_type obj, varTree)
     {
+        // Get the values for the specified properties
         GString name = PTUtil::readProperty<GString>(obj, "name");
         GString type = PTUtil::readProperty<GString>(obj, "type");
 
