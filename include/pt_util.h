@@ -92,9 +92,10 @@ public:
     }
 
     /*!
-     * Get the value of a property from an object in the property tree.
+     * Get the value of a property from an object in a subtree of the property
+     * tree.
      * 
-     * @param obj object in a property tree
+     * @param obj object in a subtree of a property tree
      * @param property the property to read
      * @return value of property
      */
