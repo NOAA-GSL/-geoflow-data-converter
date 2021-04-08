@@ -19,13 +19,13 @@ int main()
   
     // Read the x,y,z grid files specified in the json file into a collection
     // of nodes
-    gdc.readGrid();
+    gdc.readGFGrid();
 
     // Convert x,y,z to lat,lon,radius and store in nodes
     gdc.xyzToLatLonRadius();
 
     // Print header
-    gdc.printHeader();
+    //gdc.printHeader();
 
     // Print nodes
     /*for (auto n : gdc.nodes())

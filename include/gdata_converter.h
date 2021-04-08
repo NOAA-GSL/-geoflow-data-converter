@@ -11,15 +11,13 @@
 #define GCONVERTER_H
 
 #include <vector>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 #include "gheader_info.h"
 #include "gnode.h"
 #include "g_to_netcdf.h"
+#include "pt_util.h"
 
 using namespace std;
-namespace json = boost::property_tree;
 
 template <class T>
 class GDataConverter
@@ -27,24 +25,24 @@ class GDataConverter
 public:
     GDataConverter() {}
     /*!
-     * Read the json file that contains metadata for a given GeoFLOW dataset.
-     * Metadata includes the GeoFLOW x,y,z grid filenames and variable
+     * Reads a property tree file that contains metadata for a given GeoFLOW
+     * dataset. Metadata includes the GeoFLOW x,y,z grid filenames and variable
      * filenames to read in, and other metadata needed to write to a specific
      * NetCDF file format.
      * 
-     * @param filename filename of json file
+     * @param filename name of property tree; file format is JSON
      */
-    GDataConverter(const GString& filename);
+    GDataConverter(const GString& ptFilename);
     ~GDataConverter() {}
 
     // Access
     const vector<GNode<T>>& nodes() const { return _nodes; }
 
     /*!
-     * Reads the GeoFLOW x,y,z grid filenames specified in the json file and
-     * passes the filenames to the parameterized readGrid(...) method.
+     * Reads the GeoFLOW x,y,z grid filenames specified in the property tree
+     * and passes the filenames to the parameterized readGrid(...) method.
      */
-    void readGrid();
+    void readGFGrid();
 
     /*!
      * Read GeoFLOW x,y,z grid files and store data in a collection of nodes.
@@ -54,16 +52,16 @@ public:
      * @param yFilename GeoFLOW y grid filename
      * @param zFilename GeoFLOW z grid filename
      */
-    void readGrid(const GString& xFilename,
-                  const GString& yFilename,
-                  const GString& zFilename);
+    void readGFGrid(const GString& xFilename,
+                    const GString& yFilename,
+                    const GString& zFilename);
 
     /*!
      * Read GeoFLOW variable file and store data in nodes.
      * 
      * @param filename filename variable data
      */
-    void readVariable(const GString& filename);
+    void readGFVariable(const GString& filename);
 
     /*!
      * Compute a lat,lon,radius for each node and store results in node.
@@ -76,16 +74,17 @@ public:
     void writeData()
     {
         // Temp test
-        GToNetCDF g(_jsonFilename, "temp.nc", NcFile::FileMode::replace);
+        GToNetCDF g(_ptFilename, "temp.nc", NcFile::FileMode::replace);
         g.writeDimensions();
+        g.writeVariables(false);
     }
 
     // Print
     void printHeader();
 
 private:
-    GString _jsonFilename;   // JSON filename
-    json::ptree _root;       // root of JSON file that contains metadata
+    GString _ptFilename;     // name of file that contains the property tree
+    pt::ptree _ptRoot;       // root of property tree
     GHeaderInfo _header;     // GeoFLOW file's header & other metadata
     vector<GNode<T>> _nodes; // location and variable for every node in the
                              // GeoFLOW dataset

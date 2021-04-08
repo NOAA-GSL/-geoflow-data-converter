@@ -13,15 +13,13 @@
 
 #include <vector>
 #include <netcdf>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 #include "gtypes.h"
+#include "pt_util.h"
 
 using namespace std;
 using namespace netCDF;
 using namespace netCDF::exceptions;
-namespace json = boost::property_tree;
 
 class GToNetCDF
 {
@@ -29,25 +27,34 @@ public:
     /*!
      * Initialize the GeoFLOW to NetCDF file writer.
      * 
-     * @param jsonFilename JSON filename with metadata needed for conversion
-     * @param ncFilename name of NetCDF file to write to
+     * @param ptFilename property tree file with metadata needed for
+     *                   conversion; file format is JSON
+     * @param ncFilename name of NetCDF file to write to with file extension
+     *                   (ex. myfile.nc)
      * @param mode read (file exists, open read-only)
      *             write (file exists, open for writing)
      *             replace (create new file, even if it exists)
      *             newFile (create new file, fail if already exists)
      */
-    GToNetCDF(const GString& jsonFilename,
+    GToNetCDF(const GString& ptFilename,
              const GString& ncFilename,
              NcFile::FileMode mode);
     ~GToNetCDF() {}
+
+    /*!
+     * Convert a GeoFLOW data type to a NETCDF NcType.
+     * 
+     * @param gType GeoFLOW data type
+     */
+    NcType toNcType(const GString& gType);
 
     void writeDimensions();
     void writeVariables(GBOOL doWriteAttributes);
     void writeData(const GString& varName);
 
 private:
-    json::ptree _root;   // root of json file that contains NetCDF metadata
-    NcFile _nc;          // NetCDF file handle
+    pt::ptree _ptRoot; // property tree root with metadata for conversion
+    NcFile _nc;        // NetCDF file handle
 };
 
 #endif

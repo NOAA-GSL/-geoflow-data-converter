@@ -9,52 +9,34 @@
 #include "gfile_reader.h"
 #include "g_to_netcdf.h"
 #include "math_util.h"
+#include "pt_util.h"
 #include "logger.h"
 
 template <class T>
-GDataConverter<T>::GDataConverter(const GString& filename)
+GDataConverter<T>::GDataConverter(const GString& ptFilename)
 {
     // Initialize
-    _jsonFilename = filename;
+    _ptFilename = ptFilename;
 
-    // Load the json file
-    try
-    {
-        cout << "Reading JSON file: " << filename << endl;
-        json::read_json(filename, _root);
-    }
-    catch (const boost::property_tree::json_parser_error& e)
-    {
-        std::string msg = "JSON file error: " + GString(e.what());
-        Logger::error(__FILE__, __FUNCTION__, msg);
-        exit(EXIT_FAILURE);
-    }
+    // Load the property tree
+    PTUtil::readJSONFile(_ptFilename, _ptRoot);
 }
 
 template <class T>
-void GDataConverter<T>::readGrid()
+void GDataConverter<T>::readGFGrid()
 {
-    // Read the x,y,z GeoFLOW grid files specified in the json file
-    try
-    {
-        string x = _root.get<string>("grid_filenames.x"); 
-        string y = _root.get<string>("grid_filenames.y"); 
-        string z = _root.get<string>("grid_filenames.z");
+    // Read the x,y,z GeoFLOW grid files from the property tree
+    GString x = PTUtil::readProperty<GString>(_ptRoot, "grid_filenames.x");
+    GString y = PTUtil::readProperty<GString>(_ptRoot, "grid_filenames.y");
+    GString z = PTUtil::readProperty<GString>(_ptRoot, "grid_filenames.z");
 
-        readGrid(x, y, z);
-    }
-    catch(const boost::property_tree::ptree_bad_path& e)
-    {
-        std::string msg = "JSON file error: " + GString(e.what());
-        Logger::error(__FILE__, __FUNCTION__, msg);
-        exit(EXIT_FAILURE);
-    }
+    readGFGrid(x, y, z);
 }
 
 template <class T>
-void GDataConverter<T>::readGrid(const GString& xFilename,
-                                 const GString& yFilename,
-                                 const GString& zFilename)
+void GDataConverter<T>::readGFGrid(const GString& xFilename,
+                                   const GString& yFilename,
+                                   const GString& zFilename)
 {
     // Read GeoFLOW x,y,z grid files
     GFileReader<T> x(xFilename);
@@ -95,7 +77,7 @@ void GDataConverter<T>::readGrid(const GString& xFilename,
 }
 
 template <class T>
-void GDataConverter<T>::readVariable(const GString& filename)
+void GDataConverter<T>::readGFVariable(const GString& filename)
 {
     // Read a GeoFLOW variable file
     GFileReader<T> var(filename);
@@ -122,9 +104,9 @@ void GDataConverter<T>::xyzToLatLonRadius()
 {
     cout << "For each node, computing lat,lon,radius from x,y,z" << endl;
 
+    // For each node, convert x,y,z to lat,lon,radius...
     for (auto& n : _nodes)
     {
-        // Convert x,y,z to lat,lon,radius
         MathUtil::xyzToLatLonRadius<T>(n);
     } 
 }

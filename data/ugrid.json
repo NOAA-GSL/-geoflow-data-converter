@@ -46,7 +46,7 @@
     {
         "general_comment": "Timestamp",
         "name": "time",
-        "type": "datatype",
+        "type": "data_type",
         "args":
         [
             "time"
