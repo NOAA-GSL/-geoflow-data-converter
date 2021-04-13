@@ -47,69 +47,97 @@ public:
     }
 
     /*!
-     * Get a subtree from the property tree.
+     * Get an array from the property tree.
      * 
      * @param root root of the property tree
-     * @param subName name of the subtree to get
-     * @return the root of the subtree
+     * @param key name of the array key to find
+     * @return the array
      */
-    static pt::ptree readSubtree(const pt::ptree& root, const GString& subName)
+    static pt::ptree getArray(const pt::ptree& root, const GString& key)
     {
         try
         {
-            pt::ptree subtree = root.get_child(subName);
-            return subtree;
+            pt::ptree arr = root.get_child(key);
+            return arr;
         }
         catch (const boost::property_tree::ptree_error& e)
         {
-            std::string msg = "Error reading property: " + GString(e.what());
+            std::string msg = "Error reading array: " + GString(e.what());
             Logger::error(__FILE__, __FUNCTION__, msg);
             exit(EXIT_FAILURE);
         }
     }
 
     /*!
-     * Get the value of a property from the property tree.
+     * Get the value of a key from the property tree.
      * 
      * @param root root of the property tree
-     * @param property the property to read
-     * @return value of property
+     * @param key name of the key to find
+     * @return value of key
      */
     template <typename T>
-    static T readProperty(const pt::ptree& root, const GString& property)
+    static T getValue(const pt::ptree& root, const GString& key)
     {
         try
         {
-            T value = root.get<T>(property);
+            T value = root.get<T>(key);
             return value;
         }
         catch (const boost::property_tree::ptree_error& e)
         {
-            std::string msg = "Error reading property: " + GString(e.what());
+            std::string msg = "Error reading key: " + GString(e.what());
             Logger::error(__FILE__, __FUNCTION__, msg);
             exit(EXIT_FAILURE);
         }
     }
 
     /*!
-     * Get the value of a property from an object in a subtree of the property
-     * tree.
+     * Get the value of a key from an object in an array of the property tree.
      * 
-     * @param obj object in a subtree of a property tree
-     * @param property the property to read
-     * @return value of property
+     * @param obj object in array of a property tree
+     * @param key name of the key to find
+     * @return value of key
      */
     template <typename T>
-    static T readProperty(pt::ptree::value_type obj, const GString& property)
+    static T getValue(const pt::ptree::value_type& obj, const GString& key)
     {
         try
         {
-            T value = (obj.second).get<T>(property);
+            T value = (obj.second).get<T>(key);
             return value;
         }
         catch (const boost::property_tree::ptree_error& e)
         {
-            std::string msg = "Error reading property: " + GString(e.what());
+            std::string msg = "Error reading key: " + GString(e.what());
+            Logger::error(__FILE__, __FUNCTION__, msg);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    /*!
+     * Get the values in an array in the property tree.
+     * 
+     * @param arr array in the property tree
+     * @return vector of values in the array
+     */
+    template <typename T>
+    static vector<T> getValues(const pt::ptree& arr)
+    {
+        try
+        {
+            vector<T> values;
+
+            // For each value in the array...
+            BOOST_FOREACH (pt::ptree::value_type a , arr)
+            {
+                // Add the value to the vector
+                values.push_back(a.second.data());
+            }
+            return values;
+        }
+        catch (const boost::property_tree::ptree_error& e)
+        {
+            std::string msg = "Error reading values: " + GString(e.what());
             Logger::error(__FILE__, __FUNCTION__, msg);
             exit(EXIT_FAILURE);
         }

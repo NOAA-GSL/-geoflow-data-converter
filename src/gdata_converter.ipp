@@ -25,11 +25,12 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
 template <class T>
 void GDataConverter<T>::readGFGrid()
 {
-    // Read the x,y,z GeoFLOW grid files from the property tree
-    GString x = PTUtil::readProperty<GString>(_ptRoot, "grid_filenames.x");
-    GString y = PTUtil::readProperty<GString>(_ptRoot, "grid_filenames.y");
-    GString z = PTUtil::readProperty<GString>(_ptRoot, "grid_filenames.z");
+    // Read the x,y,z GeoFLOW grid filenames from the property tree
+    GString x = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.x");
+    GString y = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.y");
+    GString z = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.z");
 
+    // Read the GeoFLOW x,y,z grid values into a collection of nodes
     readGFGrid(x, y, z);
 }
 
@@ -38,7 +39,7 @@ void GDataConverter<T>::readGFGrid(const GString& xFilename,
                                    const GString& yFilename,
                                    const GString& zFilename)
 {
-    // Read GeoFLOW x,y,z grid files
+    // Read the GeoFLOW x,y,z grid files into a collection of nodes
     GFileReader<T> x(xFilename);
     GFileReader<T> y(yFilename);
     GFileReader<T> z(zFilename);

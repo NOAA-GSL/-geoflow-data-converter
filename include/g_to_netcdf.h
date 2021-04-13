@@ -42,18 +42,19 @@ public:
     ~GToNetCDF() {}
 
     /*!
-     * Convert a GeoFLOW data type to a NETCDF NcType.
+     * Convert a GeoFLOW data type to a NetCDF NcType.
      * 
      * @param gType GeoFLOW data type
      */
     NcType toNcType(const GString& gType);
 
     void writeDimensions();
-    void writeVariables(GBOOL doWriteAttributes);
+    void writeVariables();
+    void writeAttributes();
     void writeData(const GString& varName);
 
 private:
-    pt::ptree _ptRoot; // property tree root with metadata for conversion
+    pt::ptree _ptRoot; // root of the property tree
     NcFile _nc;        // NetCDF file handle
 };
 

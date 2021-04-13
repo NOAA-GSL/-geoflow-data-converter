@@ -76,7 +76,8 @@ public:
         // Temp test
         GToNetCDF g(_ptFilename, "temp.nc", NcFile::FileMode::replace);
         g.writeDimensions();
-        g.writeVariables(false);
+        g.writeVariables();
+        g.writeAttributes();
     }
 
     // Print

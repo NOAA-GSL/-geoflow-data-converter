@@ -44,14 +44,15 @@
 "variables" :
 [
     {
-        "general_comment": "Timestamp",
+        "comment": "Timestamp",
         "name": "time",
         "type": "data_type",
         "args":
         [
             "time"
         ],
-        "attributes": [
+        "attributes":
+        [
             {
                 "name": "long_name",
                 "value": "time",
