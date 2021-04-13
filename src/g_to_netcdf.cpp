@@ -59,7 +59,8 @@ void GToNetCDF::writeDimensions()
         cout << "dimension [name = " << name << ", value = " << value << "]"
              << endl;
         
-        // Write the dimension to the NetCDF file
+        // Write the dimension to the NetCDF file. The dimension gets written
+        // in the form: dim_name = dim_value
         _nc.addDim(name, value);
     }
 }
@@ -135,7 +136,8 @@ void GToNetCDF::writeAttributes()
             GString varName = PTUtil::getValue<GString>(it->second, "name");
             NcVar ncVar = _nc.getVar(varName);
 
-            // Write the variable's attribute to the NetCDF file
+            // Write the variable's attribute to the NetCDF file. The attribute
+            // gets written in the form: var_name:att_name = att_value
             ncVar.putAtt(name, value);
         }
     }
