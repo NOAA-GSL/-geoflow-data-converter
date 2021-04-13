@@ -112,13 +112,13 @@ void GToNetCDF::writeAttributes()
     // Get the variables array
     pt::ptree varArr = PTUtil::getArray(_ptRoot, "variables");
 
-    // For each object in the variables array...
+    // For each variable in the variables array...
     for (pt::ptree::iterator it = varArr.begin(); it != varArr.end(); ++it)
     {
         // Get the attributes array
         pt::ptree attArr = PTUtil::getArray(it->second, "attributes");
 
-        // For each object in the attributes array...
+        // For each attribute in the attributes array...
         for (pt::ptree::iterator it2 = attArr.begin();
              it2 != attArr.end();
              ++it2)
