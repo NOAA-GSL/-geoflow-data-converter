@@ -49,10 +49,44 @@ public:
      */
     NcType toNcType(const GString& gType);
 
+    /*!
+     * Replace any 0-valued dimensions in the property tree with the matching
+     * dimensions specified in the dimensions map. A 0-valued dimension means
+     * the dimension's value must be computed during runtime after reading a
+     * GeoFLOW data file. The name of a dimension in the map must match the
+     * name of a 0-valued dimension in the property tree.
+     * 
+     * @param dims map of key-value pairs of any dimensions that must be
+     *             computed dynamically during runtime
+     */
     void fillDimensions(const map<GString, GSIZET>& dims);
+
+    /*!
+     * Read the "dimensions" array in the property tree and write each
+     * dimension object to the NetCDF file. A dimension gets written in the
+     * form: dimName = dimValue
+     */
     void writeDimensions();
+
+    /*!
+     * Read the "variables" array in the property tree and write each
+     * variable object to the NetCDF file. A variable gets written in the form:
+     * varType varName(dim1, dim2, ...)
+     *
+     */
     void writeVariables();
+
+    /*!
+     * Read the "attributes" array in each object of the "variables" array
+     * in the property tree and write the attributes to the NetCDF file. An
+     * attribute gets written in the form: varName:attrName = "attrValue"
+     */
     void writeAttributes();
+
+    /*!
+     *
+     * 
+     */
     void writeData(const GString& varName);
 
 private:

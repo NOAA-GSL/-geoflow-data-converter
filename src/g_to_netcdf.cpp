@@ -170,7 +170,7 @@ void GToNetCDF::writeAttributes()
             GString value = PTUtil::getValue<GString>(itAtt->second, "value");
 
             // For debugging
-            cout << "variable [name = " << name << ", type = " << value << "]"
+            cout << "variable [name = " << name << ", value = " << value << "]"
                  << endl;
 
             // Get the variable whose attributes we are iterating on

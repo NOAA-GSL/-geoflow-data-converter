@@ -5,6 +5,9 @@
 //                All rights reserved.
 //==============================================================================
 
+// TODO across project
+// - Add error handling for NetCDF calls
+
 #include "gdata_converter.h"
 
 #define GDATATYPE GDOUBLE
