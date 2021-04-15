@@ -11,6 +11,7 @@
 #ifndef GTONETCDF_H
 #define GTONETCDF_H
 
+#include <map>
 #include <vector>
 #include <netcdf>
 
@@ -48,6 +49,7 @@ public:
      */
     NcType toNcType(const GString& gType);
 
+    void fillDimensions(const map<GString, GSIZET>& dims);
     void writeDimensions();
     void writeVariables();
     void writeAttributes();

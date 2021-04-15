@@ -73,8 +73,20 @@ public:
      */
     void writeData()
     {
-        // Temp test
+        // Read a propterty tree with GeoFLOW metadata and convert the metadata
+        // and GeoFLOW data to a NetCDF file
         GToNetCDF g(_ptFilename, "temp.nc", NcFile::FileMode::replace);
+        
+        // Temp test
+        // Some dimensions must be set dynamcailly after reading the GeoFLOW
+        // files
+        map<GString, GSIZET> dims;
+        dims["nMeshNodes"] = 5;
+        dims["nMeshFaces"] = 6;
+        dims["meshLayers"] = 7;
+        g.fillDimensions(dims);
+
+        // Write the data to NetCDF format
         g.writeDimensions();
         g.writeVariables();
         g.writeAttributes();

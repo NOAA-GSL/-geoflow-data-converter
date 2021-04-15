@@ -42,6 +42,44 @@ NcType GToNetCDF::toNcType(const GString& gType)
     }
 }
 
+void GToNetCDF::fillDimensions(const map<GString, GSIZET>& dims)
+{
+    cout << "Setting mesh dimensions in the property tree from GeoFLOW data"
+         << endl;
+
+    // Get the dimensions array
+    pt::ptree& dimArr = PTUtil::getArrayRef(_ptRoot, "dimensions");
+
+    // For each dimension in the dimensions array...
+    for (pt::ptree::iterator it = dimArr.begin(); it != dimArr.end(); ++it)
+    {
+        // Get the values of the specified keys
+        GString dimName = PTUtil::getValue<GString>(it->second, "name");
+        GSIZET dimValue = PTUtil::getValue<GSIZET>(it->second, "value");
+
+        // If the value of the dimension in the property tree is 0, the value
+        // needs to be set using the value in the input dimensions map
+        if (dimValue == 0)
+        {
+            // Look for the dimension name in the dimensions map
+            map<GString, GSIZET>::const_iterator itMap;
+            itMap = dims.find(dimName);
+            if (itMap != dims.end())
+            {
+               // Write the value found in the map to the dimension value in
+               // the property tree
+               PTUtil::putValue<GSIZET>(it->second, "value", dims.at(dimName));
+            }
+            else {
+                std::string msg = "Cannot find dimension (" + dimName + ") " + \
+                                  "in the input dimensions.";
+                Logger::error(__FILE__, __FUNCTION__, msg);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+}                               
+
 void GToNetCDF::writeDimensions()
 {
     cout << "Writing NetCDF dimensions" << endl;
@@ -49,18 +87,19 @@ void GToNetCDF::writeDimensions()
     // Get the dimensions array
     pt::ptree dimArr = PTUtil::getArray(_ptRoot, "dimensions");
 
-     // For each dimension in the dimensions array...
+    // For each dimension in the dimensions array...
     for (pt::ptree::iterator it = dimArr.begin(); it != dimArr.end(); ++it)
     {
         // Get the values of the specified keys
         GString name = PTUtil::getValue<GString>(it->second, "name");
         GUINT value = PTUtil::getValue<GUINT>(it->second, "value");
 
+        // For debugging
         cout << "dimension [name = " << name << ", value = " << value << "]"
              << endl;
         
         // Write the dimension to the NetCDF file. The dimension gets written
-        // in the form: dim_name = dim_value
+        // in the form: dimName = dimValue
         _nc.addDim(name, value);
     }
 }
@@ -93,7 +132,7 @@ void GToNetCDF::writeVariables()
         // Convert the GeoFLOW type to an NcType
         NcType ncType = toNcType(type);
 
-        // Collect the args into a vector of dimensions
+        // Collect the args into a vector of NetCDF dimensions
         vector<NcDim> ncDims;
         for (auto a : args)
         {
@@ -101,7 +140,7 @@ void GToNetCDF::writeVariables()
         }
         
         // Write the variable definition to the NetCDF file. The definition
-        // gets written in the form: var_type var_name(dim1, dim2, ...)
+        // gets written in the form: varType varName(dim1, dim2, ...)
         _nc.addVar(name, ncType, ncDims);
     }
 }
@@ -114,26 +153,28 @@ void GToNetCDF::writeAttributes()
     pt::ptree varArr = PTUtil::getArray(_ptRoot, "variables");
 
     // For each variable in the variables array...
-    for (pt::ptree::iterator it = varArr.begin(); it != varArr.end(); ++it)
+    for (pt::ptree::iterator itVar = varArr.begin();
+         itVar != varArr.end(); 
+         ++itVar)
     {
         // Get the attributes array
-        pt::ptree attArr = PTUtil::getArray(it->second, "attributes");
+        pt::ptree attArr = PTUtil::getArray(itVar->second, "attributes");
 
         // For each attribute in the attributes array...
-        for (pt::ptree::iterator it2 = attArr.begin();
-             it2 != attArr.end();
-             ++it2)
+        for (pt::ptree::iterator itAtt = attArr.begin();
+             itAtt != attArr.end();
+             ++itAtt)
         {
             // Get the values of the specified keys
-            GString name = PTUtil::getValue<GString>(it2->second, "name");
-            GString value = PTUtil::getValue<GString>(it2->second, "value");
+            GString name = PTUtil::getValue<GString>(itAtt->second, "name");
+            GString value = PTUtil::getValue<GString>(itAtt->second, "value");
 
             // For debugging
             cout << "variable [name = " << name << ", type = " << value << "]"
                  << endl;
 
             // Get the variable whose attributes we are iterating on
-            GString varName = PTUtil::getValue<GString>(it->second, "name");
+            GString varName = PTUtil::getValue<GString>(itVar->second, "name");
             NcVar ncVar = _nc.getVar(varName);
 
             // Write the variable's attribute to the NetCDF file. The attribute

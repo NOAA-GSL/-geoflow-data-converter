@@ -47,22 +47,43 @@ public:
     }
 
     /*!
-     * Get an array from the property tree.
+     * Get an array from a tree in the property tree.
      * 
-     * @param root root of the property tree
-     * @param key name of the array key to find
+     * @param tree tree in the property tree
+     * @param key name of the array to find
      * @return the array
      */
-    static pt::ptree getArray(const pt::ptree& root, const GString& key)
+    static pt::ptree getArray(const pt::ptree& tree, const GString& key)
     {
         try
         {
-            pt::ptree arr = root.get_child(key);
-            return arr;
+            return tree.get_child(key);
         }
         catch (const boost::property_tree::ptree_error& e)
         {
-            std::string msg = "Error reading array: " + GString(e.what());
+            std::string msg = "Error getting array: " + GString(e.what());
+            Logger::error(__FILE__, __FUNCTION__, msg);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    /*!
+     * Get a reference to an array from a tree in the property tree.
+     * 
+     * @param tree tree in the property tree
+     * @param key name of the array to find
+     * @return the array
+     */
+    static pt::ptree& getArrayRef(pt::ptree& tree, const GString& key)
+    {
+        try
+        {
+            return tree.get_child(key);
+        }
+        catch (const boost::property_tree::ptree_error& e)
+        {
+            std::string msg = "Error getting reference to array: " + \
+                              GString(e.what());
             Logger::error(__FILE__, __FUNCTION__, msg);
             exit(EXIT_FAILURE);
         }
@@ -71,44 +92,20 @@ public:
     /*!
      * Get the value of a key from the property tree.
      * 
-     * @param root root of the property tree
+     * @param tree a tree in the property tree
      * @param key name of the key to find
      * @return value of key
      */
     template <typename T>
-    static T getValue(const pt::ptree& root, const GString& key)
+    static T getValue(const pt::ptree& tree, const GString& key)
     {
         try
         {
-            T value = root.get<T>(key);
-            return value;
+            return tree.get<T>(key);
         }
         catch (const boost::property_tree::ptree_error& e)
         {
-            std::string msg = "Error reading key: " + GString(e.what());
-            Logger::error(__FILE__, __FUNCTION__, msg);
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    /*!
-     * Get the value of a key from an object in an array of the property tree.
-     * 
-     * @param obj object in array of a property tree
-     * @param key name of the key to find
-     * @return value of key
-     */
-    template <typename T>
-    static T getValue(const pt::ptree::value_type& obj, const GString& key)
-    {
-        try
-        {
-            T value = (obj.second).get<T>(key);
-            return value;
-        }
-        catch (const boost::property_tree::ptree_error& e)
-        {
-            std::string msg = "Error reading key: " + GString(e.what());
+            std::string msg = "Error getting value: " + GString(e.what());
             Logger::error(__FILE__, __FUNCTION__, msg);
             exit(EXIT_FAILURE);
         }
@@ -118,7 +115,7 @@ public:
      * Get the values in an array in the property tree.
      * 
      * @param arr array in the property tree
-     * @return vector of values in the array
+     * @return vector of the array values
      */
     template <typename T>
     static vector<T> getValues(const pt::ptree& arr)
@@ -137,7 +134,33 @@ public:
         }
         catch (const boost::property_tree::ptree_error& e)
         {
-            std::string msg = "Error reading values: " + GString(e.what());
+            std::string msg = "Error getting values: " + GString(e.what());
+            Logger::error(__FILE__, __FUNCTION__, msg);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    /*!
+     * Set a value for a key in a tree of the property tree. The value gets
+     * overwritten if it exisits.
+     * 
+     * @param @param tree a subtree/object in the property tree
+     * @param key name of the key
+     * @param value value of the key
+     */
+    template <typename T>
+    static void putValue(pt::ptree& tree,
+                         const GString& key,
+                         const T& value)
+    {
+        try
+        {
+            tree.put<T>(key, value);
+        }
+        catch (const boost::property_tree::ptree_error& e)
+        {
+            std::string msg = "Error setting value for key (" + key + "): " + \
+                              GString(e.what());
             Logger::error(__FILE__, __FUNCTION__, msg);
             exit(EXIT_FAILURE);
         }
