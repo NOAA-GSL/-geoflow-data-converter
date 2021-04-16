@@ -39,7 +39,7 @@ public:
 private:
     GHeaderInfo _header;          // GeoFLOW file's header & other meta data
     vector<T> _data;              // GeoFLOW file's data values
-    vector<GSIZET> _elemLayerIDs; // element layer ID for each data value
+    vector<GSIZET> _elemLayerIDs; // element layer ID for each node
 };
 
 #include "../src/gfile_reader.ipp"

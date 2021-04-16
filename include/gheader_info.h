@@ -1,7 +1,7 @@
 //==============================================================================
 // Date        : 3/17/21 (SG)
-// Description : Stores header and auxiliary info from a binary GeoFLOW data
-//               file.
+// Description : Stores header and auxiliary info read from a binary GeoFLOW
+//               data file.
 // Copyright   : Copyright 2021. Regents of the University of Colorado.
 //               All rights reserved.
 //==============================================================================
@@ -27,10 +27,13 @@ struct GHeaderInfo
     GSIZET        timeStamp;     // time stamp
     GUINT         hasMultVars;   // multiple fields in file?
 
-    // Auxiliary data derived from header
-    GSIZET        nHeaderBytes;  // total byte size of header
-    GUINT         nNodesPerElem; // num nodes per element (incl. sub nodes)
-    GSIZET        nNodes;        // total nodes in file (incl. sub nodes)
+    // Auxiliary data derived from GeoFLOW header
+    GSIZET        nHeaderBytes;     // total byte size of GeoFLOW header
+    GUINT         nNodesPer2DElem;  // num nodes (incl. sub nodes) per 2D \
+                                       GeoFLOW element (x and y ref dir)
+    GSIZET        nNodesPer2DLayer; // num nodes (incl. sub nodes) per 2D layer
+    GSIZET        nFacesPer2DLayer; // num faces (incl. sub faces) per 2D layer
+    GSIZET        n2DLayers;        // num 2D layers in entire volume
 };
 
 #endif

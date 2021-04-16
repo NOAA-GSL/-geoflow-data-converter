@@ -65,7 +65,7 @@ void GDataConverter<T>::readGFGrid(const GString& xFilename,
     // nodes. The IDs are the same for each x,y,z triplet so just use the
     // IDs from the x grid.
     vector<GNode<T>> nodes;
-    for (auto i = 0u; i < _header.nNodes; ++i)
+    for (auto i = 0u; i < _header.nNodesPer2DLayer; ++i)
     {
         GNode<T> node(x.data()[i],
                       y.data()[i], 
@@ -94,7 +94,7 @@ void GDataConverter<T>::readGFVariable(const GString& filename)
     }
 
     // Store variable data into nodes
-    for (auto i = 0u; i < _header.nNodes; ++i)
+    for (auto i = 0u; i < _header.nNodesPer2DLayer; ++i)
     {
         _nodes[i].var(var.data()[i]);
     }    

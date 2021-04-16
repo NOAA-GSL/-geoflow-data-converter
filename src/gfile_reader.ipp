@@ -46,6 +46,16 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
     {
         ifs.read((char*)&p, sizeof(h.polyOrder[0]));
     }
+
+    // Verify data
+    if (h.polyOrder.size() < 2)
+    {
+        string msg = "Found only (" + to_string(h.polyOrder.size()) + ") " + \
+                     "polynomial orders in file: " + filename + ". Need " + \
+                     "a minimum of 2 (for each x & y reference direction).";
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);       
+    }
     
     ifs.read((char*)&h.gridType, sizeof(h.gridType));
     ifs.read((char*)&h.timeCycle, sizeof(h.timeCycle));
@@ -55,16 +65,22 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
     // Get total byte size of header
     h.nHeaderBytes = ifs.tellg(); // curr pos in file stream
     
-    // Get num nodes (incl. sub nodes) per element
+    // Get num nodes (incl. sub nodes) per 2D element (x & y ref dir)
     // Num nodes in one reference direction of one element = (poly order + 1)
-    h.nNodesPerElem = 1;
+    h.nNodesPer2DElem = 1;
     for (const auto& p : h.polyOrder)
     {
-        h.nNodesPerElem *= (p + 1);
+        h.nNodesPer2DElem *= (p + 1);
     }
 
-    // Get num nodes (incl. sub nodes) in entire dataset
-    h.nNodes = h.nElems * h.nNodesPerElem;
+    // Get num nodes (incl. sub nodes) per 2D layer(x & y ref dir)
+    h.nNodesPer2DLayer = h.nElems * h.nNodesPer2DElem;
+
+    // Get num faces (incl. sub faces) per 2D layer(x & y ref dir)
+    h.nFacesPer2DLayer = h.nElems * (h.polyOrder[0] * h.polyOrder[1]);
+
+    // Get num 2D layers in the entire volume
+    h.n2DLayers = 1;
 
     ifs.close();
 
@@ -87,10 +103,10 @@ void GFileReader<T>::readData(const GString& filename)
 
     // Set file stream loc to start of data and allocate mem
     ifs.seekg(_header.nHeaderBytes);
-    _data.resize(_header.nNodes);
+    _data.resize(_header.nNodesPer2DLayer);
 
     // Read data
-    GSIZET nDataBytes = _header.nNodes * sizeof(T);
+    GSIZET nDataBytes = _header.nNodesPer2DLayer * sizeof(T);
     if (!ifs.read((char*)_data.data(), nDataBytes))
     {
         cerr << "Error: Cannot read the requested " << nDataBytes
@@ -105,20 +121,11 @@ void GFileReader<T>::readData(const GString& filename)
 template <class T>
 void GFileReader<T>::setElementLayerIDs()
 {
-    // TODO:
     // Use header's element ID array to set an element layer ID for each data
     // value
-    // Set fake element layer IDs for now
     for (auto i = 0u; i < _data.size(); ++i)
     {
-        if (i < _data.size() / 2)
-        {
             _elemLayerIDs.push_back(0);
-        }
-        else
-        {
-            _elemLayerIDs.push_back(1);
-        }
     }
 }
 
@@ -149,9 +156,11 @@ void GFileReader<T>::printHeader(const GHeaderInfo& h)
     cout << "------------------------" << endl;
     cout << "Derived Info from Header" << endl;
     cout << "------------------------" << endl;
-    cout << "Num nodes per element: " << h.nNodesPerElem << endl;
-    cout << "Num nodes in file: " << h.nNodes << endl;
     cout << "Num header bytes: " << h.nHeaderBytes << endl;
+    cout << "Num nodes per 2D GeoFLOW element: " << h.nNodesPer2DElem << endl;
+    cout << "Num nodes per 2D layer: " << h.nNodesPer2DLayer << endl;
+    cout << "Num faces per 2D layer: " << h.nFacesPer2DLayer << endl;
+    cout << "Num 2D layers: " << h.n2DLayers << endl;
     cout << endl;
 }
 

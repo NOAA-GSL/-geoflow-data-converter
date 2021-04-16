@@ -144,7 +144,7 @@ public:
      * Set a value for a key in a tree of the property tree. The value gets
      * overwritten if it exisits.
      * 
-     * @param @param tree a subtree/object in the property tree
+     * @param @param tree a sub tree/object in the property tree
      * @param key name of the key
      * @param value value of the key
      */

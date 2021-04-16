@@ -7,6 +7,12 @@
 
 // TODO across project
 // - Add error handling for NetCDF calls
+// - Modify nElem in gfile_reader.h (right now, only accounts for one layer of
+//   2D elements); also compute n2DLayers - right now hard-coded; also compute
+//   setElementLayerIDs
+// - MathUtil essentiallyEqual method
+// - Remove nNodesPerFace from json file and hard code it? Assumption is
+//   poly order same for each element in any one ref direction
 
 #include "gdata_converter.h"
 
@@ -38,7 +44,7 @@ int main()
 
     // Temp for testing
     // Write to NetCDF
-    gdc.writeData();
+    gdc.writeDataToUGRID();
 
     return 0;
 }
