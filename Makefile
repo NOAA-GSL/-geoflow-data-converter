@@ -1,4 +1,4 @@
-# List source and build output directories
+# List the source and build output directories
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
@@ -13,23 +13,25 @@ SRC := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ := $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 # List flags
-# -I is a preprocessor flag, not a compiler flag
+# -I is a preprocessor flag
 # -MMD & -MP used to generate header dependencies automatically
+# -Wno-comment supresses backslash-newline warning after a // comment
+# -Llib_name, -L is a linker flag
 CPPFLAGS := -Iinclude -MMD -MP
-CFLAGS := -g -Wall
-LDFLAGS := -L/usr/lib/x86_64-linux-gnu # -Llib # -L is a linker flag
+CFLAGS := -g -Wall -Wno-comment
+LDFLAGS := -L/usr/lib/x86_64-linux-gnu
 LDLIBS := -lnetcdf_c++4
 CC := g++
 
-# Run these built-intargets regardless if there is a file with this name
+# Run these built-in targets regardless if there is a file with this name
 .PHONY: all clean
 
-# The target you want to build when typing only make on command line
+# The target to build when typing make on command line
 all: $(EXE)
 
 # Recipe for building executable
-# $^ = names of all the prerequisites with spaces bw them & omitting duplicates
-# $@ = name of the target
+# $^ = names of all prerequisites with spaces bw them and omitting duplicates
+# $@ = name of target
 $(EXE): $(OBJ) | $(BIN_DIR)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
@@ -43,6 +45,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 $(BIN_DIR) $(OBJ_DIR):
 	mkdir -p $@
 
+# Remove various files by running: make clean
 clean:
 	$(RM) -rv $(BIN_DIR) $(OBJ_DIR)
 
