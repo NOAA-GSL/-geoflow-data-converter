@@ -34,16 +34,19 @@ public:
         _pos = {{x, y, z}};
         _elemLayerID = elemLayerID;
         _var = T(0);
-        _latlon = {{0, 0}};
-        _radius = 0;
+        _lat = T(0);
+        _lon = T(0);
+        _radius = T(0);
     }
     ~GNode() {}
 
     // Access
     array<T, 3> pos() const { return _pos; }
     void pos(const array<T, 3>& pos) { _pos = pos; }
-    array<T, 2> latlon() const { return _latlon; }
-    void latlon(const array<T, 2>& latlon) { _latlon = latlon; }
+    T lat() const { return _lat; }
+    void lat(const T& lat) { _lat = lat; }
+    T lon() const { return _lon; }
+    void lon(const T& lon) { _lon = lon; }
     T radius() const { return _radius; }
     void radius(const T& radius) { _radius = radius; }
     T var() const { return _var; }
@@ -56,8 +59,8 @@ public:
         cout << "(x, y, z): (" << _pos[0] << ", " 
                                << _pos[1] << ", "
                                << _pos[2] << ") | ";
-        cout << "(lat, lon, r): (" << _latlon[0] << ", " 
-                                   << _latlon[1] << ", "
+        cout << "(lat, lon, r): (" << _lat << ", " 
+                                   << _lon << ", "
                                    << _radius << ") | ";
         cout << "elemLayerID: (" << _elemLayerID << ") | ";
         cout << "var: (" << _var << ")";
@@ -66,7 +69,8 @@ public:
 
 private:
     array<T, 3> _pos;    // cartesian coordinate x,y,z of node
-    array<T, 2> _latlon; // lat,lon coordinate of node
+    T _lat;              // lat coordinate of node
+    T _lon;              // lon coordinate of node
     T _var;              // variable value at node
     T _radius;           // radius of node
     GSIZET _elemLayerID; // element layer index the node resides on

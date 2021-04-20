@@ -76,6 +76,7 @@ void MathUtil::xyzToLatLonRadius(GNode<T>& node)
     ll[1] = toDegrees(ll[1]);
    
     // Update node
+    node.lat(ll[0]);
+    node.lon(ll[1]);
     node.radius(r);
-    node.latlon(ll);
 }
