@@ -124,7 +124,7 @@ public:
         {
             vector<T> values;
 
-            // For each value in the array...
+            // For each key-value element in the array...
             BOOST_FOREACH (pt::ptree::value_type a , arr)
             {
                 // Add the value to the vector
@@ -141,24 +141,34 @@ public:
     }
 
     /*!
-     * Check if a key exists in a tree of the property tree. The key's value
-     * has a type of T.
+     * Check if a key exists in a tree of the property tree.
      * 
      * @param tree a tree in the property tree
      * @param key name of the key to find
      * @return true if key is found, false otherwise
      */
-    template <typename T>
     static GBOOL findKey(const pt::ptree& tree, const GString& key)
     {
         try
         {
-            tree.get<T>(key);
-            return true;
+            // For each key-value element in the array...
+            BOOST_FOREACH (pt::ptree::value_type t , tree)
+            {
+                // Check if the key exists
+                if (t.first.data() == key)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
         catch (const boost::property_tree::ptree_error& e)
         {
-            return false;        
+            std::string msg = "Error looking for key (" + key + "): " + \
+                              GString(e.what());
+            Logger::error(__FILE__, __FUNCTION__, msg);
+            exit(EXIT_FAILURE);        
         }
     }
 

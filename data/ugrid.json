@@ -146,6 +146,7 @@
             },
             {
                 "name": "start_index",
+                "type": "GINT",
                 "value": 0,
                 "comment": "use 0-based indexing (i.e., points and faces are numbered starting with 0, which is the default)"
             }

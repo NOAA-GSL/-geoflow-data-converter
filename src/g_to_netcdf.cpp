@@ -22,8 +22,8 @@ GToNetCDF::GToNetCDF(const GString& ptFilename,
 
 NcType GToNetCDF::toNcType(const GString& gType)
 {
-    if (gType == "GString") { return ncString; }
-    else if (gType == "GFLOAT")       { return ncFloat; }
+    if (gType == "GString")      { return ncString; }
+    else if (gType == "GFLOAT")  { return ncFloat; }
     else if (gType == "GDOUBLE") { return ncDouble; }
     else if (gType == "GINT")    { return ncInt; }
     else if (gType == "GUINT")   { return ncUint; }
@@ -203,7 +203,7 @@ void GToNetCDF::writeAttributes()
             GString gType = "GString"; // default type for an attribute value
 
             // If a type key is specified for this attribute, get the value
-            if (PTUtil::findKey<GString>(itAtt->second, "type"))
+            if (PTUtil::findKey(itAtt->second, "type"))
             {
                 gType = PTUtil::getValue<GString>(itAtt->second, "type");
             }
