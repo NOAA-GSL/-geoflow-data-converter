@@ -141,6 +141,28 @@ public:
     }
 
     /*!
+     * Check if a key exists in a tree of the property tree. The key's value
+     * has a type of T.
+     * 
+     * @param tree a tree in the property tree
+     * @param key name of the key to find
+     * @return true if key is found, false otherwise
+     */
+    template <typename T>
+    static GBOOL findKey(const pt::ptree& tree, const GString& key)
+    {
+        try
+        {
+            tree.get<T>(key);
+            return true;
+        }
+        catch (const boost::property_tree::ptree_error& e)
+        {
+            return false;        
+        }
+    }
+
+    /*!
      * Set a value for a key in a tree of the property tree. The value gets
      * overwritten if it exisits.
      * 

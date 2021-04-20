@@ -16,18 +16,17 @@ GToNetCDF::GToNetCDF(const GString& ptFilename,
     PTUtil::readJSONFile(ptFilename, _ptRoot);
 
     // Open the NetCDF file
-    // TODO: Add error checking.
     cout << "Opening NetCDF file for writing: " << ncFilename << endl;
     _nc.open(ncFilename, mode);
 }
 
 NcType GToNetCDF::toNcType(const GString& gType)
 {
-    if (gType == "GFLOAT")       { return ncFloat; }
+    if (gType == "GString") { return ncString; }
+    else if (gType == "GFLOAT")       { return ncFloat; }
     else if (gType == "GDOUBLE") { return ncDouble; }
     else if (gType == "GINT")    { return ncInt; }
     else if (gType == "GUINT")   { return ncUint; }
-    else if (gType == "GString") { return ncString; }
     else if (gType == "data_type")
     {
         GString t = PTUtil::getValue<GString>(_ptRoot, "data_type");
@@ -36,7 +35,40 @@ NcType GToNetCDF::toNcType(const GString& gType)
     else
     {
         std::string msg = "Unable to convert data type (" + gType + ") " + \
-                          "read from property tree to a NetCDF data type.";
+                          "to a NetCDF data type.";
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+}
+
+void GToNetCDF::putAttribute(const NcVar& ncVar, 
+                             const GString& name,
+                             const GString& value,
+                             const NcType& ncType)
+{
+    if (ncType == ncString)
+    {
+        ncVar.putAtt(name, value);
+    }
+    else if (ncType == ncFloat)
+    {
+        ncVar.putAtt(name, ncType, stof(value));
+    }
+    else if (ncType == ncDouble)
+    {
+        ncVar.putAtt(name, ncType, stod(value));
+    }
+    else if (ncType == ncInt)
+    {
+        ncVar.putAtt(name, ncType, stoi(value));
+    }
+    else if (ncType == ncUint)
+    {
+        ncVar.putAtt(name, ncType, (unsigned int)(stoul(value)));
+    }
+    else 
+    {
+        std::string msg = "The input NetCDF data type is not supported.";
         Logger::error(__FILE__, __FUNCTION__, msg);
         exit(EXIT_FAILURE);
     }
@@ -61,7 +93,7 @@ void GToNetCDF::fillDimensions(const map<GString, GSIZET>& dims)
         // needs to be set using the value in the input dimensions map
         if (dimValue == 0)
         {
-            // Look for the dimension name in the dimensions map
+            // Look for the dimension name in the input dimensions map
             map<GString, GSIZET>::const_iterator itMap;
             itMap = dims.find(dimName);
             if (itMap != dims.end())
@@ -168,10 +200,13 @@ void GToNetCDF::writeAttributes()
             // Get the values of the specified keys
             GString name = PTUtil::getValue<GString>(itAtt->second, "name");
             GString value = PTUtil::getValue<GString>(itAtt->second, "value");
+            GString gType = "GString"; // default type for an attribute value
 
-            // For debugging
-            cout << "variable [name = " << name << ", value = " << value << "]"
-                 << endl;
+            // If a type key is specified for this attribute, get the value
+            if (PTUtil::findKey<GString>(itAtt->second, "type"))
+            {
+                gType = PTUtil::getValue<GString>(itAtt->second, "type");
+            }
 
             // Get the variable whose attributes we are iterating on
             GString varName = PTUtil::getValue<GString>(itVar->second, "name");
@@ -179,7 +214,11 @@ void GToNetCDF::writeAttributes()
 
             // Write the variable's attribute to the NetCDF file. The attribute
             // gets written in the form: var_name:att_name = att_value
-            ncVar.putAtt(name, value);
+            putAttribute(ncVar, name, value, toNcType(gType));
+
+            // For debugging
+            cout << "variable [name = " << name << ", value = " << value
+                 << ", gtype = " << gType << "]" << endl;
         }
     }
 }

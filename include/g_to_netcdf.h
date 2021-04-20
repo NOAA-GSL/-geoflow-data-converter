@@ -46,8 +46,14 @@ public:
      * Convert a GeoFLOW data type to a NetCDF NcType.
      * 
      * @param gType GeoFLOW data type
+     * @return the NetCDF data type
      */
     NcType toNcType(const GString& gType);
+
+    void putAttribute(const NcVar& ncVar, 
+                      const GString& name,
+                      const GString& value,
+                      const NcType& ncType);
 
     /*!
      * Replace any 0-valued dimensions in the property tree with the matching
