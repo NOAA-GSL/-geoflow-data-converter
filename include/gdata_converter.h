@@ -33,10 +33,11 @@ public:
      * @param filename name of property tree; file format is JSON
      */
     GDataConverter(const GString& ptFilename);
-    ~GDataConverter() {}
+    ~GDataConverter();
 
     // Access
     const vector<GNode<T>>& nodes() const { return _nodes; }
+    const GHeaderInfo header() const { return _header; }
 
     /*!
      * Reads the GeoFLOW x,y,z grid filenames specified in the property tree
@@ -69,27 +70,37 @@ public:
     void xyzToLatLonRadius();
 
     /*!
-     * Write to a NetCDF file.
+     * Replace any 0-valued dimensions in the property tree with the matching
+     * dimensions specified in the dimensions map. A 0-valued dimension means
+     * the dimension's value must be computed during runtime after reading a
+     * GeoFLOW data file. The name of a dimension in the map must match the
+     * name of a 0-valued dimension in the property tree.
+     * 
+     * @param dims map of key-value pairs of any dimensions that must be
+     *             computed dynamically during runtime
      */
-    void writeDataToUGRID()
-    {
-        // Read a propterty tree with GeoFLOW metadata and convert the metadata
-        // and GeoFLOW data to a NetCDF file
-        GToNetCDF g(_ptFilename, "temp.nc", NcFile::FileMode::replace);
-        
-        // Temp test
-        // Set any 0-valued dimensions dynamcailly based on the GeoFLOW files
-        map<GString, GSIZET> dims;
-        dims["nMeshNodes"] = _header.nNodesPer2DLayer;
-        dims["nMeshFaces"] = _header.nFacesPer2DLayer;
-        dims["meshLayers"] = _header.n2DLayers;
-        g.fillDimensions(dims);
+    void setDimensions(const map<GString, GSIZET>& dims);
 
-        // Write the data to NetCDF format
-        g.writeDimensions();
-        g.writeVariables();
-        g.writeAttributes();
-    }
+    /*!
+     *
+     */
+    void initNC(const GString& ncFilename, NcFile::FileMode mode);
+
+    /*
+     *
+     */
+    void closeNC();
+
+    /*
+     *
+     */
+    void writeNCDimensions();
+
+    /*
+     *
+     */
+    template <class U>
+    void writeNCVariable(const GString& varName);
 
     // Print
     void printHeader();
@@ -98,6 +109,7 @@ private:
     GString _ptFilename;     // name of file that contains the property tree
     pt::ptree _ptRoot;       // root of property tree
     GHeaderInfo _header;     // GeoFLOW file's header & other metadata
+    GToNetCDF *_nc;          // handle to NetCDF writer 
     vector<GNode<T>> _nodes; // location and variable for every node in the
                              // GeoFLOW dataset
 };

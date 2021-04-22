@@ -21,30 +21,43 @@
 
 int main()
 {
-    // Read the json file that specifies the GeoFLOW data files and contains
-    // other metadata needed for converting the GeoFLOW dataset to a specific
+    // Read the JSON file that specifies the GeoFLOW dataset's metadata and
+    // UGRID metadata needed for converting the GeoFLOW dataset to a specific
     // NetCDF file format
     GDataConverter<GDATATYPE> gdc(FILE_JSON);
   
-    // Read the x,y,z grid files specified in the json file into a collection
+    // Read the x,y,z grid files specified in the JSON file into a collection
     // of nodes
     gdc.readGFGrid();
 
     // Convert x,y,z to lat,lon,radius and store in nodes
     gdc.xyzToLatLonRadius();
 
-    // Print header
+    // Set any 0-valued dimensions in the JSON file dynamcailly with the info
+    // read in from the header of a GeoFLOW dataset file.
+    map<GString, GSIZET> dims;
+    dims["nMeshNodes"] = (gdc.header()).nNodesPer2DLayer;
+    dims["nMeshFaces"] = (gdc.header()).nFacesPer2DLayer;
+    dims["meshLayers"] = (gdc.header()).n2DLayers;
+    gdc.setDimensions(dims);
+
+    // Write NetCDF grid (i.e., all time invariant coordinate variables)
+    gdc.initNC("grid.nc", NcFile::FileMode::replace);
+    gdc.writeNCDimensions();
+    //gdc.writeNCVariable<GINT>("mesh_face_nodes"); // Error need a template on this function vs. class level
+    gdc.writeNCVariable<GDATATYPE>("mesh_node_x");
+    gdc.writeNCVariable<GDATATYPE>("mesh_node_y");
+    gdc.writeNCVariable<GDATATYPE>("mesh_depth");
+    gdc.closeNC();
+
+    // For debugging
     gdc.printHeader();
 
-    // Print nodes
+    // For debugging
     /*for (auto n : gdc.nodes())
     {
         n.printNode();
     }*/
-
-    // Temp for testing
-    // Write to NetCDF
-    gdc.writeDataToUGRID();
 
     return 0;
 }

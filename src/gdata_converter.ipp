@@ -17,9 +17,17 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
 {
     // Initialize
     _ptFilename = ptFilename;
+    _nc = 0;
 
     // Load the property tree
     PTUtil::readJSONFile(_ptFilename, _ptRoot);
+}
+
+template <class T>
+GDataConverter<T>::~GDataConverter()
+{
+    // Clean memory
+    closeNC();
 }
 
 template <class T>
@@ -116,4 +124,83 @@ template <class T>
 void GDataConverter<T>::printHeader()
 {
     GFileReader<T>::printHeader(_header);
+}
+
+template <class T>
+void GDataConverter<T>::setDimensions(const map<GString, GSIZET>& dims)
+{
+    cout << "Setting mesh dimensions in the property tree from GeoFLOW data"
+         << endl;
+
+    // Get the dimensions array
+    pt::ptree& dimArr = PTUtil::getArrayRef(_ptRoot, "dimensions");
+
+    // For each dimension in the dimensions array...
+    for (pt::ptree::iterator it = dimArr.begin(); it != dimArr.end(); ++it)
+    {
+        // Get the values of the specified keys
+        GString dimName = PTUtil::getValue<GString>(it->second, "name");
+        GSIZET dimValue = PTUtil::getValue<GSIZET>(it->second, "value");
+
+        // If the value of the dimension in the property tree is 0, the value
+        // needs to be set using the value in the input dimensions map
+        if (dimValue == 0)
+        {
+            // Look for the dimension name in the input dimensions map
+            map<GString, GSIZET>::const_iterator itMap;
+            itMap = dims.find(dimName);
+            if (itMap != dims.end())
+            {
+               // Write the value found in the map to the dimension value in
+               // the property tree
+               PTUtil::putValue<GSIZET>(it->second, "value", dims.at(dimName));
+            }
+            else {
+                std::string msg = "Could not find dimension (" + dimName + \
+                                  ") in the property tree.";
+                Logger::error(__FILE__, __FUNCTION__, msg);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+} 
+
+template <class T>
+void GDataConverter<T>::initNC(const GString& ncFilename, NcFile::FileMode mode)
+{
+    // Clean memory
+    closeNC();
+
+    // Initialize a GToNetCDF object with a property tree
+    _nc = new GToNetCDF(_ptRoot, ncFilename, mode);
+}
+
+template <class T>
+void GDataConverter<T>::closeNC()
+{
+    // Clean memory
+    if (_nc != 0)
+    {
+        delete _nc;
+        _nc = 0;
+    }
+}
+
+template <class T>
+void GDataConverter<T>::writeNCDimensions()
+{
+    // Write the dataset dimensions to the NetCDF fiel
+    _nc->writeDimensions();
+}
+
+template <class T>
+template <class U>
+void GDataConverter<T>::writeNCVariable(const GString& varName)
+{
+    _nc->writeVariableDefinition(varName);
+    _nc->writeVariableAttribute(varName);
+
+    // Pass number of layers to read for this variable
+    // Pass in GFVolume which contains Layers, Faces, and Nodes
+    _nc->writeVariableData<T>(varName, _nodes);
 }

@@ -17,6 +17,7 @@
 
 #include "gtypes.h"
 #include "pt_util.h"
+#include "gnode.h"
 
 using namespace std;
 using namespace netCDF;
@@ -28,8 +29,8 @@ public:
     /*!
      * Initialize the GeoFLOW to NetCDF file writer.
      * 
-     * @param ptFilename property tree file with metadata needed for
-     *                   conversion; file format is JSON
+     * @param ptRoot root of property tree file with metadata needed for
+     *               conversion; file format is JSON
      * @param ncFilename name of NetCDF file to write to with file extension
      *                   (ex. myfile.nc)
      * @param mode read (file exists, open read-only)
@@ -37,9 +38,10 @@ public:
      *             replace (create new file, even if it exists)
      *             newFile (create new file, fail if already exists)
      */
-    GToNetCDF(const GString& ptFilename,
-             const GString& ncFilename,
-             NcFile::FileMode mode);
+    GToNetCDF(pt::ptree& ptRoot,
+              const GString& ncFilename,
+              NcFile::FileMode mode);
+
     ~GToNetCDF() {}
 
     /*!
@@ -50,22 +52,20 @@ public:
      */
     NcType toNcType(const GString& gType);
 
+    /*!
+     * Helper method that calls the NetCDF putAtt() method with the appropriate
+     * NetCDF type. The attribute's string value string gets converted to a
+     * NetCDF type.
+     *
+     * @param ncVar the NetCDF variable to add the attribute to
+     * @param name name of the attribute
+     * @param value value of the attribute
+     * @param ncType the NetCDF type of the attribute
+     */
     void putAttribute(const NcVar& ncVar, 
                       const GString& name,
                       const GString& value,
                       const NcType& ncType);
-
-    /*!
-     * Replace any 0-valued dimensions in the property tree with the matching
-     * dimensions specified in the dimensions map. A 0-valued dimension means
-     * the dimension's value must be computed during runtime after reading a
-     * GeoFLOW data file. The name of a dimension in the map must match the
-     * name of a 0-valued dimension in the property tree.
-     * 
-     * @param dims map of key-value pairs of any dimensions that must be
-     *             computed dynamically during runtime
-     */
-    void fillDimensions(const map<GString, GSIZET>& dims);
 
     /*!
      * Read the "dimensions" array in the property tree and write each
@@ -75,25 +75,40 @@ public:
     void writeDimensions();
 
     /*!
-     * Read the "variables" array in the property tree and write each
-     * variable object to the NetCDF file. A variable gets written in the form:
-     * varType varName(dim1, dim2, ...)
+     * Iterate the "variables" array in the property tree and look for the
+     * varName variable object. Write the variable's defintion to the NetCDF
+     * file. A variable gets written in the form: varType varName(dim1, dim2, ...)
      *
      */
-    void writeVariables();
+    void writeVariableDefinition(const GString& varName);
 
     /*!
-     * Read the "attributes" array in each object of the "variables" array
-     * in the property tree and write the attributes to the NetCDF file. An
-     * attribute gets written in the form: varName:attrName = "attrValue"
+     * Read the "attributes" array of the varName variable object in the
+     * "variables" array of the property tree and write the variable's
+     * attributes to the NetCDF file. An attribute gets written in the form:
+     * varName:attrName = "attrValue"
+     *
      */
-    void writeAttributes();
+    void writeVariableAttribute(const GString& varName);
 
     /*!
      *
      * 
      */
-    void writeData(const GString& varName);
+    template <typename T>
+    void writeVariableData(const GString& varName, const vector<GNode<T>>& nodes)
+    {
+        // Temp test code - just writing lat values for variable data
+        NcVar ncVar = _nc.getVar(varName);
+        T *data = new T[nodes.size()];
+        for (auto i = 0u; i < nodes.size(); ++i)
+        {
+            data[i] = nodes[i].lat();
+        }
+        ncVar.putVar(data);
+        delete [] data;
+        data = 0;
+    }
 
 private:
     pt::ptree _ptRoot; // root of the property tree
