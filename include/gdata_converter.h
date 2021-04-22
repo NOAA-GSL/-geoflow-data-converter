@@ -65,9 +65,17 @@ public:
     void readGFVariable(const GString& filename);
 
     /*!
-     * Compute a lat,lon,radius for each node and store results in node.
+     * Compute a lat,lon,radius for each node. A new variable for each
+     * lat,lon,radius with the input varNames gets created in the node
+     * if it does not exist.
+     * 
+     * @param latVarName name of latitude variable
+     * @param lonVarName name of longitude variable
+     * @param radVarName name of radius variable
      */
-    void xyzToLatLonRadius();
+    void xyzToLatLonRadius(const GString& latVarName,
+                           const GString& lonVarName,
+                           const GString& radVarName);
 
     /*!
      * Replace any 0-valued dimensions in the property tree with the matching
@@ -82,28 +90,28 @@ public:
     void setDimensions(const map<GString, GSIZET>& dims);
 
     /*!
-     * TODO
+     * Initialize a GToNetCDF object with the converter's property tree
      */
     void initNC(const GString& ncFilename, NcFile::FileMode mode);
 
     /*!
-     * TODO
+     * Clean memory for the GToNetCDF object
      */
     void closeNC();
 
     /*!
-     * TODO
+     * Write the dataset's dimensions to the current NetCDF file
      *
      */
     void writeNCDimensions();
 
     /*!
-     * TODO
+     * Write the variable definition, variable attributes, and variable data to
+     * the current NetCDF file.
      * 
-     * @param ncVarName name of variable in the property tree
-     * @param nodeVarName name of variable in the node variable list
+     * @param varName name of variable in the property tree
      */
-    void writeNCVariable(const GString& ncVarName, const GString& nodeVarName="");
+    void writeNCVariable(const GString& varName);
 
     // Print
     void printHeader();

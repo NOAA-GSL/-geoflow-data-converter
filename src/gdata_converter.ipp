@@ -107,7 +107,9 @@ void GDataConverter<T>::readGFVariable(const GString& filename)
 }
 
 template <class T>
-void GDataConverter<T>::xyzToLatLonRadius()
+void GDataConverter<T>::xyzToLatLonRadius(const GString& latVarName,
+                                          const GString& lonVarName,
+                                          const GString& radVarName)
 {
     cout << "For each node, computing lat,lon,radius from x,y,z" << endl;
 
@@ -115,9 +117,9 @@ void GDataConverter<T>::xyzToLatLonRadius()
     for (auto& n : _nodes)
     {
         array<T, 3> p = MathUtil::xyzToLatLonRadius<T>(n.pos());
-        n.lat(p[0]);
-        n.lon(p[1]);
-        n.radius(p[2]);
+        n.var(latVarName, p[0]);
+        n.var(lonVarName, p[1]);
+        n.var(radVarName, p[2]);
     } 
 }
 
@@ -195,42 +197,39 @@ void GDataConverter<T>::writeNCDimensions()
 }
 
 template <class T>
-void GDataConverter<T>::writeNCVariable(const GString& ncVarName,
-                                        const GString& nodeVarName)
+void GDataConverter<T>::writeNCVariable(const GString& varName)
 {
-    GString nodeName = (nodeVarName == "" ? ncVarName : nodeVarName);
-
     // Write variable definition
-    _nc->writeVariableDefinition(ncVarName);
+    _nc->writeVariableDefinition(varName);
 
     // Write variable attributes
-    _nc->writeVariableAttribute(ncVarName);
+    _nc->writeVariableAttribute(varName);
 
     // Write variable data
-    NcType ncType = _nc->getVariableType(ncVarName);    
+    NcType ncType = _nc->getVariableType(varName);    
     if (ncType == ncString) {
-        _nc->writeVariableData<T, GString>(ncVarName, nodeName, _nodes);
+        _nc->writeVariableData<T, GString>(varName, _nodes);
     }
     else if (ncType == ncFloat)
     {
-        _nc->writeVariableData<T, GFLOAT>(ncVarName, nodeName, _nodes);
+        _nc->writeVariableData<T, GFLOAT>(varName, _nodes);
     }
     else if (ncType == ncDouble)
     {
-        _nc->writeVariableData<T, GDOUBLE>(ncVarName, nodeName, _nodes);
+        _nc->writeVariableData<T, GDOUBLE>(varName, _nodes);
     }
     else if (ncType == ncInt)
     {
-        _nc->writeVariableData<T, GINT>(ncVarName, nodeName, _nodes);
+        _nc->writeVariableData<T, GINT>(varName, _nodes);
     }
     else if (ncType == ncUint)
     {
-        _nc->writeVariableData<T, GUINT>(ncVarName, nodeName, _nodes);
+        _nc->writeVariableData<T, GUINT>(varName, _nodes);
     }
     else 
     {
         std::string msg = "The input NetCDF data type found for variable (" + \
-                          ncVarName + ") is not supported.";
+                          varName + ") is not supported.";
         Logger::error(__FILE__, __FUNCTION__, msg);
         exit(EXIT_FAILURE);
     }

@@ -35,23 +35,12 @@ public:
         // Initialize
         _pos = {{x, y, z}};
         _elemLayerID = elemLayerID;
-
-        // Initialize grid variables that define a node location
-        _varMap["lat"] = T(0);
-        _varMap["lon"] = T(0);
-        _varMap["radius"] = T(0);
     }
     ~GNode() {}
 
     // Access
     array<T, 3> pos() const { return _pos; }
     void pos(const array<T, 3>& pos) { _pos = pos; }
-    T lat() const { return _varMap.at("lat"); }
-    void lat(const T& lat) { _varMap["lat"] = lat; }
-    T lon() const { return _varMap.at("lon"); }
-    void lon(const T& lon) { _varMap["lon"] = lon; }
-    T radius() const { return _varMap.at("radius"); }
-    void radius(const T& radius) { _varMap["radius"] = radius; }
     T var(const GString& varName) const
     {
         try

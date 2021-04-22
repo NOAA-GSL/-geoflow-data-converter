@@ -102,24 +102,22 @@ public:
     void writeVariableAttribute(const GString& varName);
 
     /*!
-     * TODO
+     * Write varName's variable data to the NetCDF file.
      *
-     * @param ncVarName name of variable in the property tree
-     * @param nodeVarName name of variable in the node variable list
+     * @param varName name of a variable in the NetCDF file
      */
     template <typename T, typename U>
-    void writeVariableData(const GString& ncVarName,
-                           const GString& nodeVarName,
+    void writeVariableData(const GString& varName,
                            const vector<GNode<T>>& nodes)
     {
         // Get the NcVar associated with this variable
-        NcVar ncVar = _nc.getVar(ncVarName);
+        NcVar ncVar = _nc.getVar(varName);
 
         // Allocate memory and fill values
         U *data = new U[nodes.size()];
         for (auto i = 0u; i < nodes.size(); ++i)
         {
-            data[i] = nodes[i].var(nodeVarName);
+            data[i] = nodes[i].var(varName);
         }
 
         // Write the data to the NetCDF file
