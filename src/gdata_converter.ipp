@@ -7,9 +7,7 @@
 #include <fstream>
 
 #include "gfile_reader.h"
-#include "g_to_netcdf.h"
 #include "math_util.h"
-#include "pt_util.h"
 #include "logger.h"
 
 template <class T>
@@ -116,7 +114,11 @@ void GDataConverter<T>::xyzToLatLonRadius()
     // For each node, convert x,y,z to lat,lon,radius...
     for (auto& n : _nodes)
     {
-        MathUtil::xyzToLatLonRadius<T>(n);
+        //MathUtil::xyzToLatLonRadius<T>(n);
+        array<T, 3> p = MathUtil::xyzToLatLonRadius<T>(n.pos());
+        n.lat(p[0]);
+        n.lon(p[1]);
+        n.radius(p[2]);
     } 
 }
 
@@ -189,22 +191,22 @@ void GDataConverter<T>::closeNC()
 template <class T>
 void GDataConverter<T>::writeNCDimensions()
 {
-    // Write the dataset dimensions to the NetCDF fiel
+    // Write the dataset dimensions to the NetCDF file
     _nc->writeDimensions();
 }
 
 template <class T>
 void GDataConverter<T>::writeNCVariable(const GString& varName)
 {
-    // Temp test code - just writing data stored in lat for all vars
-
+    // Write variable definition
     _nc->writeVariableDefinition(varName);
+
+    // Write variable attributes
     _nc->writeVariableAttribute(varName);
 
-    // Pass number of layers to read for this variable
-    // Pass in GFVolume which contains Layers, Faces, and Nodes
+    // Write variable data
+    // TODO: Don't pass in GNodes, pass in GVolume which contains Layers, Faces, and Nodes
     NcType ncType = _nc->getVariableType(varName);
-
     
     if (ncType == ncString) { _nc->writeVariableData<T, GString>(varName, _nodes); }
     else if (ncType == ncFloat) { _nc->writeVariableData<T, GFLOAT>(varName, _nodes); }

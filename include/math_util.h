@@ -12,8 +12,6 @@
 #include <vector>
 #include <array>
 
-#include <gnode.h>
-
 using namespace std;
 
 class MathUtil
@@ -82,13 +80,14 @@ public:
     static array<T, 2> toLatLon(const array<T, 3>& p, T radius);
 
     /*!
-     * Compute the lat,lon,radius from the 3D Cartesian coordinate stored in
-     * node and store the results in node.
+     * Compute a lat,lon,radius from a 3D Cartesian coordinate. The center
+     * point of the sphere is assumed to be (0, 0, 0)
      * 
-     * @param node A GeoFLOW node already initialized with x,y,z values
+     * @param pos 3D Cartesian coordinate
+     * @return the corresponding lat,lon,radius
      */
     template <typename T>
-    static void xyzToLatLonRadius(GNode<T>& node);
+    static array<T, 3> xyzToLatLonRadius(array<T, 3> pos);
 };
 
 #include "../src/math_util.ipp"

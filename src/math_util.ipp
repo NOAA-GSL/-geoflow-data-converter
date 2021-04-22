@@ -62,21 +62,18 @@ array<T, 2> MathUtil::toLatLon(const array<T, 3>& p, T radius)
 }
 
 template <typename T>
-void MathUtil::xyzToLatLonRadius(GNode<T>& node)
+array<T, 3> MathUtil::xyzToLatLonRadius(array<T, 3> pos)
 {
     // Get radius of coordinate
-    T r = radius(node.pos(), array<T, 3> {0, 0, 0});
+    T r = radius(pos, array<T, 3> {0, 0, 0});
 
     // Get normalized coordinate
-    array<T, 3> n = normalize(node.pos());
+    array<T, 3> n = normalize(pos);
 
     // Get lat,lon of coordinate and convert to degrees.
     array<T, 2> ll = toLatLon(n, T(1.0));
     ll[0] = toDegrees(ll[0]);
     ll[1] = toDegrees(ll[1]);
    
-    // Update node
-    node.lat(ll[0]);
-    node.lon(ll[1]);
-    node.radius(r);
+    return array<T, 3> {ll[0], ll[1], r};
 }

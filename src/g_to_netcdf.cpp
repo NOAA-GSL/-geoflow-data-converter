@@ -5,14 +5,13 @@
 //==============================================================================
 
 #include "g_to_netcdf.h"
-#include "pt_util.h"
 #include "logger.h"
 
 GToNetCDF::GToNetCDF(pt::ptree& ptRoot,
                      const GString& ncFilename,
                      NcFile::FileMode mode)
 {
-    // Store the root of the property tree
+    // Initialize
     _ptRoot = ptRoot;
 
     // Open the NetCDF file
@@ -22,6 +21,7 @@ GToNetCDF::GToNetCDF(pt::ptree& ptRoot,
 
 NcType GToNetCDF::toNcType(const GString& gType)
 {
+    // Get NetCDF type from GeoFLOW type
     if (gType == "GString")      { return ncString; }
     else if (gType == "GFLOAT")  { return ncFloat; }
     else if (gType == "GDOUBLE") { return ncDouble; }
@@ -46,6 +46,7 @@ void GToNetCDF::putAttribute(const NcVar& ncVar,
                              const GString& value,
                              const NcType& ncType)
 {
+    // Write an attribute to the NetCDF file
     if (ncType == ncString)
     {
         ncVar.putAtt(name, value);
@@ -84,7 +85,6 @@ void GToNetCDF::writeDimensions()
 {
     cout << "Writing NetCDF dimensions" << endl;
 
-    // Get the dimensions array
     pt::ptree dimArr = PTUtil::getArray(_ptRoot, "dimensions");
 
     // For each dimension in the dimensions array...
@@ -108,7 +108,6 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
 {
     cout << "Writing NetCDF variable definition for: " << varName << endl;
 
-    // Get the variables array
     pt::ptree varArr = PTUtil::getArray(_ptRoot, "variables");
 
     // For each variable in the variables array...
@@ -117,7 +116,7 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
         // Get the values of the specified key
         GString name = PTUtil::getValue<GString>(it->second, "name");
 
-        // Check if this variable's name matches the input variable name
+        // If the input variable is found...
         if (name == varName)
         {
             // Get the values of the specified keys
@@ -164,7 +163,6 @@ void GToNetCDF::writeVariableAttribute(const GString& varName)
 {
     cout << "Writing NetCDF variable attributes" << endl;
 
-    // Get the variables array
     pt::ptree varArr = PTUtil::getArray(_ptRoot, "variables");
 
     // For each variable in the variables array...
@@ -175,10 +173,9 @@ void GToNetCDF::writeVariableAttribute(const GString& varName)
         // Get the values of the specified key
         GString name = PTUtil::getValue<GString>(itVar->second, "name");
 
-        // Check if this variable's name matches the input variable name
+        // If the input variable is found...
         if (name == varName)
         {
-
             // Get the attributes array
             pt::ptree attArr = PTUtil::getArray(itVar->second, "attributes");
 
@@ -198,7 +195,7 @@ void GToNetCDF::writeVariableAttribute(const GString& varName)
                     gType = PTUtil::getValue<GString>(itAtt->second, "type");
                 }
 
-                // Get the variable whose attributes we are iterating on
+                // Get the NetCDF variable whose attributes we are iterating on
                 GString varName = PTUtil::getValue<GString>(itVar->second, "name");
                 NcVar ncVar = _nc.getVar(varName);
 

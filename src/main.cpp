@@ -11,8 +11,6 @@
 //   2D elements); also compute n2DLayers - right now hard-coded; also compute
 //   setElementLayerIDs
 // - MathUtil essentiallyEqual method
-// - Remove nNodesPerFace from json file and hard code it? Assumption is
-//   poly order same for each element in any one ref direction
 
 #include "gdata_converter.h"
 
@@ -33,7 +31,7 @@ int main()
     // Convert x,y,z to lat,lon,radius and store in nodes
     gdc.xyzToLatLonRadius();
 
-    // Set any 0-valued dimensions in the JSON file dynamcailly with the info
+    // Set any 0-valued dimensions in the JSON file dynamically with the info
     // read in from the header of a GeoFLOW dataset file.
     map<GString, GSIZET> dims;
     dims["nMeshNodes"] = (gdc.header()).nNodesPer2DLayer;
@@ -44,7 +42,7 @@ int main()
     // Write NetCDF grid (i.e., all time invariant coordinate variables)
     gdc.initNC("grid.nc", NcFile::FileMode::replace);
     gdc.writeNCDimensions();
-    gdc.writeNCVariable("mesh_face_nodes"); // Error need a template on this function vs. class level
+    gdc.writeNCVariable("mesh_face_nodes");
     gdc.writeNCVariable("mesh_node_x");
     gdc.writeNCVariable("mesh_node_y");
     gdc.writeNCVariable("mesh_depth");
@@ -54,10 +52,10 @@ int main()
     gdc.printHeader();
 
     // For debugging
-    /*for (auto n : gdc.nodes())
+    for (auto n : gdc.nodes())
     {
         n.printNode();
-    }*/
+    }
 
     return 0;
 }
