@@ -114,7 +114,6 @@ void GDataConverter<T>::xyzToLatLonRadius()
     // For each node, convert x,y,z to lat,lon,radius...
     for (auto& n : _nodes)
     {
-        //MathUtil::xyzToLatLonRadius<T>(n);
         array<T, 3> p = MathUtil::xyzToLatLonRadius<T>(n.pos());
         n.lat(p[0]);
         n.lon(p[1]);
@@ -196,27 +195,42 @@ void GDataConverter<T>::writeNCDimensions()
 }
 
 template <class T>
-void GDataConverter<T>::writeNCVariable(const GString& varName)
+void GDataConverter<T>::writeNCVariable(const GString& ncVarName,
+                                        const GString& nodeVarName)
 {
+    GString nodeName = (nodeVarName == "" ? ncVarName : nodeVarName);
+
     // Write variable definition
-    _nc->writeVariableDefinition(varName);
+    _nc->writeVariableDefinition(ncVarName);
 
     // Write variable attributes
-    _nc->writeVariableAttribute(varName);
+    _nc->writeVariableAttribute(ncVarName);
 
     // Write variable data
-    // TODO: Don't pass in GNodes, pass in GVolume which contains Layers, Faces, and Nodes
-    NcType ncType = _nc->getVariableType(varName);
-    
-    if (ncType == ncString) { _nc->writeVariableData<T, GString>(varName, _nodes); }
-    else if (ncType == ncFloat) { _nc->writeVariableData<T, GFLOAT>(varName, _nodes); }
-    else if (ncType == ncDouble) { _nc->writeVariableData<T, GDOUBLE>(varName, _nodes); }
-    else if (ncType == ncInt) { _nc->writeVariableData<T, GINT>(varName, _nodes); }
-    else if (ncType == ncUint) { _nc->writeVariableData<T, GUINT>(varName, _nodes); }
+    NcType ncType = _nc->getVariableType(ncVarName);    
+    if (ncType == ncString) {
+        _nc->writeVariableData<T, GString>(ncVarName, nodeName, _nodes);
+    }
+    else if (ncType == ncFloat)
+    {
+        _nc->writeVariableData<T, GFLOAT>(ncVarName, nodeName, _nodes);
+    }
+    else if (ncType == ncDouble)
+    {
+        _nc->writeVariableData<T, GDOUBLE>(ncVarName, nodeName, _nodes);
+    }
+    else if (ncType == ncInt)
+    {
+        _nc->writeVariableData<T, GINT>(ncVarName, nodeName, _nodes);
+    }
+    else if (ncType == ncUint)
+    {
+        _nc->writeVariableData<T, GUINT>(ncVarName, nodeName, _nodes);
+    }
     else 
     {
         std::string msg = "The input NetCDF data type found for variable (" + \
-                          varName + ") is not supported.";
+                          ncVarName + ") is not supported.";
         Logger::error(__FILE__, __FUNCTION__, msg);
         exit(EXIT_FAILURE);
     }

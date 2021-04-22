@@ -11,8 +11,10 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <map>
 
 #include "gtypes.h"
+#include "logger.h"
 
 using namespace std;
 
@@ -33,47 +35,65 @@ public:
         // Initialize
         _pos = {{x, y, z}};
         _elemLayerID = elemLayerID;
-        _var = T(0);
-        _lat = T(0);
-        _lon = T(0);
-        _radius = T(0);
+
+        // Initialize grid variables that define a node location
+        _varMap["lat"] = T(0);
+        _varMap["lon"] = T(0);
+        _varMap["radius"] = T(0);
     }
     ~GNode() {}
 
     // Access
     array<T, 3> pos() const { return _pos; }
     void pos(const array<T, 3>& pos) { _pos = pos; }
-    T lat() const { return _lat; }
-    void lat(const T& lat) { _lat = lat; }
-    T lon() const { return _lon; }
-    void lon(const T& lon) { _lon = lon; }
-    T radius() const { return _radius; }
-    void radius(const T& radius) { _radius = radius; }
-    T var() const { return _var; }
-    void var(const T& var) { _var = var; }
+    T lat() const { return _varMap.at("lat"); }
+    void lat(const T& lat) { _varMap["lat"] = lat; }
+    T lon() const { return _varMap.at("lon"); }
+    void lon(const T& lon) { _varMap["lon"] = lon; }
+    T radius() const { return _varMap.at("radius"); }
+    void radius(const T& radius) { _varMap["radius"] = radius; }
+    T var(const GString& varName) const
+    {
+        try
+        {
+            return _varMap.at(varName);
+        }
+        catch(const std::out_of_range& e)
+        {
+            std::string msg = "Could not find the variable (" + varName + \
+                              ") in the node's variable list.";
+            Logger::error(__FILE__, __FUNCTION__, msg);
+            exit(EXIT_FAILURE);
+        }
+    }
+    void var(const GString& varName, const T& value)
+    {
+        _varMap[varName] = value;
+    }
 
     // Print
     void printNode()
     {
+        // Print position and layer info
         cout << "Node: ";
-        cout << "(x, y, z): (" << _pos[0] << ", " 
+        cout << "x, y, z: (" << _pos[0] << ", " 
                                << _pos[1] << ", "
                                << _pos[2] << ") | ";
-        cout << "(lat, lon, r): (" << _lat << ", " 
-                                   << _lon << ", "
-                                   << _radius << ") | ";
         cout << "elemLayerID: (" << _elemLayerID << ") | ";
-        cout << "var: (" << _var << ")";
+
+        // Print all variables in the node
+        typename map<GString, T>::const_iterator it;
+        for (it = _varMap.begin(); it != _varMap.end(); ++it)
+        {
+            cout << it->first << ": (" << it->second << ") | ";
+        }
         cout << endl;
     }
 
 private:
-    array<T, 3> _pos;    // cartesian coordinate x,y,z of node
-    T _lat;              // lat coordinate of node
-    T _lon;              // lon coordinate of node
-    T _var;              // variable value at node
-    T _radius;           // radius of node
-    GSIZET _elemLayerID; // element layer index the node resides on
+    array<T, 3> _pos;        // cartesian coordinate x,y,z of node
+    GSIZET _elemLayerID;     // element layer index the node resides on
+    map<GString, T> _varMap; // pairs of variable names and their values
 };
 
 #endif

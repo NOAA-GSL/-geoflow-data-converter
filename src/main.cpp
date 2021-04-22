@@ -11,6 +11,8 @@
 //   2D elements); also compute n2DLayers - right now hard-coded; also compute
 //   setElementLayerIDs
 // - MathUtil essentiallyEqual method
+// - Write of NCVariable: just writing all the nodes - need to divide into
+//   layers
 
 #include "gdata_converter.h"
 
@@ -42,20 +44,20 @@ int main()
     // Write NetCDF grid (i.e., all time invariant coordinate variables)
     gdc.initNC("grid.nc", NcFile::FileMode::replace);
     gdc.writeNCDimensions();
-    gdc.writeNCVariable("mesh_face_nodes");
-    gdc.writeNCVariable("mesh_node_x");
-    gdc.writeNCVariable("mesh_node_y");
-    gdc.writeNCVariable("mesh_depth");
+    //gdc.writeNCVariable("mesh_face_nodes", "mesh_face_nodes");
+    gdc.writeNCVariable("mesh_node_x", "lat");
+    gdc.writeNCVariable("mesh_node_y", "lon");
+    gdc.writeNCVariable("mesh_depth", "radius");
     gdc.closeNC();
 
     // For debugging
     gdc.printHeader();
 
     // For debugging
-    for (auto n : gdc.nodes())
+    /*for (auto n : gdc.nodes())
     {
         n.printNode();
-    }
+    }*/
 
     return 0;
 }

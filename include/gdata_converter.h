@@ -82,24 +82,28 @@ public:
     void setDimensions(const map<GString, GSIZET>& dims);
 
     /*!
-     *
+     * TODO
      */
     void initNC(const GString& ncFilename, NcFile::FileMode mode);
 
-    /*
-     *
+    /*!
+     * TODO
      */
     void closeNC();
 
-    /*
+    /*!
+     * TODO
      *
      */
     void writeNCDimensions();
 
-    /*
-     *
+    /*!
+     * TODO
+     * 
+     * @param ncVarName name of variable in the property tree
+     * @param nodeVarName name of variable in the node variable list
      */
-    void writeNCVariable(const GString& varName);
+    void writeNCVariable(const GString& ncVarName, const GString& nodeVarName="");
 
     // Print
     void printHeader();

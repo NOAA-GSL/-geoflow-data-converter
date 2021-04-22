@@ -70,7 +70,7 @@ public:
     /*!
      * Get the NetCDF type for the input variable.
      *
-     * @param varName
+     * @param varName name of variable
      * @return NetCDF type of the variable
      */
     NcType getVariableType(const GString& varName);
@@ -87,6 +87,7 @@ public:
      * varName variable object. Write the variable's defintion to the NetCDF
      * file. A variable gets written in the form: varType varName(dim1, dim2, ...)
      *
+     * @param varName name of variable
      */
     void writeVariableDefinition(const GString& varName);
 
@@ -96,26 +97,29 @@ public:
      * attributes to the NetCDF file. An attribute gets written in the form:
      * varName:attrName = "attrValue"
      *
+     * @param varName name of variable
      */
     void writeVariableAttribute(const GString& varName);
 
     /*!
+     * TODO
      *
-     * 
+     * @param ncVarName name of variable in the property tree
+     * @param nodeVarName name of variable in the node variable list
      */
     template <typename T, typename U>
-    void writeVariableData(const GString& varName, const vector<GNode<T>>& nodes)
+    void writeVariableData(const GString& ncVarName,
+                           const GString& nodeVarName,
+                           const vector<GNode<T>>& nodes)
     {
-        // Temp test code - just writing lat values for variable data
-
         // Get the NcVar associated with this variable
-        NcVar ncVar = _nc.getVar(varName);
+        NcVar ncVar = _nc.getVar(ncVarName);
 
         // Allocate memory and fill values
         U *data = new U[nodes.size()];
         for (auto i = 0u; i < nodes.size(); ++i)
         {
-            data[i] = nodes[i].lat();
+            data[i] = nodes[i].var(nodeVarName);
         }
 
         // Write the data to the NetCDF file
