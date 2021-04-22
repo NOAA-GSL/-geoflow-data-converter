@@ -68,6 +68,14 @@ public:
                       const NcType& ncType);
 
     /*!
+     * Get the NetCDF type for the input variable.
+     *
+     * @param varName
+     * @return NetCDF type of the variable
+     */
+    NcType getVariableType(const GString& varName);
+
+    /*!
      * Read the "dimensions" array in the property tree and write each
      * dimension object to the NetCDF file. A dimension gets written in the
      * form: dimName = dimValue
@@ -95,17 +103,25 @@ public:
      *
      * 
      */
-    template <typename T>
+    template <typename T, typename U>
     void writeVariableData(const GString& varName, const vector<GNode<T>>& nodes)
     {
         // Temp test code - just writing lat values for variable data
+
+        // Get the NcVar associated with this variable
         NcVar ncVar = _nc.getVar(varName);
-        T *data = new T[nodes.size()];
+
+        // Allocate memory and fill values
+        U *data = new U[nodes.size()];
         for (auto i = 0u; i < nodes.size(); ++i)
         {
             data[i] = nodes[i].lat();
         }
+
+        // Write the data to the NetCDF file
         ncVar.putVar(data);
+
+        // Clean memory
         delete [] data;
         data = 0;
     }

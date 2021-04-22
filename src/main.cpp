@@ -44,10 +44,10 @@ int main()
     // Write NetCDF grid (i.e., all time invariant coordinate variables)
     gdc.initNC("grid.nc", NcFile::FileMode::replace);
     gdc.writeNCDimensions();
-    //gdc.writeNCVariable<GINT>("mesh_face_nodes"); // Error need a template on this function vs. class level
-    gdc.writeNCVariable<GDATATYPE>("mesh_node_x");
-    gdc.writeNCVariable<GDATATYPE>("mesh_node_y");
-    gdc.writeNCVariable<GDATATYPE>("mesh_depth");
+    gdc.writeNCVariable("mesh_face_nodes"); // Error need a template on this function vs. class level
+    gdc.writeNCVariable("mesh_node_x");
+    gdc.writeNCVariable("mesh_node_y");
+    gdc.writeNCVariable("mesh_depth");
     gdc.closeNC();
 
     // For debugging

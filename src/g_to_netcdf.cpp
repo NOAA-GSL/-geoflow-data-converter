@@ -72,7 +72,13 @@ void GToNetCDF::putAttribute(const NcVar& ncVar,
         Logger::error(__FILE__, __FUNCTION__, msg);
         exit(EXIT_FAILURE);
     }
-}                              
+}
+
+NcType GToNetCDF::getVariableType(const GString& varName)
+{
+    NcVar ncVar = _nc.getVar(varName);
+    return ncVar.getType();
+}
 
 void GToNetCDF::writeDimensions()
 {

@@ -99,7 +99,6 @@ public:
     /*
      *
      */
-    template <class U>
     void writeNCVariable(const GString& varName);
 
     // Print

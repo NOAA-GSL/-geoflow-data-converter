@@ -194,13 +194,28 @@ void GDataConverter<T>::writeNCDimensions()
 }
 
 template <class T>
-template <class U>
 void GDataConverter<T>::writeNCVariable(const GString& varName)
 {
+    // Temp test code - just writing data stored in lat for all vars
+
     _nc->writeVariableDefinition(varName);
     _nc->writeVariableAttribute(varName);
 
     // Pass number of layers to read for this variable
     // Pass in GFVolume which contains Layers, Faces, and Nodes
-    _nc->writeVariableData<T>(varName, _nodes);
+    NcType ncType = _nc->getVariableType(varName);
+
+    
+    if (ncType == ncString) { _nc->writeVariableData<T, GString>(varName, _nodes); }
+    else if (ncType == ncFloat) { _nc->writeVariableData<T, GFLOAT>(varName, _nodes); }
+    else if (ncType == ncDouble) { _nc->writeVariableData<T, GDOUBLE>(varName, _nodes); }
+    else if (ncType == ncInt) { _nc->writeVariableData<T, GINT>(varName, _nodes); }
+    else if (ncType == ncUint) { _nc->writeVariableData<T, GUINT>(varName, _nodes); }
+    else 
+    {
+        std::string msg = "The input NetCDF data type found for variable (" + \
+                          varName + ") is not supported.";
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
 }
