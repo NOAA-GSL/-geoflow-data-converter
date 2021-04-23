@@ -288,7 +288,7 @@
     },
     {
         "comment": "A variable like pressure or density",
-        "name": "the_variable",
+        "name": "dtotal",
         "type": "data_type",
         "args":
         [

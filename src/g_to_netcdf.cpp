@@ -95,7 +95,7 @@ void GToNetCDF::writeDimensions()
         GUINT value = PTUtil::getValue<GUINT>(it->second, "value");
 
         // For debugging
-        cout << "dimension [name = " << name << ", value = " << value << "]"
+        cout << "--- [name = " << name << ", value = " << value << "]"
              << endl;
         
         // Write the dimension to the NetCDF file. The dimension gets written
@@ -139,7 +139,7 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
             _nc.addVar(name, ncType, ncDims);
 
             // For debugging
-            cout << "variable [name = " << name << ", type = " << type << ", "
+            cout << "--- [name = " << name << ", type = " << type << ", "
                  << "args = ";
             for (auto a : args)
             {
@@ -161,7 +161,7 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
 
 void GToNetCDF::writeVariableAttribute(const GString& varName)
 {
-    cout << "Writing NetCDF variable attributes" << endl;
+    cout << "Writing NetCDF variable attributes for: " << varName << endl;
 
     pt::ptree varArr = PTUtil::getArray(_ptRoot, "variables");
 
@@ -204,7 +204,7 @@ void GToNetCDF::writeVariableAttribute(const GString& varName)
                 putAttribute(ncVar, name, value, toNcType(gType));
 
                 // For debugging
-                cout << "variable [name = " << name << ", value = " << value
+                cout << "--- [name = " << name << ", value = " << value
                      << ", gtype = " << gType << "]" << endl;
             }
 

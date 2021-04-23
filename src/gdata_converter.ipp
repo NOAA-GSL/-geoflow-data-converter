@@ -84,7 +84,8 @@ void GDataConverter<T>::readGFGrid(const GString& xFilename,
 }
 
 template <class T>
-void GDataConverter<T>::readGFVariable(const GString& filename)
+void GDataConverter<T>::readGFVariable(const GString& filename,
+                                       const GString& varName)
 {
     // Read a GeoFLOW variable file
     GFileReader<T> var(filename);
@@ -102,7 +103,7 @@ void GDataConverter<T>::readGFVariable(const GString& filename)
     // Store variable data into nodes
     for (auto i = 0u; i < _header.nNodesPer2DLayer; ++i)
     {
-        _nodes[i].var(var.data()[i]);
+        _nodes[i].var(varName, var.data()[i]);
     }    
 }
 
@@ -135,7 +136,6 @@ void GDataConverter<T>::setDimensions(const map<GString, GSIZET>& dims)
     cout << "Setting mesh dimensions in the property tree from GeoFLOW data"
          << endl;
 
-    // Get the dimensions array
     pt::ptree& dimArr = PTUtil::getArrayRef(_ptRoot, "dimensions");
 
     // For each dimension in the dimensions array...

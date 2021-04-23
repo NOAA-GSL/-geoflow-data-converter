@@ -110,6 +110,9 @@ public:
     void writeVariableData(const GString& varName,
                            const vector<GNode<T>>& nodes)
     {
+        cout << "Writing NetCDF variable data for variable: " << varName
+             << endl;
+
         // Get the NcVar associated with this variable
         NcVar ncVar = _nc.getVar(varName);
 

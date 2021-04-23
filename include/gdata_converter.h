@@ -61,8 +61,9 @@ public:
      * Read GeoFLOW variable file and store data in nodes.
      * 
      * @param filename filename variable data
+     * @param varName name of variable in nodes used to store the data
      */
-    void readGFVariable(const GString& filename);
+    void readGFVariable(const GString& filename, const GString& varName);
 
     /*!
      * Compute a lat,lon,radius for each node. A new variable for each
