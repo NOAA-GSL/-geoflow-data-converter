@@ -19,6 +19,7 @@
 //   current NcFile??
 // - Add custom enum in place of second param for NcFile mode?
 // - Documentation: Write min requirements template for JSON file
+// - readFiles - make it recursive
 
 #include "gdata_converter.h"
 
@@ -67,16 +68,37 @@ int main()
     ////// CONVERT VARIABLES //////
     ///////////////////////////////
 
-    // Read a GeoFLOW variable file specified in the JSON file into the
-    // collection of nodes
-    gdc.readGFVariable("data/dtotal.000000.out", "dtotal");
+    // Get a list of the field variables
 
-    // Write a variable to a NetCDF file
-    gdc.initNC("dtotal.000000.nc", NcFile::FileMode::replace);
-    gdc.writeNCDimensions();
-    //gdc.writeNCVariable("time");
-    gdc.writeNCVariable("dtotal");
-    gdc.closeNC();
+
+    // For each timestep...
+    /*for ()
+    {
+        // Create a NetCDF file for this timestep to hold all the field
+        // variables
+        GString ncFilename = "field_var.000000.nc";
+        gdc.initNC(ncFilename, NcFile::FileMode::replace);
+        gdc.writeNCDimensions();
+
+        // For each field variable in this timestep
+        for ()
+        {
+            // Read a GeoFLOW variable file specified in the JSON file into the
+            // collection of nodes
+            GString gfFilename = "data/dtotal.000000.out";
+            GString fieldName = "dtotal";
+            gdc.readGFVariable(gfFilename, fieldName);
+
+            // Write the timestep
+            //gdc.writeNCVariable("time");
+
+            // Write the variable to the NetCDF file
+            gdc.writeNCVariable(varName);
+        }
+        
+        // Close the NetCDF file
+        gdc.closeNC();
+    }*/
 
     // For debugging
     gdc.printHeader();

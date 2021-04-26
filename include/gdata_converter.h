@@ -35,6 +35,15 @@ public:
     GDataConverter(const GString& ptFilename);
     ~GDataConverter();
 
+    /*!
+     * Get a list of absolute filenames in the given directory. Does not search
+     * recursively at the moment.
+     * 
+     * @param dirName the directory to read
+     * @return a list of absolute filenames in the directory
+     */
+    vector<GString> getFilenames(const GString& dirName);
+
     // Access
     const vector<GNode<T>>& nodes() const { return _nodes; }
     const GHeaderInfo header() const { return _header; }
@@ -92,6 +101,14 @@ public:
 
     /*!
      * Initialize a GToNetCDF object with the converter's property tree
+     *
+     * @param ncFilename name of NetCDF file to write to
+     * @param mode NcFile::FileMode::read (file exists, open read-only)
+     *             NcFile::FileMode::write (file exists, open for writing)
+     *             NcFile::FileMode::replace (create new file, even if it
+     *             exists)
+     *             NcFile::FileMode::newFile (create new file, fail if already
+     *             exists)
      */
     void initNC(const GString& ncFilename, NcFile::FileMode mode);
 
@@ -124,6 +141,11 @@ private:
     GToNetCDF *_nc;          // handle to NetCDF writer 
     vector<GNode<T>> _nodes; // location and variable for every node in the
                              // GeoFLOW dataset
+    GString _inputDir;       // name of directory that holds all GeoFLOW files
+    GString _outputDir;      // name of directory to put the converted files in
+    vector<GString> _fieldFilenames; // absolute pathnames of input GeoFLOW
+                                     // field files
+    vector<GString> _fieldPrefixes;  // prefix names of field variables
 };
 
 #include "../src/gdata_converter.ipp"

@@ -33,10 +33,12 @@ public:
      *               conversion; file format is JSON
      * @param ncFilename name of NetCDF file to write to with file extension
      *                   (ex. myfile.nc)
-     * @param mode read (file exists, open read-only)
-     *             write (file exists, open for writing)
-     *             replace (create new file, even if it exists)
-     *             newFile (create new file, fail if already exists)
+     * @param mode NcFile::FileMode::read (file exists, open read-only)
+     *             NcFile::FileMode::write (file exists, open for writing)
+     *             NcFile::FileMode::replace (create new file, even if it
+     *             exists)
+     *             NcFile::FileMode::newFile (create new file, fail if already
+     *             exists)
      */
     GToNetCDF(pt::ptree& ptRoot,
               const GString& ncFilename,

@@ -5,6 +5,7 @@
 //==============================================================================
 
 #include <fstream>
+#include <dirent.h>
 
 #include "gfile_reader.h"
 #include "math_util.h"
@@ -19,6 +20,54 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
 
     // Load the property tree
     PTUtil::readJSONFile(_ptFilename, _ptRoot);
+
+    // Get the name of the input directory
+    _inputDir = PTUtil::getValue<GString>(_ptRoot, "input_dir");
+
+    // Get the names of all the files in the input directory
+    GString dirName = PTUtil::getValue<GString>(_ptRoot, "input_dir");
+    _fieldFilenames = getFilenames(dirName);
+
+    // Get the name of the directory to store converted output files
+    _outputDir = PTUtil::getValue<GString>(_ptRoot, "output_dir");
+}
+
+template <class T>
+vector<GString> GDataConverter<T>::getFilenames(const GString& dirName)
+{
+    cout << "Getting a list of absolute filenames in the directory: "
+         << dirName << endl;
+
+    DIR *dir;
+    struct dirent *diread;
+    vector<GString> filenames;
+
+    if ((dir = opendir(dirName.c_str())) != nullptr)
+    {
+        while ((diread = readdir(dir)) != nullptr)
+        {
+            char *filename = diread->d_name;            
+            char buff[1024];
+            char *pathPtr = realpath(filename, buff);
+            if (pathPtr != NULL)
+            {
+                filenames.push_back(buff);
+            }
+
+            // For debugging
+            cout << "Field variable absolute path is: " << buff << endl;
+        }
+        closedir (dir);
+    }
+    else
+    {
+        std::string msg = "Cannot find directory (" + \
+                          dirName + ").";
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+
+    return filenames;
 }
 
 template <class T>
@@ -31,10 +80,16 @@ GDataConverter<T>::~GDataConverter()
 template <class T>
 void GDataConverter<T>::readGFGrid()
 {
+    cout << "Reading GeoFLOW grid files" << endl;
+
     // Read the x,y,z GeoFLOW grid filenames from the property tree
     GString x = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.x");
     GString y = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.y");
     GString z = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.z");
+
+    x = _inputDir + "/" + x;
+    y = _inputDir + "/" + y;
+    z = _inputDir + "/" + z;
 
     // Read the GeoFLOW x,y,z grid values into a collection of nodes
     readGFGrid(x, y, z);
