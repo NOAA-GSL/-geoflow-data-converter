@@ -130,47 +130,6 @@ void GFileReader<T>::setElementLayerIDs()
 }
 
 template <class T>
-void GFileReader<T>::printHeader(const GHeaderInfo& h)
-{
-    // Print header info
-    cout << endl;
-    cout << "-----------" << endl;
-    cout << "Header Info" << endl;
-    cout << "-----------" << endl;
-    cout << "IO version: " << h.version << endl;
-    cout << "Dimension: " << h.dim << endl;
-    cout << "Num elements: " << h.nElems << endl;
-    cout << "Poly orders: "; 
-    for (const auto& p : h.polyOrder)
-    {
-        cout << p << " ";
-    }
-    cout << endl;
-    cout << "Grid type: " << h.gridType << endl;
-    cout << "Time cycle: " << h.timeCycle << endl;
-    cout << "Time stamp: " << h.timeStamp << endl;
-    cout << "Has mult fields?: " << h.hasMultVars << endl;
-
-    // Print derived header info
-    cout << endl;
-    cout << "------------------------" << endl;
-    cout << "Derived Info from Header" << endl;
-    cout << "------------------------" << endl;
-    cout << "Num header bytes: " << h.nHeaderBytes << endl;
-    cout << "Num nodes per 2D GeoFLOW element: " << h.nNodesPer2DElem << endl;
-    cout << "Num nodes per 2D layer: " << h.nNodesPer2DLayer << endl;
-    cout << "Num faces per 2D layer: " << h.nFacesPer2DLayer << endl;
-    cout << "Num 2D layers: " << h.n2DLayers << endl;
-    cout << endl;
-}
-
-template <class T>
-void GFileReader<T>::printHeader()
-{
-    printHeader(_header);
-}
-
-template <class T>
 void GFileReader<T>::printData()
 {
     for (auto i = 0u; i < _data.size(); ++i)

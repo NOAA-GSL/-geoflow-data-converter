@@ -34,6 +34,39 @@ struct GHeaderInfo
     GSIZET        nNodesPer2DLayer; // num nodes (incl. sub nodes) per 2D layer
     GSIZET        nFacesPer2DLayer; // num faces (incl. sub faces) per 2D layer
     GSIZET        n2DLayers;        // num 2D layers in entire volume
+
+    void printHeader()
+    {
+       cout << endl;
+       cout << "-----------" << endl;
+       cout << "Header Info" << endl;
+       cout << "-----------" << endl;
+       cout << "IO version: " << version << endl;
+       cout << "Dimension: " << dim << endl;
+       cout << "Num elements: " << nElems << endl;
+       cout << "Poly orders: "; 
+       for (const auto& p : polyOrder)
+       {
+           cout << p << " ";
+       }
+       cout << endl;
+       cout << "Grid type: " << gridType << endl;
+       cout << "Time cycle: " << timeCycle << endl;
+       cout << "Time stamp: " << timeStamp << endl;
+       cout << "Has mult fields?: " << hasMultVars << endl;
+
+       // Print derived header info
+       cout << endl;
+       cout << "------------------------" << endl;
+       cout << "Derived Info from Header" << endl;
+       cout << "------------------------" << endl;
+       cout << "Num header bytes: " << nHeaderBytes << endl;
+       cout << "Num nodes per 2D GeoFLOW element: " << nNodesPer2DElem << endl;
+       cout << "Num nodes per 2D layer: " << nNodesPer2DLayer << endl;
+       cout << "Num faces per 2D layer: " << nFacesPer2DLayer << endl;
+       cout << "Num 2D layers: " << n2DLayers << endl;
+       cout << endl;
+   }
 };
 
 #endif

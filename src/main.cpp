@@ -14,15 +14,13 @@
 // - MathUtil essentiallyEqual method
 // - Write of NCVariable: just writing all the nodes - need to divide into
 //   layers
-// - Handle timestamps - loop through filenames in input directory
-//   Read in time value from header while iterating files and direct store in
-//   current NcFile??
 // - Add custom enum in place of second param for NcFile mode?
 // - Documentation: Write min requirements template for JSON file
 //   Write assumptions (i.e., everything goes in/out of in/out dirs specified
 //   in JSON file, including grid files)
 //   Define property tree = json file
-// - readFiles - make it recursive
+// - Make readFiles method recursive?
+// - Doxygen comments for GFileReader
 
 #include "gdata_converter.h"
 
@@ -31,31 +29,31 @@
 
 int main()
 {
-    // Read the JSON file that specifies the GeoFLOW dataset's metadata and
-    // NetCDF metadata needed for converting the GeoFLOW dataset to a specific
-    // NetCDF file format (i.e., UGRID or CF)
+    // Initialize the GeoFLOW data converter with the JSON file (property 
+    // tree) that contains GeoFLOW dataset metadata and NetCDF metadata
     GDataConverter<GDATATYPE> gdc(FILE_JSON);
   
     //////////////////////////
     ////// CONVERT GRID //////
     //////////////////////////
 
-    // Read the x,y,z grid files specified in the JSON file into a collection
+    // Read the x,y,z grid files specified in the JSON file into a collection 
     // of nodes
-    gdc.readGFGrid();
+    GHeaderInfo gHeader = gdc.readGFGrid();
+    gHeader.printHeader();
 
-    // Convert x,y,z to lat,lon,radius and store in nodes. The arguments
-    // correspond to the variable names in the JSON file that store
-    // lat,lon,radius values. (For example, "mesh_node_x" corresponds to the
+    // Convert x,y,z to lat,lon,radius and store in nodes. The arguments 
+    // passed in correspond to the variable names in the JSON file that store 
+    // lat,lon,radius values. (For example, "mesh_node_x" corresponds to the 
     // grid's latitude values)
     gdc.xyzToLatLonRadius("mesh_node_x", "mesh_node_y", "mesh_depth");
 
-    // Set any 0-valued dimensions in the JSON file with the info read in from
-    // the header of a GeoFLOW dataset file
+    // Set any 0-valued dimensions in the JSON file with the info read in from 
+    // the header of a GeoFLOW file
     map<GString, GSIZET> dims;
-    dims["nMeshNodes"] = (gdc.header()).nNodesPer2DLayer;
-    dims["nMeshFaces"] = (gdc.header()).nFacesPer2DLayer;
-    dims["meshLayers"] = (gdc.header()).n2DLayers;
+    dims["nMeshNodes"] = gHeader.nNodesPer2DLayer;
+    dims["nMeshFaces"] = gHeader.nFacesPer2DLayer;
+    dims["meshLayers"] = gHeader.n2DLayers;
     gdc.setDimensions(dims);
 
     // Initialize a NetCDF file to store all time-invariant grid variables
@@ -81,10 +79,9 @@ int main()
         ss << std::setfill('0') << std::setw(6) << i;
         GString timestep = ss.str();
 
-        // Initialize a NetCDF file for this timestep to store all the field
+        // Initialize a NetCDF file for this timestep to store all the field 
         // variables
         GString ncFilename = "var." + timestep + ".nc";
-
         gdc.initNC(ncFilename, NcFile::FileMode::replace);
         gdc.writeNCDimensions();
 
@@ -96,8 +93,7 @@ int main()
 
             // Read the GeoFLOW field variable into collection of nodes
             GString gfFilename = fieldName + "." + timestep + ".out";
-
-            gdc.readGFVariable(gfFilename, fieldName);
+            GHeaderInfo fHeader = gdc.readGFVariable(gfFilename, fieldName);
 
             // Write the timestep variable to the NetCDF file
             //gdc.writeNCVariable("time");
@@ -109,9 +105,6 @@ int main()
         // Close the NetCDF file
         gdc.closeNC();
     }
-
-    // For debugging
-    gdc.printHeader();
 
     // For debugging
     for (auto n : gdc.nodes())

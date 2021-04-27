@@ -110,7 +110,7 @@ GDataConverter<T>::~GDataConverter()
 }
 
 template <class T>
-void GDataConverter<T>::readGFGrid()
+GHeaderInfo GDataConverter<T>::readGFGrid()
 {
     cout << "Reading GeoFLOW grid files" << endl;
 
@@ -124,13 +124,15 @@ void GDataConverter<T>::readGFGrid()
     z = _inputDir + "/" + z;
 
     // Read the GeoFLOW x,y,z grid values into a collection of nodes
-    readGFGrid(x, y, z);
+    GHeaderInfo header = readGFGrid(x, y, z);
+
+    return header;
 }
 
 template <class T>
-void GDataConverter<T>::readGFGrid(const GString& gfXFilename,
-                                   const GString& gfYFilename,
-                                   const GString& gfZFilename)
+GHeaderInfo GDataConverter<T>::readGFGrid(const GString& gfXFilename,
+                                          const GString& gfYFilename,
+                                          const GString& gfZFilename)
 {
     // Read the GeoFLOW x,y,z grid files into a collection of nodes
     GFileReader<T> x(gfXFilename);
@@ -150,15 +152,11 @@ void GDataConverter<T>::readGFGrid(const GString& gfXFilename,
         exit(EXIT_FAILURE);
     }
 
-    // Get header info. The header is the same for each x,y,z file so just
-    // use the x grid header.
-    _header = x.header();
-
-    // Read each x,y,z location value and element layer ID into a collection of
-    // nodes. The IDs are the same for each x,y,z triplet so just use the
-    // IDs from the x grid.
+    // Read each x,y,z location value and element layer ID into a collection 
+    // of nodes. The IDs/header are the same for each x,y,z triplet so just 
+    // use the IDs/header from the x grid.
     vector<GNode<T>> nodes;
-    for (auto i = 0u; i < _header.nNodesPer2DLayer; ++i)
+    for (auto i = 0u; i < (x.header()).nNodesPer2DLayer; ++i)
     {
         GNode<T> node(x.data()[i],
                       y.data()[i], 
@@ -168,11 +166,13 @@ void GDataConverter<T>::readGFGrid(const GString& gfXFilename,
         // Save node
         _nodes.push_back(node);
     }
+
+    return x.header();
 }
 
 template <class T>
-void GDataConverter<T>::readGFVariable(const GString& gfFilename,
-                                       const GString& varName)
+GHeaderInfo GDataConverter<T>::readGFVariable(const GString& gfFilename,
+                                              const GString& varName)
 {
     // Get full output path
     GString filename = _inputDir + "/" + gfFilename;
@@ -191,10 +191,12 @@ void GDataConverter<T>::readGFVariable(const GString& gfFilename,
     }
 
     // Store variable data into nodes
-    for (auto i = 0u; i < _header.nNodesPer2DLayer; ++i)
+    for (auto i = 0u; i < (var.header()).nNodesPer2DLayer; ++i)
     {
         _nodes[i].var(varName, var.data()[i]);
-    }    
+    } 
+
+    return var.header();  
 }
 
 template <class T>
@@ -215,12 +217,6 @@ void GDataConverter<T>::xyzToLatLonRadius(const GString& latVarName,
 }
 
 template <class T>
-void GDataConverter<T>::printHeader()
-{
-    GFileReader<T>::printHeader(_header);
-}
-
-template <class T>
 void GDataConverter<T>::setDimensions(const map<GString, GSIZET>& dims)
 {
     cout << "Setting mesh dimensions in the property tree from GeoFLOW data"
@@ -235,7 +231,7 @@ void GDataConverter<T>::setDimensions(const map<GString, GSIZET>& dims)
         GString dimName = PTUtil::getValue<GString>(it->second, "name");
         GSIZET dimValue = PTUtil::getValue<GSIZET>(it->second, "value");
 
-        // If the value of the dimension in the property tree is 0, the value
+        // If the value of the dimension in the property tree is 0, the value 
         // needs to be set using the value in the input dimensions map
         if (dimValue == 0)
         {
@@ -244,7 +240,7 @@ void GDataConverter<T>::setDimensions(const map<GString, GSIZET>& dims)
             itMap = dims.find(dimName);
             if (itMap != dims.end())
             {
-               // Write the value found in the map to the dimension value in
+               // Write the value found in the map to the dimension value in 
                // the property tree
                PTUtil::putValue<GSIZET>(it->second, "value", dims.at(dimName));
             }

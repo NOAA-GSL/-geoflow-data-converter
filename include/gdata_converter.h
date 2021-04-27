@@ -25,10 +25,10 @@ class GDataConverter
 public:
     GDataConverter() {}
     /*!
-     * Reads a property tree file that contains metadata for a given GeoFLOW
-     * dataset. Metadata includes the GeoFLOW x,y,z grid filenames and variable
-     * filenames to read in, and other metadata needed to write to a specific
-     * NetCDF file format.
+     * Reads a property tree file that contains metadata for a given GeoFLOW 
+     * dataset. Metadata includes the GeoFLOW x,y,z grid filenames and 
+     * variable filenames to read in, and other metadata needed to write to a 
+     * specific NetCDF file format.
      * 
      * @param filename name of property tree; file format is JSON
      */
@@ -37,7 +37,6 @@ public:
 
     // Access
     const vector<GNode<T>>& nodes() const { return _nodes; }
-    const GHeaderInfo header() const { return _header; }
     vector<GString> fieldVarNames() const { return _fieldVarNames; }
     GUINT numTimesteps() const { return _numTimesteps; }
 
@@ -49,8 +48,8 @@ public:
     void makeDirectory(const GString& dirName);
 
     /*!
-     * Get a list of absolute filenames in the given directory. Does not search
-     * recursively at the moment.
+     * Get a list of absolute filenames in the given directory. Does not 
+     * search recursively at the moment.
      * 
      * @param dirName the directory to read
      * @return a list of absolute filenames in the directory
@@ -58,52 +57,59 @@ public:
     vector<GString> getFilenames(const GString& dirName);
 
     /*!
-     * Reads the GeoFLOW x,y,z grid filenames specified in the property tree
+     * Reads the GeoFLOW x,y,z grid filenames specified in the property tree 
      * and passes the filenames to the parameterized readGrid(...) method.
+     * 
+     * @return the header info for the grid files read in (the header should 
+     *         be the same for each time-invariant x,y,z file)
      */
-    void readGFGrid();
+   GHeaderInfo readGFGrid();
 
     /*!
-     * Read GeoFLOW x,y,z grid files and store data in a collection of nodes.
+     * Read GeoFLOW x,y,z grid files and store data in a collection of nodes. 
      * A GeoFLOW element layer ID is also set for each node.
      * 
      * @param gfXFilename GeoFLOW x grid filename
      * @param gfYFilename GeoFLOW y grid filename
      * @param gfZFilename GeoFLOW z grid filename
+     * @return the header info for the grid files read in (the header should 
+     *         be the same for each time-invariant x,y,z file)
      */
-    void readGFGrid(const GString& gfXFilename,
-                    const GString& gfYFilename,
-                    const GString& gfZFilename);
+   GHeaderInfo readGFGrid(const GString& gfXFilename,
+                          const GString& gfYFilename,
+                          const GString& gfZFilename);
 
     /*!
      * Read GeoFLOW variable file and store data in nodes.
      * 
-     * @param gfFilename GeoFLOW variable filename
+     * @param gfFilename GeoFLOW field variable filename
      * @param varName name of variable in nodes used to store the data
+     * @param the header info for the file read in 
      */
-    void readGFVariable(const GString& gfFilename, const GString& varName);
+    GHeaderInfo readGFVariable(const GString& gfFilename,
+                               const GString& varName);
 
     /*!
-     * Compute a lat,lon,radius for each node. A new variable for each
-     * lat,lon,radius with the input varNames gets created in the node
+     * Compute a lat,lon,radius for each node. A new variable for each 
+     * lat,lon,radius with the input varNames gets created in the node 
      * if it does not exist.
      * 
-     * @param latVarName name of latitude variable
-     * @param lonVarName name of longitude variable
-     * @param radVarName name of radius variable
+     * @param latVarName name of latitude variable in property tree
+     * @param lonVarName name of longitude variable in property tree
+     * @param radVarName name of radius variable in property tree
      */
     void xyzToLatLonRadius(const GString& latVarName,
                            const GString& lonVarName,
                            const GString& radVarName);
 
     /*!
-     * Replace any 0-valued dimensions in the property tree with the matching
-     * dimensions specified in the dimensions map. A 0-valued dimension means
-     * the dimension's value must be computed during runtime after reading a
-     * GeoFLOW data file. The name of a dimension in the map must match the
+     * Replace any 0-valued dimensions in the property tree with the matching 
+     * dimensions specified in the dimensions map. A 0-valued dimension means 
+     * the dimension's value must be computed during runtime after reading a 
+     * GeoFLOW data file. The name of a dimension in the map must match the 
      * name of a 0-valued dimension in the property tree.
      * 
-     * @param dims map of key-value pairs of any dimensions that must be
+     * @param dims map of key-value pairs of any dimensions that must be 
      *             computed dynamically during runtime
      */
     void setDimensions(const map<GString, GSIZET>& dims);
@@ -111,13 +117,13 @@ public:
     /*!
      * Initialize a GToNetCDF object with the converter's property tree.
      *
-     * @param ncFilename name of NetCDF file to write to; the file will be
-     *                   placed in the property tree's output directory
-     * @param mode NcFile::FileMode::read (file exists, open read-only)
-     *             NcFile::FileMode::write (file exists, open for writing)
-     *             NcFile::FileMode::replace (create new file, even if it
-     *             exists)
-     *             NcFile::FileMode::newFile (create new file, fail if already
+     * @param ncFilename name of NetCDF file to write to; the file will be 
+     *                   placed in the property tree's output directory 
+     * @param mode NcFile::FileMode::read (file exists, open read-only), 
+     *             NcFile::FileMode::write (file exists, open for writing), 
+     *             NcFile::FileMode::replace (create new file, even if it 
+     *             exists), 
+     *             NcFile::FileMode::newFile (create new file, fail if already 
      *             exists)
      */
     void initNC(const GString& ncFilename, NcFile::FileMode mode);
@@ -134,20 +140,16 @@ public:
     void writeNCDimensions();
 
     /*!
-     * Write the variable definition, variable attributes, and variable data to
-     * the current NetCDF file.
+     * Write the variable definition, variable attributes, and variable data 
+     * to the current NetCDF file.
      * 
      * @param varName name of variable in the property tree
      */
     void writeNCVariable(const GString& varName);
 
-    // Print
-    void printHeader();
-
 private:
     GString _ptFilename;     // name of file that contains the property tree
     pt::ptree _ptRoot;       // root of property tree
-    GHeaderInfo _header;     // GeoFLOW file's header & other metadata
     GToNetCDF *_nc;          // handle to NetCDF writer 
     vector<GNode<T>> _nodes; // location and variable for every node in the
                              // GeoFLOW dataset

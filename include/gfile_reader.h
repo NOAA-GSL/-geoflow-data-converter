@@ -32,8 +32,6 @@ public:
     void setElementLayerIDs();
 
     // Print
-    static void printHeader(const GHeaderInfo& h);
-    void printHeader();
     void printData();
 
 private:

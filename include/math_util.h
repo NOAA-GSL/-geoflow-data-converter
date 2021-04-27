@@ -80,7 +80,7 @@ public:
     static array<T, 2> toLatLon(const array<T, 3>& p, T radius);
 
     /*!
-     * Compute a lat,lon,radius from a 3D Cartesian coordinate. The center
+     * Compute a lat,lon,radius from a 3D Cartesian coordinate. The center 
      * point of the sphere is assumed to be (0, 0, 0)
      * 
      * @param pos 3D Cartesian coordinate

@@ -29,14 +29,14 @@ public:
     /*!
      * Initialize the GeoFLOW to NetCDF file writer.
      * 
-     * @param ptRoot root of property tree file with metadata needed for
+     * @param ptRoot root of property tree file with metadata needed for 
      *               conversion; file format is JSON
-     * @param ncFilename name of NetCDF file to write to with file extension
+     * @param ncFilename name of NetCDF file to write to with file extension 
      *                   (ex. myfile.nc)
-     * @param mode NcFile::FileMode::read (file exists, open read-only)
-     *             NcFile::FileMode::write (file exists, open for writing)
-     *             NcFile::FileMode::replace (create new file, even if it
-     *             exists)
+     * @param mode NcFile::FileMode::read (file exists, open read-only), 
+     *             NcFile::FileMode::write (file exists, open for writing), 
+     *             NcFile::FileMode::replace (create new file, even if it 
+     *             exists), 
      *             NcFile::FileMode::newFile (create new file, fail if already
      *             exists)
      */
@@ -55,9 +55,9 @@ public:
     NcType toNcType(const GString& gType);
 
     /*!
-     * Helper method that calls the NetCDF putAtt() method with the appropriate
-     * NetCDF type. The attribute's string value string gets converted to a
-     * NetCDF type.
+     * Helper method that calls the NetCDF putAtt() method with the 
+     * appropriate NetCDF type. The attribute's string value string gets 
+     * converted to a NetCDF type.
      *
      * @param ncVar the NetCDF variable to add the attribute to
      * @param name name of the attribute
@@ -78,15 +78,15 @@ public:
     NcType getVariableType(const GString& varName);
 
     /*!
-     * Read the "dimensions" array in the property tree and write each
-     * dimension object to the NetCDF file. A dimension gets written in the
+     * Read the "dimensions" array in the property tree and write each 
+     * dimension object to the NetCDF file. A dimension gets written in the 
      * form: dimName = dimValue
      */
     void writeDimensions();
 
     /*!
-     * Iterate the "variables" array in the property tree and look for the
-     * varName variable object. Write the variable's defintion to the NetCDF
+     * Iterate the "variables" array in the property tree and look for the 
+     * varName variable object. Write the variable's defintion to the NetCDF 
      * file. A variable gets written in the form: varType varName(dim1, dim2, ...)
      *
      * @param varName name of variable
@@ -94,9 +94,9 @@ public:
     void writeVariableDefinition(const GString& varName);
 
     /*!
-     * Read the "attributes" array of the varName variable object in the
-     * "variables" array of the property tree and write the variable's
-     * attributes to the NetCDF file. An attribute gets written in the form:
+     * Read the "attributes" array of the varName variable object in the 
+     * "variables" array of the property tree and write the variable's 
+     * attributes to the NetCDF file. An attribute gets written in the form: 
      * varName:attrName = "attrValue"
      *
      * @param varName name of variable

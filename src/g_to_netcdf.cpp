@@ -98,7 +98,7 @@ void GToNetCDF::writeDimensions()
         cout << "--- [name = " << name << ", value = " << value << "]"
              << endl;
         
-        // Write the dimension to the NetCDF file. The dimension gets written
+        // Write the dimension to the NetCDF file. The dimension gets written 
         // in the form: dimName = dimValue
         _nc.addDim(name, value);
     }
@@ -134,8 +134,9 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
                ncDims.push_back(_nc.getDim(a));
             }
         
-            // Write the variable definition to the NetCDF file. The definition
-            // gets written in the form: varType varName(dim1, dim2, ...)
+            // Write the variable definition to the NetCDF file. The 
+            // definition gets written in the form: 
+            // varType varName(dim1, dim2, ...)
             _nc.addVar(name, ncType, ncDims);
 
             // For debugging
@@ -199,8 +200,9 @@ void GToNetCDF::writeVariableAttribute(const GString& varName)
                 GString varName = PTUtil::getValue<GString>(itVar->second, "name");
                 NcVar ncVar = _nc.getVar(varName);
 
-                // Write the variable's attribute to the NetCDF file. The attribute
-                // gets written in the form: var_name:att_name = att_value
+                // Write the variable's attribute to the NetCDF file. The 
+                // attribute gets written in the form: 
+                // var_name:att_name = att_value
                 putAttribute(ncVar, name, value, toNcType(gType));
 
                 // For debugging
