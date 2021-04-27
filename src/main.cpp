@@ -19,6 +19,9 @@
 //   current NcFile??
 // - Add custom enum in place of second param for NcFile mode?
 // - Documentation: Write min requirements template for JSON file
+//   Write assumptions (i.e., everything goes in/out of in/out dirs specified
+//   in JSON file, including grid files)
+//   Define property tree = json file
 // - readFiles - make it recursive
 
 #include "gdata_converter.h"
@@ -42,9 +45,9 @@ int main()
     gdc.readGFGrid();
 
     // Convert x,y,z to lat,lon,radius and store in nodes. The arguments
-    // correspond to the variable names of the lat,lon,radius values and should
-    // match the corresponding variable names in the JSON file. (For example,
-    // "mesh_node_x" corresponds to the grid's latitude values)
+    // correspond to the variable names in the JSON file that store
+    // lat,lon,radius values. (For example, "mesh_node_x" corresponds to the
+    // grid's latitude values)
     gdc.xyzToLatLonRadius("mesh_node_x", "mesh_node_y", "mesh_depth");
 
     // Set any 0-valued dimensions in the JSON file with the info read in from
@@ -55,9 +58,11 @@ int main()
     dims["meshLayers"] = (gdc.header()).n2DLayers;
     gdc.setDimensions(dims);
 
-    // Write grid (i.e., all time invariant coord variables) to a NetCDF file
+    // Initialize a NetCDF file to store all time-invariant grid variables
     gdc.initNC("grid.nc", NcFile::FileMode::replace);
     gdc.writeNCDimensions();
+
+    // Write the grid variables to the NetCDF file
     //gdc.writeNCVariable("mesh_face_nodes");
     gdc.writeNCVariable("mesh_node_x");
     gdc.writeNCVariable("mesh_node_y");
@@ -68,37 +73,37 @@ int main()
     ////// CONVERT VARIABLES //////
     ///////////////////////////////
 
-    // Get a list of the field variables
-
-
     // For each timestep...
-    /*for ()
+    for (auto i = 0u; i < 1; ++i) // TODO get actual count
     {
-        // Create a NetCDF file for this timestep to hold all the field
+        // Initialize a NetCDF file for this timestep to store all the field
         // variables
-        GString ncFilename = "field_var.000000.nc";
+        GString timestep = "000000"; // TODO get actual number
+        GString ncExt = ".nc";
+        GString ncFilename = "var." + timestep + "." + ncExt;
+
         gdc.initNC(ncFilename, NcFile::FileMode::replace);
         gdc.writeNCDimensions();
 
-        // For each field variable in this timestep
-        for ()
+        // For each field variable in this timestep...
+        for (auto fieldVarName : gdc.fieldVarNames())
         {
-            // Read a GeoFLOW variable file specified in the JSON file into the
-            // collection of nodes
-            GString gfFilename = "data/dtotal.000000.out";
-            GString fieldName = "dtotal";
-            gdc.readGFVariable(gfFilename, fieldName);
+            // Read the GeoFLOW field variable into collection of nodes
+            GString gfExt = "out";
+            GString gfFilename = fieldVarName + "." + timestep + "." + gfExt;
+            
+            gdc.readGFVariable(gfFilename, fieldVarName);
 
-            // Write the timestep
+            // Write the timestep variable to the NetCDF file
             //gdc.writeNCVariable("time");
 
             // Write the variable to the NetCDF file
-            gdc.writeNCVariable(varName);
+            gdc.writeNCVariable(fieldVarName);
         }
         
         // Close the NetCDF file
         gdc.closeNC();
-    }*/
+    }
 
     // For debugging
     gdc.printHeader();

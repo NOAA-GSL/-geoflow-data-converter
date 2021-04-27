@@ -36,6 +36,13 @@ public:
     ~GDataConverter();
 
     /*!
+     * Create a directory if it does not exist.
+     * 
+     * @param dirName name of the directory to create
+     */
+    void makeDirectory(const GString& dirName);
+
+    /*!
      * Get a list of absolute filenames in the given directory. Does not search
      * recursively at the moment.
      * 
@@ -47,6 +54,7 @@ public:
     // Access
     const vector<GNode<T>>& nodes() const { return _nodes; }
     const GHeaderInfo header() const { return _header; }
+    vector<GString> fieldVarNames() const { return _fieldVarNames; }
 
     /*!
      * Reads the GeoFLOW x,y,z grid filenames specified in the property tree
@@ -58,21 +66,21 @@ public:
      * Read GeoFLOW x,y,z grid files and store data in a collection of nodes.
      * A GeoFLOW element layer ID is also set for each node.
      * 
-     * @param xFilename GeoFLOW x grid filename
-     * @param yFilename GeoFLOW y grid filename
-     * @param zFilename GeoFLOW z grid filename
+     * @param gfXFilename GeoFLOW x grid filename
+     * @param gfYFilename GeoFLOW y grid filename
+     * @param gfZFilename GeoFLOW z grid filename
      */
-    void readGFGrid(const GString& xFilename,
-                    const GString& yFilename,
-                    const GString& zFilename);
+    void readGFGrid(const GString& gfXFilename,
+                    const GString& gfYFilename,
+                    const GString& gfZFilename);
 
     /*!
      * Read GeoFLOW variable file and store data in nodes.
      * 
-     * @param filename filename variable data
+     * @param gfFilename GeoFLOW variable filename
      * @param varName name of variable in nodes used to store the data
      */
-    void readGFVariable(const GString& filename, const GString& varName);
+    void readGFVariable(const GString& gfFilename, const GString& varName);
 
     /*!
      * Compute a lat,lon,radius for each node. A new variable for each
@@ -100,9 +108,10 @@ public:
     void setDimensions(const map<GString, GSIZET>& dims);
 
     /*!
-     * Initialize a GToNetCDF object with the converter's property tree
+     * Initialize a GToNetCDF object with the converter's property tree.
      *
-     * @param ncFilename name of NetCDF file to write to
+     * @param ncFilename name of NetCDF file to write to; the file will be
+     *                   placed in the property tree's output directory
      * @param mode NcFile::FileMode::read (file exists, open read-only)
      *             NcFile::FileMode::write (file exists, open for writing)
      *             NcFile::FileMode::replace (create new file, even if it
@@ -143,9 +152,10 @@ private:
                              // GeoFLOW dataset
     GString _inputDir;       // name of directory that holds all GeoFLOW files
     GString _outputDir;      // name of directory to put the converted files in
+    vector<GString> _fieldVarNames;  // names of the field variables (i.e.,
+                                     // prefix of the field variable filenames)
     vector<GString> _fieldFilenames; // absolute pathnames of input GeoFLOW
                                      // field files
-    vector<GString> _fieldPrefixes;  // prefix names of field variables
 };
 
 #include "../src/gdata_converter.ipp"

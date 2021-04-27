@@ -9,11 +9,10 @@
     "y": "ygrid.000000.out",
     "z": "zgrid.000000.out"
 },
-"field_variable_prefixes":
+"field_variable_names":
 [
     "dtotal",
-    "T",
-    "ke"
+    "T"
 ],
 "dimensions": 
 [
@@ -290,8 +289,46 @@
         ]
     },
     {
-        "comment": "A variable like pressure or density",
+        "comment": "The total density field variable",
         "name": "dtotal",
+        "type": "data_type",
+        "args":
+        [
+            "meshLayers",
+            "nMeshNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "units",
+                "value": "",
+                "comment": "required for all variables that represent dimensional quantities"
+            },
+            {
+                "name": "standard_name",
+                "value": "",
+                "comment": "optional attribute - should be consistent with the positive attribute"
+            },
+            {
+                "name": "mesh",
+                "value": "mesh",
+                "comment": ""
+            },
+            {
+                "name": "location",
+                "value": "node",
+                "comment": ""
+            },
+            {
+                "name": "coordinates",
+                "value": "mesh_node_x mesh_node_y",
+                "comment": ""
+            }
+        ]
+    },
+    {
+        "comment": "The temperature field variable",
+        "name": "T",
         "type": "data_type",
         "args":
         [

@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #include "gfile_reader.h"
 #include "math_util.h"
@@ -21,15 +22,42 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
     // Load the property tree
     PTUtil::readJSONFile(_ptFilename, _ptRoot);
 
-    // Get the name of the input directory
+    // Get input directory
     _inputDir = PTUtil::getValue<GString>(_ptRoot, "input_dir");
 
-    // Get the names of all the files in the input directory
+    // Get files in the input directory
     GString dirName = PTUtil::getValue<GString>(_ptRoot, "input_dir");
     _fieldFilenames = getFilenames(dirName);
 
-    // Get the name of the directory to store converted output files
+    // Get output directory
     _outputDir = PTUtil::getValue<GString>(_ptRoot, "output_dir");
+    makeDirectory(_outputDir);
+
+    // Get names of field variables
+    pt::ptree fieldsArr = PTUtil::getArray(_ptRoot, "field_variable_names");
+    _fieldVarNames = PTUtil::getValues<GString>(fieldsArr);
+
+    // For debugging
+    cout << "Input directory is: " << _inputDir << endl;
+    cout << "Output directory is: " << _outputDir << endl;
+    cout << "Field variable names are: ";
+    for (auto f : _fieldVarNames)
+    {
+        cout << f << " | "; 
+    }
+    cout << endl;
+}
+
+template <class T>
+void GDataConverter<T>::makeDirectory(const GString& dirName)
+{
+    if (mkdir(dirName.c_str(), 0777) != 0 && errno != EEXIST)
+    {
+        std::string msg = "Cannot create directory (" + \
+                          dirName + "): " + strerror(errno);
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
 }
 
 template <class T>
@@ -96,14 +124,14 @@ void GDataConverter<T>::readGFGrid()
 }
 
 template <class T>
-void GDataConverter<T>::readGFGrid(const GString& xFilename,
-                                   const GString& yFilename,
-                                   const GString& zFilename)
+void GDataConverter<T>::readGFGrid(const GString& gfXFilename,
+                                   const GString& gfYFilename,
+                                   const GString& gfZFilename)
 {
     // Read the GeoFLOW x,y,z grid files into a collection of nodes
-    GFileReader<T> x(xFilename);
-    GFileReader<T> y(yFilename);
-    GFileReader<T> z(zFilename);
+    GFileReader<T> x(gfXFilename);
+    GFileReader<T> y(gfYFilename);
+    GFileReader<T> z(gfZFilename);
 
     // Verify data size
     if (!(x.data().size() == y.data().size() && 
@@ -139,9 +167,12 @@ void GDataConverter<T>::readGFGrid(const GString& xFilename,
 }
 
 template <class T>
-void GDataConverter<T>::readGFVariable(const GString& filename,
+void GDataConverter<T>::readGFVariable(const GString& gfFilename,
                                        const GString& varName)
 {
+    // Get full output path
+    GString filename = _inputDir + "/" + gfFilename;
+
     // Read a GeoFLOW variable file
     GFileReader<T> var(filename);
 
@@ -229,8 +260,11 @@ void GDataConverter<T>::initNC(const GString& ncFilename, NcFile::FileMode mode)
     // Clean memory
     closeNC();
 
+    // Get full output path
+    GString filename = _outputDir + "/" + ncFilename;
+
     // Initialize a GToNetCDF object with a property tree
-    _nc = new GToNetCDF(_ptRoot, ncFilename, mode);
+    _nc = new GToNetCDF(_ptRoot, filename, mode);
 }
 
 template <class T>
