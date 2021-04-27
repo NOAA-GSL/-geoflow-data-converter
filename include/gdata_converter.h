@@ -35,6 +35,12 @@ public:
     GDataConverter(const GString& ptFilename);
     ~GDataConverter();
 
+    // Access
+    const vector<GNode<T>>& nodes() const { return _nodes; }
+    const GHeaderInfo header() const { return _header; }
+    vector<GString> fieldVarNames() const { return _fieldVarNames; }
+    GUINT numTimesteps() const { return _numTimesteps; }
+
     /*!
      * Create a directory if it does not exist.
      * 
@@ -50,11 +56,6 @@ public:
      * @return a list of absolute filenames in the directory
      */
     vector<GString> getFilenames(const GString& dirName);
-
-    // Access
-    const vector<GNode<T>>& nodes() const { return _nodes; }
-    const GHeaderInfo header() const { return _header; }
-    vector<GString> fieldVarNames() const { return _fieldVarNames; }
 
     /*!
      * Reads the GeoFLOW x,y,z grid filenames specified in the property tree
@@ -152,6 +153,7 @@ private:
                              // GeoFLOW dataset
     GString _inputDir;       // name of directory that holds all GeoFLOW files
     GString _outputDir;      // name of directory to put the converted files in
+    GUINT _numTimesteps;     // number of timesteps to convert
     vector<GString> _fieldVarNames;  // names of the field variables (i.e.,
                                      // prefix of the field variable filenames)
     vector<GString> _fieldFilenames; // absolute pathnames of input GeoFLOW

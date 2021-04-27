@@ -74,31 +74,36 @@ int main()
     ///////////////////////////////
 
     // For each timestep...
-    for (auto i = 0u; i < 1; ++i) // TODO get actual count
+    for (auto i = 0u; i < gdc.numTimesteps(); ++i)
     {
+        // Get timestep as a string
+        stringstream ss;
+        ss << std::setfill('0') << std::setw(6) << i;
+        GString timestep = ss.str();
+
         // Initialize a NetCDF file for this timestep to store all the field
         // variables
-        GString timestep = "000000"; // TODO get actual number
-        GString ncExt = ".nc";
-        GString ncFilename = "var." + timestep + "." + ncExt;
+        GString ncFilename = "var." + timestep + ".nc";
 
         gdc.initNC(ncFilename, NcFile::FileMode::replace);
         gdc.writeNCDimensions();
 
         // For each field variable in this timestep...
-        for (auto fieldVarName : gdc.fieldVarNames())
+        for (auto fieldName : gdc.fieldVarNames())
         {
+            cout << "Converting GeoFLOW variable: " << fieldName << " for " \
+                 << "timestep: " << timestep << endl;
+
             // Read the GeoFLOW field variable into collection of nodes
-            GString gfExt = "out";
-            GString gfFilename = fieldVarName + "." + timestep + "." + gfExt;
-            
-            gdc.readGFVariable(gfFilename, fieldVarName);
+            GString gfFilename = fieldName + "." + timestep + ".out";
+
+            gdc.readGFVariable(gfFilename, fieldName);
 
             // Write the timestep variable to the NetCDF file
             //gdc.writeNCVariable("time");
 
             // Write the variable to the NetCDF file
-            gdc.writeNCVariable(fieldVarName);
+            gdc.writeNCVariable(fieldName);
         }
         
         // Close the NetCDF file

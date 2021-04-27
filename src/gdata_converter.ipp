@@ -37,9 +37,13 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
     pt::ptree fieldsArr = PTUtil::getArray(_ptRoot, "field_variable_names");
     _fieldVarNames = PTUtil::getValues<GString>(fieldsArr);
 
+    // Get number of timesteps
+    _numTimesteps = PTUtil::getValue<GUINT>(_ptRoot, "num_timesteps");
+
     // For debugging
     cout << "Input directory is: " << _inputDir << endl;
     cout << "Output directory is: " << _outputDir << endl;
+    cout << "Num timestpes are: " << _numTimesteps << endl;
     cout << "Field variable names are: ";
     for (auto f : _fieldVarNames)
     {
