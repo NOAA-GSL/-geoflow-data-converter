@@ -23,8 +23,8 @@ struct GHeaderInfo
     GSIZET        nElems;        // number of elements
     vector<GUINT> polyOrder;     // poly order of each dim, array of sz dim
     GUINT         gridType;      // grid type of GeoFLOW type GElemType
-    GSIZET        timeCycle;     // time cycle stamp
-    GSIZET        timeStamp;     // time stamp
+    GSIZET        timeCycle;     // output time loop index
+    GDOUBLE       timeStamp;     // output time
     GUINT         hasMultVars;   // multiple fields in file?
 
     // Auxiliary data derived from GeoFLOW header

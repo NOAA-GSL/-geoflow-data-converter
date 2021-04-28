@@ -104,26 +104,55 @@ public:
     void writeVariableAttribute(const GString& varName);
 
     /*!
-     * Write varName's variable data to the NetCDF file.
+     * Write varName's data stored in nodes to the NetCDF file.
      *
      * @param varName name of a variable in the NetCDF file
+     * @param nodes list of nodes that contains the variable data to write
      */
-    template <typename T, typename U>
+    template <typename T>
     void writeVariableData(const GString& varName,
                            const vector<GNode<T>>& nodes)
     {
-        cout << "Writing NetCDF variable data for variable: " << varName
-             << endl;
+        cout << "Writing NetCDF variable data from nodes for variable: "
+             << varName << endl;
 
         // Get the NcVar associated with this variable
         NcVar ncVar = _nc.getVar(varName);
 
         // Allocate memory and fill values
-        U *data = new U[nodes.size()];
+        T *data = new T[nodes.size()];
         for (auto i = 0u; i < nodes.size(); ++i)
         {
             data[i] = nodes[i].var(varName);
         }
+
+        // Write the data to the NetCDF file
+        ncVar.putVar(data);
+
+        // Clean memory
+        delete [] data;
+        data = 0;
+    }
+
+    /*!
+     * Write varName's single-valued data to the NetCDF file.
+     *
+     * @param varName name of a variable in the NetCDF file
+     * @param varValue value of the variable data to write
+     */
+    template <typename T>
+    void writeVariableData(const GString& varName,
+                           const T& varValue)
+    {
+        cout << "Writing NetCDF variable data from single-value for variable: "
+             << varName << endl;
+
+        // Get the NcVar associated with this variable
+        NcVar ncVar = _nc.getVar(varName);
+
+        // Allocate memory and fill value
+        T *data = new T[1];
+        data[0] = varValue;
 
         // Write the data to the NetCDF file
         ncVar.putVar(data);

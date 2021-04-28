@@ -3,7 +3,7 @@
 "input_dir": "data",
 "output_dir": "converted",
 "data_type": "GDOUBLE",
-"num_timesteps": 3,
+"num_timesteps": 2,
 "grid_filenames":
 {
     "x": "xgrid.000000.out",

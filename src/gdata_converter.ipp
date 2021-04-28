@@ -25,10 +25,6 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
     // Get input directory
     _inputDir = PTUtil::getValue<GString>(_ptRoot, "input_dir");
 
-    // Get files in the input directory
-    GString dirName = PTUtil::getValue<GString>(_ptRoot, "input_dir");
-    _fieldFilenames = getFilenames(dirName);
-
     // Get output directory
     _outputDir = PTUtil::getValue<GString>(_ptRoot, "output_dir");
     makeDirectory(_outputDir);
@@ -47,7 +43,7 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
     cout << "Field variable names are: ";
     for (auto f : _fieldVarNames)
     {
-        cout << f << " | "; 
+        cout << f << ", "; 
     }
     cout << endl;
 }
@@ -65,41 +61,14 @@ void GDataConverter<T>::makeDirectory(const GString& dirName)
 }
 
 template <class T>
-vector<GString> GDataConverter<T>::getFilenames(const GString& dirName)
+bool GDataConverter<T>::fileExists(const GString& filename)
 {
-    cout << "Getting a list of absolute filenames in the directory: "
-         << dirName << endl;
-
-    DIR *dir;
-    struct dirent *diread;
-    vector<GString> filenames;
-
-    if ((dir = opendir(dirName.c_str())) != nullptr)
+    ifstream ifs(filename);
+    if (!ifs.good())
     {
-        while ((diread = readdir(dir)) != nullptr)
-        {
-            char *filename = diread->d_name;            
-            char buff[1024];
-            char *pathPtr = realpath(filename, buff);
-            if (pathPtr != NULL)
-            {
-                filenames.push_back(buff);
-            }
-
-            // For debugging
-            cout << "Field variable absolute path is: " << buff << endl;
-        }
-        closedir (dir);
+        return false;
     }
-    else
-    {
-        std::string msg = "Cannot find directory (" + \
-                          dirName + ").";
-        Logger::error(__FILE__, __FUNCTION__, msg);
-        exit(EXIT_FAILURE);
-    }
-
-    return filenames;
+    return true;
 }
 
 template <class T>
@@ -263,7 +232,7 @@ void GDataConverter<T>::initNC(const GString& ncFilename, NcFile::FileMode mode)
     // Get full output path
     GString filename = _outputDir + "/" + ncFilename;
 
-    // Initialize a GToNetCDF object with a property tree
+    // Initialize a GToNetCDF object with the property tree
     _nc = new GToNetCDF(_ptRoot, filename, mode);
 }
 
@@ -286,7 +255,7 @@ void GDataConverter<T>::writeNCDimensions()
 }
 
 template <class T>
-void GDataConverter<T>::writeNCVariable(const GString& varName)
+void GDataConverter<T>::writeNCNodeVariable(const GString& varName)
 {
     // Write variable definition
     _nc->writeVariableDefinition(varName);
@@ -295,31 +264,20 @@ void GDataConverter<T>::writeNCVariable(const GString& varName)
     _nc->writeVariableAttribute(varName);
 
     // Write variable data
-    NcType ncType = _nc->getVariableType(varName);    
-    if (ncType == ncString) {
-        _nc->writeVariableData<T, GString>(varName, _nodes);
-    }
-    else if (ncType == ncFloat)
-    {
-        _nc->writeVariableData<T, GFLOAT>(varName, _nodes);
-    }
-    else if (ncType == ncDouble)
-    {
-        _nc->writeVariableData<T, GDOUBLE>(varName, _nodes);
-    }
-    else if (ncType == ncInt)
-    {
-        _nc->writeVariableData<T, GINT>(varName, _nodes);
-    }
-    else if (ncType == ncUint)
-    {
-        _nc->writeVariableData<T, GUINT>(varName, _nodes);
-    }
-    else 
-    {
-        std::string msg = "The input NetCDF data type found for variable (" + \
-                          varName + ") is not supported.";
-        Logger::error(__FILE__, __FUNCTION__, msg);
-        exit(EXIT_FAILURE);
-    }
+    _nc->writeVariableData<T>(varName, _nodes);
+}
+
+template <class T>
+template <typename U>
+void GDataConverter<T>::writeNCVariable(const GString& varName, 
+                                        const U& varValue)
+{
+    // Write variable definition
+    _nc->writeVariableDefinition(varName);
+
+    // Write variable attributes
+    _nc->writeVariableAttribute(varName);
+
+    // Write variable data
+    _nc->writeVariableData<U>(varName, varValue);
 }

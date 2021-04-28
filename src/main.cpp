@@ -39,8 +39,8 @@ int main()
 
     // Read the x,y,z grid files specified in the JSON file into a collection 
     // of nodes
-    GHeaderInfo gHeader = gdc.readGFGrid();
-    gHeader.printHeader();
+    GHeaderInfo gridHeader = gdc.readGFGrid();
+    gridHeader.printHeader();
 
     // Convert x,y,z to lat,lon,radius and store in nodes. The arguments 
     // passed in correspond to the variable names in the JSON file that store 
@@ -51,9 +51,9 @@ int main()
     // Set any 0-valued dimensions in the JSON file with the info read in from 
     // the header of a GeoFLOW file
     map<GString, GSIZET> dims;
-    dims["nMeshNodes"] = gHeader.nNodesPer2DLayer;
-    dims["nMeshFaces"] = gHeader.nFacesPer2DLayer;
-    dims["meshLayers"] = gHeader.n2DLayers;
+    dims["nMeshNodes"] = gridHeader.nNodesPer2DLayer;
+    dims["nMeshFaces"] = gridHeader.nFacesPer2DLayer;
+    dims["meshLayers"] = gridHeader.n2DLayers;
     gdc.setDimensions(dims);
 
     // Initialize a NetCDF file to store all time-invariant grid variables
@@ -62,9 +62,9 @@ int main()
 
     // Write the grid variables to the NetCDF file
     //gdc.writeNCVariable("mesh_face_nodes");
-    gdc.writeNCVariable("mesh_node_x");
-    gdc.writeNCVariable("mesh_node_y");
-    gdc.writeNCVariable("mesh_depth");
+    gdc.writeNCNodeVariable("mesh_node_x");
+    gdc.writeNCNodeVariable("mesh_node_y");
+    gdc.writeNCNodeVariable("mesh_depth");
     gdc.closeNC();
 
     ///////////////////////////////
@@ -74,6 +74,8 @@ int main()
     // For each timestep...
     for (auto i = 0u; i < gdc.numTimesteps(); ++i)
     {
+        bool wroteTimeStamp = false;
+
         // Get timestep as a string
         stringstream ss;
         ss << std::setfill('0') << std::setw(6) << i;
@@ -81,7 +83,7 @@ int main()
 
         // Initialize a NetCDF file for this timestep to store all the field 
         // variables
-        GString ncFilename = "var." + timestep + ".nc";
+        GString ncFilename = "vars." + timestep + ".nc";
         gdc.initNC(ncFilename, NcFile::FileMode::replace);
         gdc.writeNCDimensions();
 
@@ -91,15 +93,31 @@ int main()
             cout << "Converting GeoFLOW variable: " << fieldName << " for " \
                  << "timestep: " << timestep << endl;
 
-            // Read the GeoFLOW field variable into collection of nodes
+            // Verify file - omit this code section if want to fail if file not 
+            // found
             GString gfFilename = fieldName + "." + timestep + ".out";
-            GHeaderInfo fHeader = gdc.readGFVariable(gfFilename, fieldName);
+            GString gfFullPath = gdc.inputDir() + "/" + gfFilename;
+            if (!gdc.fileExists(gfFullPath))
+            {
+                GString msg = "Cannot find file (" + gfFullPath + "). " + \
+                              "Skipping.";
+                Logger::warning(__FILE__, __FUNCTION__, msg);
+                continue;
+            }
 
-            // Write the timestep variable to the NetCDF file
-            //gdc.writeNCVariable("time");
+            // Read the GeoFLOW field variable into collection of nodes
+            GHeaderInfo fieldHeader = gdc.readGFVariable(gfFilename, fieldName);
+
+            // Write the time stamp variable to the NetCDF file; only want do
+            // this once per timestep file
+            if (!wroteTimeStamp)
+            {
+                gdc.writeNCVariable("time", fieldHeader.timeStamp);
+                wroteTimeStamp = true;
+            }
 
             // Write the variable to the NetCDF file
-            gdc.writeNCVariable(fieldName);
+            gdc.writeNCNodeVariable(fieldName);
         }
         
         // Close the NetCDF file
@@ -107,10 +125,10 @@ int main()
     }
 
     // For debugging
-    for (auto n : gdc.nodes())
+    /*for (auto n : gdc.nodes())
     {
         n.printNode();
-    }
+    }*/
 
     return 0;
 }

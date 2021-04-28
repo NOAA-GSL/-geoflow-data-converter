@@ -39,6 +39,8 @@ public:
     const vector<GNode<T>>& nodes() const { return _nodes; }
     vector<GString> fieldVarNames() const { return _fieldVarNames; }
     GUINT numTimesteps() const { return _numTimesteps; }
+    GString outputDir() const { return _outputDir; }
+    GString inputDir() const { return _inputDir; }
 
     /*!
      * Create a directory if it does not exist.
@@ -48,13 +50,12 @@ public:
     void makeDirectory(const GString& dirName);
 
     /*!
-     * Get a list of absolute filenames in the given directory. Does not 
-     * search recursively at the moment.
+     * Check if a file exists.
      * 
-     * @param dirName the directory to read
-     * @return a list of absolute filenames in the directory
+     * @param filename name of file to check for
+     * @return true if file exists; false otherwise
      */
-    vector<GString> getFilenames(const GString& dirName);
+    bool fileExists(const GString& filename);
 
     /*!
      * Reads the GeoFLOW x,y,z grid filenames specified in the property tree 
@@ -141,11 +142,22 @@ public:
 
     /*!
      * Write the variable definition, variable attributes, and variable data 
-     * to the current NetCDF file.
+     * to the current NetCDF file. The data comes from the collection of nodes
      * 
-     * @param varName name of variable in the property tree
+     * @param varName name of variable in the property tree (same name as 
+     *                variable stored in the nodes)
      */
-    void writeNCVariable(const GString& varName);
+    void writeNCNodeVariable(const GString& varName);
+
+    /*!
+     * Write the variable definition, variable attributes, and single-valued 
+     * variable data to the current NetCDF file.
+     * 
+     * @param varName name of variable in the property tree / nodes
+     * @param varValue value to write for the variable
+     */
+    template <typename U>
+    void writeNCVariable(const GString& varName, const U& varValue);
 
 private:
     GString _ptFilename;     // name of file that contains the property tree
@@ -158,8 +170,6 @@ private:
     GUINT _numTimesteps;     // number of timesteps to convert
     vector<GString> _fieldVarNames;  // names of the field variables (i.e.,
                                      // prefix of the field variable filenames)
-    vector<GString> _fieldFilenames; // absolute pathnames of input GeoFLOW
-                                     // field files
 };
 
 #include "../src/gdata_converter.ipp"

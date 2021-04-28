@@ -29,6 +29,18 @@ public:
     {
         cerr << "ERROR [" << file << "::" << func << "()] " << msg << endl;
     }
+
+    /*!
+     * Print warning message.
+     * 
+     * @param file name of source file
+     * @param func name of function
+     * @param msg warning message description
+     */
+    static void warning(const char* file, const char* func, string msg)
+    {
+        cerr << "WARNING [" << file << "::" << func << "()] " << msg << endl;
+    }
 };
 
 #endif
