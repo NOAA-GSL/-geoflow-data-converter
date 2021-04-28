@@ -5,22 +5,25 @@
 //                All rights reserved.
 //==============================================================================
 
-// TODO across project
-// - Add error handling for NetCDF calls
-// - Modify nElem in gfile_reader.h (right now, only accounts for one layer of
-//   2D elements); also compute n2DLayers - right now hard-coded; also compute
-//   setElementLayerIDs when the element ID becomes available in header of GF
-//   files
-// - MathUtil essentiallyEqual method
-// - Write of NCVariable: just writing all the nodes - need to divide into
-//   layers
-// - Add custom enum in place of second param for NcFile mode?
-// - Documentation: Write min requirements template for JSON file
-//   Write assumptions (i.e., everything goes in/out of in/out dirs specified
-//   in JSON file, including grid files)
-//   Define property tree = json file
-// - Make readFiles method recursive?
-// - Doxygen comments for GFileReader
+/*
+-------------------
+TODO Across Project
+-------------------
+- Add error handling for NetCDF calls
+- When element IDs become available in the GeoFLOW header files:
+  - modify h.nElemLayers gfile_reader::readHeader (right now, only accounts
+    one layer of GeoFLOW elements)
+  - compute gfile_reader::setElementLayerIDs()
+- Implement MathUtil::essentiallyEqual() method
+- Add custom enum in place of second param for NcFile mode to remove Nc
+  dependency?
+- Is custom g_to_netcdf::putAttribute() method actuall needed?
+- Documentation:
+  - Write min requirements template for JSON file
+  - Write assumptions (i.e., everything goes in/out of in/out dirs specified
+    in JSON file, including grid files); Define property tree = json file
+  - Doxygen comments for GFileReader
+*/
 
 #include "gdata_converter.h"
 
@@ -108,8 +111,8 @@ int main()
             // Read the GeoFLOW field variable into collection of nodes
             GHeaderInfo fieldHeader = gdc.readGFVariable(gfFilename, fieldName);
 
-            // Write the time stamp variable to the NetCDF file; only want do
-            // this once per timestep file
+            // Write the time stamp variable to the NetCDF file; only want to 
+            // do this once per timestep file
             if (!wroteTimeStamp)
             {
                 gdc.writeNCVariable("time", fieldHeader.timeStamp);

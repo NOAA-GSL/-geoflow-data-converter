@@ -11,7 +11,7 @@
 template <class T>
 GFileReader<T>::GFileReader(const GString& filename)
 {
-    // Read header
+    // Read header and data
     _header = readHeader(filename);
 
     // Read data
@@ -65,22 +65,36 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
     // Get total byte size of header
     h.nHeaderBytes = ifs.tellg(); // curr pos in file stream
     
-    // Get num nodes (incl. sub nodes) per 2D element (x & y ref dir)
-    // Num nodes in one reference direction of one element = (poly order + 1)
-    h.nNodesPer2DElem = 1;
+    // Get num nodes (incl. sub nodes) in volume (x,y,z ref dir)
+    h.nNodesPerVolume = h.nElems;
     for (const auto& p : h.polyOrder)
     {
-        h.nNodesPer2DElem *= (p + 1);
+        h.nNodesPerVolume *= (p + 1);
     }
 
-    // Get num nodes (incl. sub nodes) per 2D layer(x & y ref dir)
-    h.nNodesPer2DLayer = h.nElems * h.nNodesPer2DElem;
+    // Get num nodes (incl. sub nodes) per 2D element (x,y ref dir)
+    // Num nodes in one reference direction of one element = (poly order + 1)
+    h.nNodesPer2DElem = 1;
+    for (auto i = 0u; i < 2; ++i)
+    {
+        h.nNodesPer2DElem *= (h.polyOrder[i] + 1);
+    }
+
+    // TODO: Get num GeoFLOW element layers
+    h.nElemLayers = 1;
+
+    // Get num GeoFLOW elments per GeoFLOW element layer
+    h.nElemPerElemLayer = h.nElems / h.nElemLayers;
+
+    // Get num nodes (incl. sub nodes) per 2D layer (x,y ref dir)
+    h.nNodesPer2DLayer = h.nElemPerElemLayer * h.nNodesPer2DElem;
 
     // Get num faces (incl. sub faces) per 2D layer(x & y ref dir)
-    h.nFacesPer2DLayer = h.nElems * (h.polyOrder[0] * h.polyOrder[1]);
+    //h.nFacesPer2DLayer = h.nElems * (h.polyOrder[0] * h.polyOrder[1]);
+    h.nFacesPer2DLayer = h.nElemPerElemLayer * (h.polyOrder[0] * h.polyOrder[1]);
 
     // Get num 2D layers in the entire volume
-    h.n2DLayers = 1;
+    h.n2DLayers = h.nNodesPerVolume / h.nNodesPer2DLayer;
 
     ifs.close();
 
@@ -125,7 +139,7 @@ void GFileReader<T>::setElementLayerIDs()
     // value
     for (auto i = 0u; i < _data.size(); ++i)
     {
-            _elemLayerIDs.push_back(0);
+        _elemLayerIDs.push_back(0);
     }
 }
 
