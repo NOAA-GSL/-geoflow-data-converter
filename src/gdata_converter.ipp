@@ -123,7 +123,7 @@ GHeaderInfo GDataConverter<T>::readGFGrid(const GString& gfXFilename,
     // of nodes. The IDs/header are the same for each x,y,z triplet so just 
     // use the IDs/header from the x grid.
     vector<GNode<T>> nodes;
-    for (auto i = 0u; i < (x.header()).nNodesPer2DLayer; ++i)
+    for (auto i = 0u; i < (x.header()).nNodesPerVolume; ++i)
     {
         GNode<T> node(x.data()[i],
                       y.data()[i], 
@@ -158,7 +158,7 @@ GHeaderInfo GDataConverter<T>::readGFNodeVariable(const GString& gfFilename,
     }
 
     // Store variable data into nodes
-    for (auto i = 0u; i < (var.header()).nNodesPer2DLayer; ++i)
+    for (auto i = 0u; i < (var.header()).nNodesPerVolume; ++i)
     {
         _nodes[i].var(varName, var.data()[i]);
     } 

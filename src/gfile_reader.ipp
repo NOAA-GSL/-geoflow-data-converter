@@ -116,10 +116,10 @@ void GFileReader<T>::readData(const GString& filename)
 
     // Set file stream location to start of data and allocate memory
     ifs.seekg(_header.nHeaderBytes);
-    _data.resize(_header.nNodesPer2DLayer);
+    _data.resize(_header.nNodesPerVolume);
 
     // Read data
-    GSIZET nDataBytes = _header.nNodesPer2DLayer * sizeof(T);
+    GSIZET nDataBytes = _header.nNodesPerVolume * sizeof(T);
     if (!ifs.read((char*)_data.data(), nDataBytes))
     {
         cerr << "Error: Cannot read the requested " << nDataBytes
