@@ -1,9 +1,8 @@
 //=============================================================================
 // Date         : 4/1/21 (SG)
-// Description  : Reads a GeoFLOW dataset (x, y, z files and a variable file)   
-//              : and converts it to another file format (like UGRID or
-//              : NetCDF-CF).
-// Copyright    : Copyright 2021. Regents of the University of Colorado.
+// Description  : Reads a GeoFLOW dataset (x, y, z files and variable files) 
+//              : and converts it to a set of NetCDF files (like UGRID or CF).
+// Copyright    : Copyright 2021. Regents of the University of Colorado. 
 //                All rights reserved.
 //=============================================================================
 
@@ -25,10 +24,10 @@ class GDataConverter
 public:
     GDataConverter() {}
     /*!
-     * Reads a property tree file that contains metadata for a given GeoFLOW 
+     * Reads a property tree file that contains metadata for a given GeoFLOW  
      * dataset. Metadata includes the GeoFLOW x,y,z grid filenames and 
-     * variable filenames to read in, and other metadata needed to write to a 
-     * specific NetCDF file format.
+     * variable filenames to read in, and other metadata needed to write to  
+     * NetCDF files.
      * 
      * @param filename name of property tree; file format is JSON
      */
@@ -37,7 +36,7 @@ public:
 
     // Access
     const vector<GNode<T>>& nodes() const { return _nodes; }
-    vector<GString> fieldVarNames() const { return _fieldVarNames; }
+    vector<GString> varNames() const { return _varNames; }
     GUINT numTimesteps() const { return _numTimesteps; }
     GString outputDir() const { return _outputDir; }
     GString inputDir() const { return _inputDir; }
@@ -67,28 +66,31 @@ public:
    GHeaderInfo readGFGrid();
 
     /*!
-     * Read GeoFLOW x,y,z grid files and store data in a collection of nodes. 
-     * A GeoFLOW element layer ID is also set for each node.
+     * Read GeoFLOW x,y,z grid files and store data in a collection of nodes.  
+     * A GeoFLOW element layer ID is also set for each node based on data in 
+     * the header of the GeoFLOW file.
      * 
      * @param gfXFilename GeoFLOW x grid filename
      * @param gfYFilename GeoFLOW y grid filename
      * @param gfZFilename GeoFLOW z grid filename
-     * @return the header info for the grid files read in (the header should 
-     *         be the same for each time-invariant x,y,z file)
+     * @return the header info for the grid files read in (the header is the 
+     *         same for each time-invariant x,y,z file)
      */
    GHeaderInfo readGFGrid(const GString& gfXFilename,
                           const GString& gfYFilename,
                           const GString& gfZFilename);
 
     /*!
-     * Read GeoFLOW variable file and store data in nodes.
+     * Read GeoFLOW variable file and store data in nodes. Assumes the 
+     * correct number of nodes have already been initialized by the readGrid() 
+     * method.
      * 
-     * @param gfFilename GeoFLOW field variable filename
-     * @param varName name of variable in nodes used to store the data
-     * @param the header info for the file read in 
+     * @param gfFilename GeoFLOW variable filename
+     * @param varName name of variable in nodes to store the data into
+     * @return the header info for the file read in
      */
-    GHeaderInfo readGFVariable(const GString& gfFilename,
-                               const GString& varName);
+    GHeaderInfo readGFNodeVariable(const GString& gfFilename,
+                                   const GString& varName);
 
     /*!
      * Compute a lat,lon,radius for each node. A new variable for each 
@@ -105,10 +107,10 @@ public:
 
     /*!
      * Replace any 0-valued dimensions in the property tree with the matching 
-     * dimensions specified in the dimensions map. A 0-valued dimension means 
-     * the dimension's value must be computed during runtime after reading a 
-     * GeoFLOW data file. The name of a dimension in the map must match the 
-     * name of a 0-valued dimension in the property tree.
+     * dimensions specified in the input dimensions map. A 0-valued dimension 
+     * means the dimension's value must be computed during runtime after 
+     * reading a GeoFLOW data file. The name of a dimension in the map must 
+     * match the name of a 0-valued dimension in the property tree.
      * 
      * @param dims map of key-value pairs of any dimensions that must be 
      *             computed dynamically during runtime
@@ -116,10 +118,13 @@ public:
     void setDimensions(const map<GString, GSIZET>& dims);
 
     /*!
-     * Initialize a GToNetCDF object with the converter's property tree.
+     * Initialize a GToNetCDF object (makes NetCDF API calls) with the 
+     * converter's property tree and the NetCDF file to write to. This file
+     * becomes the active NetCDF file for writing until closeNC() is called.
      *
      * @param ncFilename name of NetCDF file to write to; the file will be 
-     *                   placed in the property tree's output directory 
+     *                   placed in the output directory listed in the 
+     *                   property tree 
      * @param mode NcFile::FileMode::read (file exists, open read-only), 
      *             NcFile::FileMode::write (file exists, open for writing), 
      *             NcFile::FileMode::replace (create new file, even if it 
@@ -130,46 +135,48 @@ public:
     void initNC(const GString& ncFilename, NcFile::FileMode mode);
 
     /*!
-     * Clean memory for the GToNetCDF object
+     * Closes the active NetCDF file and deletes the GToNetCDF object.
      */
     void closeNC();
 
     /*!
-     * Write the dataset's dimensions to the current NetCDF file
+     * Use dimensions in the property tree to write the dataset's dimensions 
+     * to the active NetCDF file.
      *
      */
     void writeNCDimensions();
 
     /*!
      * Write the variable definition, variable attributes, and variable data 
-     * to the current NetCDF file. The data comes from the collection of nodes
+     * to the active NetCDF file. The data comes from the converter's 
+     * collection of nodes that match the input varName.
      * 
-     * @param varName name of variable in the property tree (same name as 
-     *                variable stored in the nodes)
+     * @param varName name of variable in the property tree (should be the 
+     *                same name as the variable name stored in the nodes)
      */
     void writeNCNodeVariable(const GString& varName);
 
     /*!
-     * Write the variable definition, variable attributes, and single-valued 
-     * variable data to the current NetCDF file.
+     * Write the variable definition, variable attributes, and a single data  
+     * value to the active NetCDF file.
      * 
-     * @param varName name of variable in the property tree / nodes
-     * @param varValue value to write for the variable
+     * @param varName name of variable in the property tree
+     * @param varValue single data value to write for the variable
      */
     template <typename U>
     void writeNCVariable(const GString& varName, const U& varValue);
 
 private:
-    GString _ptFilename;     // name of file that contains the property tree
+    GString _ptFilename;     // filename that contains the property tree
     pt::ptree _ptRoot;       // root of property tree
     GToNetCDF *_nc;          // handle to NetCDF writer 
-    vector<GNode<T>> _nodes; // location and variable for every node in the
-                             // GeoFLOW dataset
-    GString _inputDir;       // name of directory that holds all GeoFLOW files
-    GString _outputDir;      // name of directory to put the converted files in
+    vector<GNode<T>> _nodes; // location and variable data for every node in 
+                             // the GeoFLOW dataset
+    GString _inputDir;       // directory name that holds input GeoFLOW files
+    GString _outputDir;      // directory name that holds output NetCDF files
     GUINT _numTimesteps;     // number of timesteps to convert
-    vector<GString> _fieldVarNames;  // names of the field variables (i.e.,
-                                     // prefix of the field variable filenames)
+    vector<GString> _varNames; // names of the variables (i.e., prefix of the 
+                               // variable filenames)
 };
 
 #include "../src/gdata_converter.ipp"

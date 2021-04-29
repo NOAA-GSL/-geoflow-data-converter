@@ -28,14 +28,15 @@ struct GHeaderInfo
     GUINT         hasMultVars;   // multiple fields in file?
 
     // Auxiliary data derived from GeoFLOW header
-    GSIZET        nHeaderBytes;     // total byte size of GeoFLOW header
-    GSIZET        nNodesPerVolume;  // num nodes (incl. sub nodes) in volume
-    GUINT         nNodesPer2DElem;  // num nodes (incl. sub nodes) per 2D \
-                                       GeoFLOW element (x and y ref dir)
-    GSIZET        nNodesPer2DLayer; // num nodes (incl. sub nodes) per 2D layer
-    GSIZET        nFacesPer2DLayer; // num faces (incl. sub faces) per 2D layer
-    GSIZET        n2DLayers;        // num 2D layers in entire volume
-    GSIZET        nElemLayers;      // num GeoFLOW element layers
+    GSIZET        nHeaderBytes;      // total byte size of GeoFLOW header
+    GSIZET        nNodesPerVolume;   // num nodes in volume
+    GUINT         nNodesPer2DElem;   // num nodes per 2D (x,y ref dir only) 
+                                     // GeoFLOW element
+    GSIZET        nNodesPer2DLayer;  // num nodes per 2D mesh layer
+    GSIZET        nFacesPer2DLayer;  // num faces (incl. sub faces) per 2D mesh 
+                                     // layer
+    GSIZET        n2DLayers;         // num 2D mesh layers in entire volume
+    GSIZET        nElemLayers;       // num GeoFLOW element layers
     GSIZET        nElemPerElemLayer; // num GeoFLOW elements per GeoFLOW
                                      // element layer
 
@@ -66,12 +67,13 @@ struct GHeaderInfo
        cout << "------------------------" << endl;
        cout << "Num header bytes: " << nHeaderBytes << endl;
        cout << "Num nodes per volume: " << nNodesPerVolume << endl;
-       cout << "Num nodes per 2D GeoFLOW element: " << nNodesPer2DElem << endl;
+       cout << "Num nodes per 2D (x,y ref dir only) element: " 
+            << nNodesPer2DElem << endl;
        cout << "Num element layers: " << nElemLayers << endl;
        cout << "Num elements per layer: " << nElemPerElemLayer << endl;
-       cout << "Num nodes per 2D layer: " << nNodesPer2DLayer << endl;
-       cout << "Num 2D layers: " << n2DLayers << endl;
-       cout << "Num faces per 2D layer: " << nFacesPer2DLayer << endl;
+       cout << "Num 2D mesh layers: " << n2DLayers << endl;
+       cout << "Num nodes per 2D mesh layer: " << nNodesPer2DLayer << endl;
+       cout << "Num sub-faces per 2D mesh layer: " << nFacesPer2DLayer << endl;
        cout << endl;
    }
 };

@@ -173,7 +173,7 @@ public:
     }
 
     /*!
-     * Set a value for a key in a tree of the property tree. The value gets
+     * Set a value for a key in a tree of the property tree. The value gets 
      * overwritten if it exisits.
      * 
      * @param @param tree a sub tree/object in the property tree

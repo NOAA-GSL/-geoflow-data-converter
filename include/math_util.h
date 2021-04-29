@@ -1,6 +1,6 @@
 //==============================================================================
 // Date        : 3/24/21 (SG)
-// Description : Various math helper functions.
+// Description : Math helper functions.
 // Copyright   : Copyright 2021. Regents of the University of Colorado.
 //               All rights reserved.
 //==============================================================================
@@ -32,8 +32,8 @@ public:
     bool essentiallyEqual(float a, float b);*/
      
      /*!
-     * Compute radius of a 3D Cartesian coordinate on a sphere.
-     * Assumes center of sphere is at (0, 0, 0).
+     * Compute radius of a 3D Cartesian coordinate on a sphere. Assumes center 
+     * of sphere is (0, 0, 0).
      * 
      * @param p 3D coordinate
      * @param c location of sphere center

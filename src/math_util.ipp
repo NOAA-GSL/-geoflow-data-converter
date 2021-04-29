@@ -70,7 +70,7 @@ array<T, 3> MathUtil::xyzToLatLonRadius(array<T, 3> pos)
     // Get normalized coordinate
     array<T, 3> n = normalize(pos);
 
-    // Get lat,lon of coordinate and convert to degrees.
+    // Get lat,lon of coordinate and convert to degrees
     array<T, 2> ll = toLatLon(n, T(1.0));
     ll[0] = toDegrees(ll[0]);
     ll[1] = toDegrees(ll[1]);

@@ -22,16 +22,14 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
     // Load the property tree
     PTUtil::readJSONFile(_ptFilename, _ptRoot);
 
-    // Get input directory
+    // Get input and output directories
     _inputDir = PTUtil::getValue<GString>(_ptRoot, "input_dir");
-
-    // Get output directory
     _outputDir = PTUtil::getValue<GString>(_ptRoot, "output_dir");
     makeDirectory(_outputDir);
 
-    // Get names of field variables
-    pt::ptree fieldsArr = PTUtil::getArray(_ptRoot, "field_variable_names");
-    _fieldVarNames = PTUtil::getValues<GString>(fieldsArr);
+    // Get variable names
+    pt::ptree varsArr = PTUtil::getArray(_ptRoot, "variable_names");
+    _varNames = PTUtil::getValues<GString>(varsArr);
 
     // Get number of timesteps
     _numTimesteps = PTUtil::getValue<GUINT>(_ptRoot, "num_timesteps");
@@ -40,8 +38,8 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
     cout << "Input directory is: " << _inputDir << endl;
     cout << "Output directory is: " << _outputDir << endl;
     cout << "Num timestpes are: " << _numTimesteps << endl;
-    cout << "Field variable names are: ";
-    for (auto f : _fieldVarNames)
+    cout << "Variable names are: ";
+    for (auto f : _varNames)
     {
         cout << f << ", "; 
     }
@@ -103,7 +101,7 @@ GHeaderInfo GDataConverter<T>::readGFGrid(const GString& gfXFilename,
                                           const GString& gfYFilename,
                                           const GString& gfZFilename)
 {
-    // Read the GeoFLOW x,y,z grid files into a collection of nodes
+    // Read the GeoFLOW x,y,z grid files (header and data)
     GFileReader<T> x(gfXFilename);
     GFileReader<T> y(gfYFilename);
     GFileReader<T> z(gfZFilename);
@@ -140,13 +138,13 @@ GHeaderInfo GDataConverter<T>::readGFGrid(const GString& gfXFilename,
 }
 
 template <class T>
-GHeaderInfo GDataConverter<T>::readGFVariable(const GString& gfFilename,
-                                              const GString& varName)
+GHeaderInfo GDataConverter<T>::readGFNodeVariable(const GString& gfFilename,
+                                                  const GString& varName)
 {
     // Get full output path
     GString filename = _inputDir + "/" + gfFilename;
 
-    // Read a GeoFLOW variable file
+    // Read a GeoFLOW file
     GFileReader<T> var(filename);
 
     // Verify data size
@@ -188,7 +186,7 @@ void GDataConverter<T>::xyzToLatLonRadius(const GString& latVarName,
 template <class T>
 void GDataConverter<T>::setDimensions(const map<GString, GSIZET>& dims)
 {
-    cout << "Setting mesh dimensions in the property tree from GeoFLOW data"
+    cout << "Setting mesh dimensions in the property tree from GeoFLOW data" 
          << endl;
 
     pt::ptree& dimArr = PTUtil::getArrayRef(_ptRoot, "dimensions");
@@ -224,7 +222,8 @@ void GDataConverter<T>::setDimensions(const map<GString, GSIZET>& dims)
 } 
 
 template <class T>
-void GDataConverter<T>::initNC(const GString& ncFilename, NcFile::FileMode mode)
+void GDataConverter<T>::initNC(const GString& ncFilename,
+                               NcFile::FileMode mode)
 {
     // Clean memory
     closeNC();
@@ -232,7 +231,7 @@ void GDataConverter<T>::initNC(const GString& ncFilename, NcFile::FileMode mode)
     // Get full output path
     GString filename = _outputDir + "/" + ncFilename;
 
-    // Initialize a GToNetCDF object with the property tree
+    // Initialize a GToNetCDF object
     _nc = new GToNetCDF(_ptRoot, filename, mode);
 }
 

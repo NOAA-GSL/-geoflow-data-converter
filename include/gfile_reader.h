@@ -35,9 +35,9 @@ public:
     void printData();
 
 private:
-    GHeaderInfo _header;          // GeoFLOW file's header & other meta data
-    vector<T> _data;              // GeoFLOW file's data values
-    vector<GSIZET> _elemLayerIDs; // element layer ID for each node
+    GHeaderInfo _header;          // GeoFLOW file header & other meta data
+    vector<T> _data;              // GeoFLOW file data values
+    vector<GSIZET> _elemLayerIDs; // element layer ID for each data value
 };
 
 #include "../src/gfile_reader.ipp"

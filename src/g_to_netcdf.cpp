@@ -77,6 +77,7 @@ void GToNetCDF::putAttribute(const NcVar& ncVar,
 
 NcType GToNetCDF::getVariableType(const GString& varName)
 {
+    // Get the NetCDF type from the NetCDF variable name
     NcVar ncVar = _nc.getVar(varName);
     return ncVar.getType();
 }
@@ -95,7 +96,7 @@ void GToNetCDF::writeDimensions()
         GUINT value = PTUtil::getValue<GUINT>(it->second, "value");
 
         // For debugging
-        cout << "--- [name = " << name << ", value = " << value << "]"
+        cout << "--- [name = " << name << ", value = " << value << "]" 
              << endl;
         
         // Write the dimension to the NetCDF file. The dimension gets written 
@@ -113,7 +114,7 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
     // For each variable in the variables array...
     for (pt::ptree::iterator it = varArr.begin(); it != varArr.end(); ++it)
     {
-        // Get the values of the specified key
+        // Get the value of the specified key
         GString name = PTUtil::getValue<GString>(it->second, "name");
 
         // If the input variable is found...
@@ -140,7 +141,7 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
             _nc.addVar(name, ncType, ncDims);
 
             // For debugging
-            cout << "--- [name = " << name << ", type = " << type << ", "
+            cout << "--- [name = " << name << ", type = " << type << ", " 
                  << "args = ";
             for (auto a : args)
             {
@@ -148,14 +149,14 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
             }
             cout << "]" << endl;
 
-            // Found variable - exit loop
+            // Found the input variable - exit loop
             return;
         }
     }
 
-    // Reached error - could not find the input variable name
-    std::string msg = "Could not find the variable name (" + varName + ") " \
-                      "in the property tree.";
+    // Reached error state - could not find the input variable
+    std::string msg = "Could not find the variable (" + varName + ") in the " \
+                      "property tree.";
     Logger::error(__FILE__, __FUNCTION__, msg);
     exit(EXIT_FAILURE);
 }
@@ -171,13 +172,13 @@ void GToNetCDF::writeVariableAttribute(const GString& varName)
          itVar != varArr.end(); 
          ++itVar)
     {
-        // Get the values of the specified key
+        // Get the value of the specified key
         GString name = PTUtil::getValue<GString>(itVar->second, "name");
 
         // If the input variable is found...
         if (name == varName)
         {
-            // Get the attributes array
+            // Get the varialble's attributes array
             pt::ptree attArr = PTUtil::getArray(itVar->second, "attributes");
 
             // For each attribute in the attributes array...
@@ -206,7 +207,7 @@ void GToNetCDF::writeVariableAttribute(const GString& varName)
                 putAttribute(ncVar, name, value, toNcType(gType));
 
                 // For debugging
-                cout << "--- [name = " << name << ", value = " << value
+                cout << "--- [name = " << name << ", value = " << value 
                      << ", gtype = " << gType << "]" << endl;
             }
 
@@ -215,7 +216,7 @@ void GToNetCDF::writeVariableAttribute(const GString& varName)
         }
     }
 
-    // Reached error - could not find the input variable name
+    // Reached error state - could not find the input variable
     std::string msg = "Could not find the variable name (" + varName + ") " \
                       "in the property tree.";
     Logger::error(__FILE__, __FUNCTION__, msg);

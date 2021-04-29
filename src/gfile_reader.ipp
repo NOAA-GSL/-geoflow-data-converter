@@ -11,7 +11,7 @@
 template <class T>
 GFileReader<T>::GFileReader(const GString& filename)
 {
-    // Read header and data
+    // Read header
     _header = readHeader(filename);
 
     // Read data
@@ -65,15 +65,15 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
     // Get total byte size of header
     h.nHeaderBytes = ifs.tellg(); // curr pos in file stream
     
-    // Get num nodes (incl. sub nodes) in volume (x,y,z ref dir)
+    // Get num nodes in volume (x,y,z ref dir)
     h.nNodesPerVolume = h.nElems;
     for (const auto& p : h.polyOrder)
     {
         h.nNodesPerVolume *= (p + 1);
     }
 
-    // Get num nodes (incl. sub nodes) per 2D element (x,y ref dir)
-    // Num nodes in one reference direction of one element = (poly order + 1)
+    // Get num nodes per 2D element (x,y ref dir). Num nodes in one reference 
+    // direction of one element = (poly order + 1)
     h.nNodesPer2DElem = 1;
     for (auto i = 0u; i < 2; ++i)
     {
@@ -86,11 +86,10 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
     // Get num GeoFLOW elments per GeoFLOW element layer
     h.nElemPerElemLayer = h.nElems / h.nElemLayers;
 
-    // Get num nodes (incl. sub nodes) per 2D layer (x,y ref dir)
+    // Get num nodes per 2D layer (x,y ref dir)
     h.nNodesPer2DLayer = h.nElemPerElemLayer * h.nNodesPer2DElem;
 
-    // Get num faces (incl. sub faces) per 2D layer(x & y ref dir)
-    //h.nFacesPer2DLayer = h.nElems * (h.polyOrder[0] * h.polyOrder[1]);
+    // Get num faces (includes sub faces) per 2D layer (x,y ref dir)
     h.nFacesPer2DLayer = h.nElemPerElemLayer * (h.polyOrder[0] * h.polyOrder[1]);
 
     // Get num 2D layers in the entire volume
@@ -115,7 +114,7 @@ void GFileReader<T>::readData(const GString& filename)
         exit(EXIT_FAILURE);
     }
 
-    // Set file stream loc to start of data and allocate mem
+    // Set file stream location to start of data and allocate memory
     ifs.seekg(_header.nHeaderBytes);
     _data.resize(_header.nNodesPer2DLayer);
 
