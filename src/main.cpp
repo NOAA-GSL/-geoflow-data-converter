@@ -14,6 +14,11 @@ TODO ACROSS PROJECT
   - modify h.nElemLayers gfile_reader::readHeader (right now, only accounts
     one layer of GeoFLOW elements)
   - modify gfile_reader::setElementLayerIDs()
+- g_to_netcdf::writeVariableData is allocating all node data but this is not 
+  needed for all vars since, for ex, mesh_nodes_x is the same for each layer;
+  it is getting correctly written to the NetCDF file, I'm guessing b/c of the
+  dimensions that were alreay assigned to the variable; Writing of the single
+  variable seems hacky - update.
 - Implement MathUtil::essentiallyEqual() method
 - Add custom enum in place of second param for NcFile mode to remove Nc
   dependency?
