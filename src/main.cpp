@@ -18,6 +18,7 @@ TODO ACROSS PROJECT
 - Add custom enum in place of second param for NcFile mode to remove Nc
   dependency?
 - Is custom g_to_netcdf::putAttribute() method actuall needed?
+  - Check attribute values: some ints are set as strings and then converted?
 - Documentation:
   - Write min requirements template for JSON file
   - Write assumptions (i.e., everything goes in/out of in/out dirs specified

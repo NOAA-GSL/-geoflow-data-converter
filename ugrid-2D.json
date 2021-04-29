@@ -1,0 +1,370 @@
+{
+"output_format": "UGRID",
+"dataset_description": "Example of a single layer of 2D GeoFLOW elements.",
+"input_dir": "input-data-2D",
+"output_dir": "output-data",
+"data_type": "GDOUBLE",
+"num_timesteps": 2,
+"grid_filenames":
+{
+    "x": "xgrid.000000.out",
+    "y": "ygrid.000000.out",
+    "z": "zgrid.000000.out"
+},
+"variable_names":
+[
+    "dtotal",
+    "T"
+],
+"dimensions": 
+[
+    {
+        "name": "nMeshNodes",
+        "value": 0,
+        "comment": "number of nodes per mesh layer (determined at runtime)" 
+    },
+    {
+        "name": "nMeshFaces",
+        "value": 0,
+        "comment": "number of faces per mesh layer (determined at runtime)"
+    },
+    {
+        "name": "nFaceNodes",
+        "value": 4,
+        "comment": "number of nodes per face"
+    },
+    {
+        "name": "meshLayers",
+        "value": 0,
+        "comment": "number of mesh layers in the volume (determined at runtime)"
+    },
+    {
+        "name": "time",
+        "value": 1,
+        "comment": "file contains one timestep worth of data"
+    }
+],
+
+"variables" :
+[
+    {
+        "comment": "Timestamp",
+        "name": "time",
+        "type": "data_type",
+        "args":
+        [
+            "time"
+        ],
+        "attributes":
+        [
+            {
+                "name": "long_name",
+                "value": "time",
+                "comment": ""
+            },
+            {
+                "name": "units",
+                "value": "",
+                "comment": "TBD, but an example is: hours since YYYY-MM-DD HH:MM:SS"
+            },
+            {
+                "name": "calendar",
+                "value": "",
+                "comment": "TBD but an example is: standard"
+            },
+            {
+                "name": "axis",
+                "value": "T",
+                "comment": "required attribute in VAPOR" 
+            }
+        ]
+    },
+    {
+        "comment": "Mesh topology described by a \\“dummy\\” variable",
+        "name": "mesh",
+        "type": "GINT",
+        "args":
+        [
+        ],
+        "attributes":
+        [
+            {
+                "name": "cf_role",
+                "value": "mesh_topology",
+                "comment": ""
+            },
+            {
+                "name": "long_name",
+                "value": "Topology data of 2D unstructured mesh.",
+                "comment": ""
+            },
+            {
+                "name": "topology_dimension",
+                "type": "GINT",
+                "value": "2",
+                "comment": "highest dimension of a geometric element"
+            },
+            {
+                "name": "node_coordinates",
+                "value": "mesh_node_x mesh_node_y",
+                "comment": "node locations in the horizontal plane"
+            },
+            {
+                "name": "face_node_connectivity",
+                "value": "mesh_face_nodes",
+                "comment": "for every face, the indices of its corner nodes in a cc direction"
+            },
+            {
+                "name": "face_dimension",
+                "value": "nMeshFaces",
+                "comment": "required only if non-standard; this example indicates the default, which is a face that changes slower than its nodes - i.e. (nMeshFaces, nFaceNodes) vs (nFaceNodes, nMeshFaces)"
+            }
+        ]
+    },
+    {
+        "comment": "Face node coordinates: the indices of the corner nodes (in a cc direction) of each face in each mesh layer",
+        "name": "mesh_face_nodes",
+        "type": "GINT",
+        "args":
+        [
+            "nMeshFaces", 
+            "nFaceNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "cf_role",
+                "value": "face_node_connectivity",
+                "comment": ""
+            },
+            {
+                "name": "long_name",
+                "value": "Maps every face to its corner nodes.",
+                "comment": ""
+            },
+            {
+                "name": "_FillValue",
+                "type": "GINT",
+                "value": "-1",
+                "comment": "type should be same as the variable type"
+            },
+            {
+                "name": "start_index",
+                "type": "GINT",
+                "value": 0,
+                "comment": "use 0-based indexing (i.e., points and faces are numbered starting with 0, which is the default)"
+            }
+        ]
+    },
+    {
+        "comment": "Mesh node coordinates: the horizontal location (lon) of each node in each mesh layer",
+        "name": "mesh_node_x",
+        "type": "data_type",
+        "args":
+        [
+            "nMeshNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "standard_name",
+                "value": "longitude",
+                "comment": ""
+            },
+            {
+                "name": "long_name",
+                "value": "Longitude of 2D mesh nodes.",
+                "comment": ""
+            },
+            {
+                "name": "units",
+                "value": "degrees_east",
+                "comment": ""
+            }
+        ]
+    },
+    {
+        "comment": "Mesh node coordinates: the horizontal location (lat) of each node in each mesh layer",
+        "name": "mesh_node_y",
+        "type": "data_type",
+        "args":
+        [
+            "nMeshNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "standard_name",
+                "value": "latitude",
+                "comment": ""
+            },
+            {
+                "name": "long_name",
+                "value": "Latitude of 2D mesh nodes.",
+                "comment": ""
+            },
+            {
+                "name": "units",
+                "value": "degrees_north",
+                "comment": ""
+            }
+        ]
+    },
+    {
+        "comment": "Vertical coordinates: the vertical location of each mesh layer",
+        "name": "meshLayers",
+        "type": "data_type",
+        "args":
+        [
+            "meshLayers"
+        ],
+        "attributes":
+        [
+            {
+                "name": "units",
+                "value": "meters",
+                "comment": "required for all variables that represent dimensional quantities"
+            },
+            {
+                "name": "positive",
+                "value": "up",
+                "comment": "“up” or “down”; direction in which coordinate values are increasing (default is \\“down\\” if the units are pressure)"
+            },
+            {
+                "name": "standard_name",
+                "value": "",
+                "comment": "optional attribute - should be consistent with the positive attribute"
+            },
+            {
+                "name": "long_name",
+                "value": "",
+                "comment": "optional attribute"
+            },
+            {
+                "name": "axis",
+                "value": "Z",
+                "comment": "required attribute in VAPOR"
+            }
+        ]
+    },
+    {
+        "comment": "Vertical coordinates: the vertical location of each mesh layer",
+        "name": "mesh_depth",
+        "type": "data_type",
+        "args":
+        [
+            "meshLayers",
+            "nMeshNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "units",
+                "value": "meters",
+                "comment": "required for all variables that represent dimensional quantities"
+            },
+            {
+                "name": "positive",
+                "value": "up",
+                "comment": "“up” or “down”; direction in which coordinate values are increasing (default is \\“down\\” if the units are pressure)"
+            },
+            {
+                "name": "standard_name",
+                "value": "",
+                "comment": "optional attribute - should be consistent with the positive attribute"
+            },
+            {
+                "name": "mesh",
+                "value": "mesh",
+                "comment": ""
+            },
+            {
+                "name": "location",
+                "value": "node",
+                "comment": ""
+            },
+            {
+                "name": "coordinates",
+                "value": "mesh_node_x mesh_node_y",
+                "comment": ""
+            }
+        ]
+    },
+    {
+        "comment": "The total density field variable",
+        "name": "dtotal",
+        "type": "data_type",
+        "args":
+        [
+            "meshLayers",
+            "nMeshNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "units",
+                "value": "",
+                "comment": "required for all variables that represent dimensional quantities"
+            },
+            {
+                "name": "standard_name",
+                "value": "",
+                "comment": "optional attribute - should be consistent with the positive attribute"
+            },
+            {
+                "name": "mesh",
+                "value": "mesh",
+                "comment": ""
+            },
+            {
+                "name": "location",
+                "value": "node",
+                "comment": ""
+            },
+            {
+                "name": "coordinates",
+                "value": "mesh_node_x mesh_node_y",
+                "comment": ""
+            }
+        ]
+    },
+    {
+        "comment": "The temperature field variable",
+        "name": "T",
+        "type": "data_type",
+        "args":
+        [
+            "meshLayers",
+            "nMeshNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "units",
+                "value": "",
+                "comment": "required for all variables that represent dimensional quantities"
+            },
+            {
+                "name": "standard_name",
+                "value": "",
+                "comment": "optional attribute - should be consistent with the positive attribute"
+            },
+            {
+                "name": "mesh",
+                "value": "mesh",
+                "comment": ""
+            },
+            {
+                "name": "location",
+                "value": "node",
+                "comment": ""
+            },
+            {
+                "name": "coordinates",
+                "value": "mesh_node_x mesh_node_y",
+                "comment": ""
+            }
+        ]
+    }
+]
+}
