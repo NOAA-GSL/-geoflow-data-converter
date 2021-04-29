@@ -39,3 +39,8 @@ make
 ```
 ./bin/main JSON_FILENAME
 ```
+
+## To View ASCII Version of NetCDF file
+```
+ncdump NETCDF_FILENAME
+```
