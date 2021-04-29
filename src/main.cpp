@@ -7,13 +7,13 @@
 
 /*
 -------------------
-TODO Across Project
+TODO ACROSS PROJECT
 -------------------
 - Add error handling for NetCDF calls
 - When element IDs become available in the GeoFLOW header files:
   - modify h.nElemLayers gfile_reader::readHeader (right now, only accounts
     one layer of GeoFLOW elements)
-  - compute gfile_reader::setElementLayerIDs()
+  - modify gfile_reader::setElementLayerIDs()
 - Implement MathUtil::essentiallyEqual() method
 - Add custom enum in place of second param for NcFile mode to remove Nc
   dependency?
@@ -28,27 +28,42 @@ TODO Across Project
 #include "gdata_converter.h"
 
 #define GDATATYPE GDOUBLE
-#define FILE_JSON "data/ugrid.json"
 
-int main()
+int main(int argc, char** argv)
 {
+    // Read command line arguments
+    GString jsonFile;
+    if (argc > 1)
+    {
+        jsonFile = argv[1];
+    }
+    else
+    {
+        GString progName(argv[0]);
+        GString msg = "No command line argument with input JSON file was " \
+                      "provided.\nUsage: " + progName + " JSON_FILE_NAME";
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+
     // Initialize the GeoFLOW data converter with the JSON file (property 
-    // tree) that contains GeoFLOW dataset metadata and NetCDF metadata
-    GDataConverter<GDATATYPE> gdc(FILE_JSON);
+    // tree) that contains metadata for the GeoFLOW dataset and for writing 
+    // NetCDF-UGRID files
+    GDataConverter<GDATATYPE> gdc(jsonFile);
   
     //////////////////////////
     ////// CONVERT GRID //////
     //////////////////////////
 
-    // Read the x,y,z grid files specified in the JSON file into a collection 
-    // of nodes
+    // Read the x,y,z GeoFLOW grid files specified in the JSON file into a 
+    // collection of nodes
     GHeaderInfo gridHeader = gdc.readGFGrid();
     gridHeader.printHeader();
 
-    // Convert x,y,z to lat,lon,radius and store in nodes. The arguments 
-    // passed in correspond to the variable names in the JSON file that store 
-    // lat,lon,radius values. (For example, "mesh_node_x" corresponds to the 
-    // grid's latitude values)
+    // Convert the x,y,z values to lat,lon,radius and store in nodes. The 
+    // arguments passed in correspond to the variable names in the JSON file 
+    // that store lat,lon,radius values. (For example, "mesh_node_x" 
+    // corresponds to the grid's latitude values)
     gdc.xyzToLatLonRadius("mesh_node_x", "mesh_node_y", "mesh_depth");
 
     // Set any 0-valued dimensions in the JSON file with the info read in from 
@@ -63,11 +78,13 @@ int main()
     gdc.initNC("grid.nc", NcFile::FileMode::replace);
     gdc.writeNCDimensions();
 
-    // Write the grid variables to the NetCDF file
-    //gdc.writeNCVariable("mesh_face_nodes");
+    // Write the grid variables to the active NetCDF file
+    //gdc.writeNCVariable("mesh_face_nodes"); // TODO
     gdc.writeNCNodeVariable("mesh_node_x");
     gdc.writeNCNodeVariable("mesh_node_y");
     gdc.writeNCNodeVariable("mesh_depth");
+
+    // Close the active NetCDF file
     gdc.closeNC();
 
     ///////////////////////////////
@@ -84,21 +101,21 @@ int main()
         ss << std::setfill('0') << std::setw(6) << i;
         GString timestep = ss.str();
 
-        // Initialize a NetCDF file for this timestep to store all the field 
+        // Initialize a NetCDF file for this timestep to store all field 
         // variables
         GString ncFilename = "vars." + timestep + ".nc";
         gdc.initNC(ncFilename, NcFile::FileMode::replace);
         gdc.writeNCDimensions();
 
-        // For each field variable in this timestep...
-        for (auto fieldName : gdc.fieldVarNames())
+        // For each variable in this timestep...
+        for (auto varName : gdc.varNames())
         {
-            cout << "Converting GeoFLOW variable: " << fieldName << " for " \
+            cout << "Converting GeoFLOW variable: " << varName << " for " \
                  << "timestep: " << timestep << endl;
 
             // Verify file - omit this code section if want to fail if file not 
             // found
-            GString gfFilename = fieldName + "." + timestep + ".out";
+            GString gfFilename = varName + "." + timestep + ".out";
             GString gfFullPath = gdc.inputDir() + "/" + gfFilename;
             if (!gdc.fileExists(gfFullPath))
             {
@@ -108,22 +125,22 @@ int main()
                 continue;
             }
 
-            // Read the GeoFLOW field variable into collection of nodes
-            GHeaderInfo fieldHeader = gdc.readGFVariable(gfFilename, fieldName);
+            // Read the GeoFLOW variable into the collection of nodes
+            GHeaderInfo fieldHeader = gdc.readGFNodeVariable(gfFilename, varName);
 
-            // Write the time stamp variable to the NetCDF file; only want to 
-            // do this once per timestep file
+            // Write the time stamp variable to the active NetCDF file; only 
+            // want to do this once per timestep file
             if (!wroteTimeStamp)
             {
                 gdc.writeNCVariable("time", fieldHeader.timeStamp);
                 wroteTimeStamp = true;
             }
 
-            // Write the variable to the NetCDF file
-            gdc.writeNCNodeVariable(fieldName);
+            // Write the variable to the active NetCDF file
+            gdc.writeNCNodeVariable(varName);
         }
         
-        // Close the NetCDF file
+        // Close the active NetCDF file
         gdc.closeNC();
     }
 
