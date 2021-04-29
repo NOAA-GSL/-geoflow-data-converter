@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     {
         GString progName(argv[0]);
         GString msg = "No command line argument with input JSON file was " \
-                      "provided.\nUsage: " + progName + " JSON_FILE_NAME";
+                      "provided.\nUsage: " + progName + " JSON_FILENAME";
         Logger::error(__FILE__, __FUNCTION__, msg);
         exit(EXIT_FAILURE);
     }

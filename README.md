@@ -37,5 +37,5 @@ make
 ## To Run
 
 ```
-./bin/main
+./bin/main JSON_FILENAME
 ```
