@@ -80,21 +80,17 @@ int main(int argc, char** argv)
     dims["meshLayers"] = gridHeader.n2DLayers;
     gdc.setDimensions(dims);
 
-    // For each time-invariant grid file, initialize a NetCDF file, write 
-    // dimensions, and close
-    gdc.initNC("mesh_node_x.nc", NcFile::FileMode::replace);
+    // Initialize a NetCDF file to store all time-invariant grid variables
+    gdc.initNC("grid.nc", NcFile::FileMode::replace);
     gdc.writeNCDimensions();
+
+    // Write the grid variables to the active NetCDF file
+    //gdc.writeNCVariable("mesh_face_nodes"); // TODO
     gdc.writeNCNodeVariable("mesh_node_x");
-    gdc.closeNC();
-
-    gdc.initNC("mesh_node_y.nc", NcFile::FileMode::replace);
-    gdc.writeNCDimensions();
     gdc.writeNCNodeVariable("mesh_node_y");
-    gdc.closeNC();
-
-    gdc.initNC("mesh_depth.nc", NcFile::FileMode::replace);
-    gdc.writeNCDimensions();
     gdc.writeNCNodeVariable("mesh_depth");
+
+    // Close the active NetCDF file
     gdc.closeNC();
 
     // TODO
