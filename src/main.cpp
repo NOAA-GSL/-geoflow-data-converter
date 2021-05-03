@@ -22,7 +22,7 @@ TODO ACROSS PROJECT
 - Implement MathUtil::essentiallyEqual() method
 - Add custom enum in place of second param for NcFile mode to remove Nc
   dependency?
-- Is custom g_to_netcdf::putAttribute() method actuall needed?
+- Is custom g_to_netcdf::putAttribute() method actually needed?
   - Check attribute values: some ints are set as strings and then converted?
 - Documentation:
   - Write min requirements template for JSON file
@@ -80,18 +80,28 @@ int main(int argc, char** argv)
     dims["meshLayers"] = gridHeader.n2DLayers;
     gdc.setDimensions(dims);
 
-    // Initialize a NetCDF file to store all time-invariant grid variables
-    gdc.initNC("grid.nc", NcFile::FileMode::replace);
+    // For each time-invariant grid file, initialize a NetCDF file, write 
+    // dimensions, and close
+    gdc.initNC("mesh_node_x.nc", NcFile::FileMode::replace);
     gdc.writeNCDimensions();
-
-    // Write the grid variables to the active NetCDF file
-    //gdc.writeNCVariable("mesh_face_nodes"); // TODO
     gdc.writeNCNodeVariable("mesh_node_x");
-    gdc.writeNCNodeVariable("mesh_node_y");
-    gdc.writeNCNodeVariable("mesh_depth");
-
-    // Close the active NetCDF file
     gdc.closeNC();
+
+    gdc.initNC("mesh_node_y.nc", NcFile::FileMode::replace);
+    gdc.writeNCDimensions();
+    gdc.writeNCNodeVariable("mesh_node_y");
+    gdc.closeNC();
+
+    gdc.initNC("mesh_depth.nc", NcFile::FileMode::replace);
+    gdc.writeNCDimensions();
+    gdc.writeNCNodeVariable("mesh_depth");
+    gdc.closeNC();
+
+    // TODO
+    //gdc.initNC("mesh_face_nodes.nc", NcFile::FileMode::replace);
+    //gdc.writeNCDimensions();
+    //gdc.writeNCVariable("mesh_face_nodes");
+    //gdc.closeNC();
 
     ///////////////////////////////
     ////// CONVERT VARIABLES //////
@@ -100,20 +110,12 @@ int main(int argc, char** argv)
     // For each timestep...
     for (auto i = 0u; i < gdc.numTimesteps(); ++i)
     {
-        bool wroteTimeStamp = false;
-
         // Get timestep as a string
         stringstream ss;
         ss << std::setfill('0') << std::setw(6) << i;
         GString timestep = ss.str();
 
-        // Initialize a NetCDF file for this timestep to store all field 
-        // variables
-        GString ncFilename = "vars." + timestep + ".nc";
-        gdc.initNC(ncFilename, NcFile::FileMode::replace);
-        gdc.writeNCDimensions();
-
-        // For each variable in this timestep...
+        // For each variable at this timestep...
         for (auto varName : gdc.varNames())
         {
             cout << "Converting GeoFLOW variable: " << varName << " for " \
@@ -131,23 +133,24 @@ int main(int argc, char** argv)
                 continue;
             }
 
+            // Initialize a NetCDF file for this timestep to store this field  
+            // variable
+            GString ncFilename = varName + "." + timestep + ".nc";
+            gdc.initNC(ncFilename, NcFile::FileMode::replace);
+            gdc.writeNCDimensions();
+
             // Read the GeoFLOW variable into the collection of nodes
             GHeaderInfo fieldHeader = gdc.readGFNodeVariable(gfFilename, varName);
 
-            // Write the time stamp variable to the active NetCDF file; only 
-            // want to do this once per timestep file
-            if (!wroteTimeStamp)
-            {
-                gdc.writeNCVariable("time", fieldHeader.timeStamp);
-                wroteTimeStamp = true;
-            }
+            // Write the time stamp variable to the active NetCDF file
+            gdc.writeNCVariable("time", fieldHeader.timeStamp);
 
-            // Write the variable to the active NetCDF file
+            // Write the field variable to the active NetCDF file
             gdc.writeNCNodeVariable(varName);
+
+            // Close the active NetCDF file
+            gdc.closeNC();
         }
-        
-        // Close the active NetCDF file
-        gdc.closeNC();
     }
 
     // For debugging
