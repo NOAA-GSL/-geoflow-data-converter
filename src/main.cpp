@@ -35,22 +35,17 @@ TODO ACROSS PROJECT
 
 #define GDATATYPE GDOUBLE
 
+// Global variables
+GString jsonFile;
+GINT writeOneFile = 0;
+
+void parseCommandLine(int argc, char** argv);
+void usage(char programName[]);
+
 int main(int argc, char** argv)
 {
-    // Read command line arguments
-    GString jsonFile;
-    if (argc > 1)
-    {
-        jsonFile = argv[1];
-    }
-    else
-    {
-        GString progName(argv[0]);
-        GString msg = "No command line argument with input JSON file was " \
-                      "provided.\nUsage: " + progName + " JSON_FILENAME";
-        Logger::error(__FILE__, __FUNCTION__, msg);
-        exit(EXIT_FAILURE);
-    }
+    // Parse command line arguments
+    parseCommandLine(argc, argv);
 
     // Initialize the GeoFLOW data converter with the JSON file (property 
     // tree) that contains metadata for the GeoFLOW dataset and for writing 
@@ -93,57 +88,90 @@ int main(int argc, char** argv)
     // Close the active NetCDF file
     gdc.closeNC();
 
-    // TODO
-    //gdc.initNC("mesh_face_nodes.nc", NcFile::FileMode::replace);
-    //gdc.writeNCDimensions();
-    //gdc.writeNCVariable("mesh_face_nodes");
-    //gdc.closeNC();
-
     ///////////////////////////////
     ////// CONVERT VARIABLES //////
     ///////////////////////////////
 
-    // For each timestep...
-    for (auto i = 0u; i < gdc.numTimesteps(); ++i)
+    // If writing field variables to separate files...
+    if (!writeOneFile)
     {
-        // Get timestep as a string
-        stringstream ss;
-        ss << std::setfill('0') << std::setw(6) << i;
-        GString timestep = ss.str();
-
-        // For each variable at this timestep...
-        for (auto varName : gdc.varNames())
+        // For each timestep...
+        for (auto i = 0u; i < gdc.numTimesteps(); ++i)
         {
-            cout << "Converting GeoFLOW variable: " << varName << " for " \
-                 << "timestep: " << timestep << endl;
+            // Get timestep as a string
+            stringstream ss;
+            ss << std::setfill('0') << std::setw(6) << i;
+            GString timestep = ss.str();
 
-            // Verify file - omit this code section if want to fail if file not 
-            // found
-            GString gfFilename = varName + "." + timestep + ".out";
-            GString gfFullPath = gdc.inputDir() + "/" + gfFilename;
-            if (!gdc.fileExists(gfFullPath))
+            // For each variable at this timestep...
+            for (auto varName : gdc.varNames())
             {
-                GString msg = "Cannot find file (" + gfFullPath + "). " + \
-                              "Skipping.";
-                Logger::warning(__FILE__, __FUNCTION__, msg);
-                continue;
-            }
+                cout << "Converting GeoFLOW variable: " << varName << " for " \
+                     << "timestep: " << timestep << endl;
 
-            // Initialize a NetCDF file for this timestep to store this field  
-            // variable
-            GString ncFilename = varName + "." + timestep + ".nc";
+                // Initialize a NetCDF file for this timestep to store this 
+                // field variable
+                GString ncFilename = varName + "." + timestep + ".nc";
+                gdc.initNC(ncFilename, NcFile::FileMode::replace);
+                gdc.writeNCDimensions();
+
+                // Read the GeoFLOW variable into the collection of nodes
+                GString gfFilename = varName + "." + timestep + ".out";
+                GHeaderInfo fieldHeader = gdc.readGFNodeVariable(gfFilename, 
+                                                                 varName);
+
+                // Write the time stamp variable to the active NetCDF file
+                gdc.writeNCVariable("time", fieldHeader.timeStamp);
+
+                // Write the field variable to the active NetCDF file
+                gdc.writeNCNodeVariable(varName);
+
+                // Close the active NetCDF file
+                gdc.closeNC();
+            }
+        }
+    } // end if writing separate files
+    else // write all field variables to the same file
+    {
+        // For each timestep...
+        for (auto i = 0u; i < gdc.numTimesteps(); ++i)
+        {
+            // Get timestep as a string
+            GBOOL wroteTimeStamp = false;
+            stringstream ss;
+            ss << std::setfill('0') << std::setw(6) << i;
+            GString timestep = ss.str();
+
+            // Initialize a NetCDF file for this timestep to store all the  
+            // field variables
+            GString ncFilename = "vars." + timestep + ".nc";
             gdc.initNC(ncFilename, NcFile::FileMode::replace);
             gdc.writeNCDimensions();
 
-            // Read the GeoFLOW variable into the collection of nodes
-            GHeaderInfo fieldHeader = gdc.readGFNodeVariable(gfFilename, varName);
+            // For each variable at this timestep...
+            for (auto varName : gdc.varNames())
+            {
+                cout << "Converting GeoFLOW variable: " << varName << " for " \
+                     << "timestep: " << timestep << endl;
 
-            // Write the time stamp variable to the active NetCDF file
-            gdc.writeNCVariable("time", fieldHeader.timeStamp);
+                // Read the GeoFLOW variable into the collection of nodes
+                GString gfFilename = varName + "." + timestep + ".out";
+                GHeaderInfo fieldHeader = gdc.readGFNodeVariable(gfFilename, 
+                                                                 varName);
 
-            // Write the field variable to the active NetCDF file
-            gdc.writeNCNodeVariable(varName);
+                if (!wroteTimeStamp)
+                {
+                    // Write the time stamp variable to the active NetCDF 
+                    // file; since all vars getting written to the same file, 
+                    // only want to write the time stamp variable once
+                    gdc.writeNCVariable("time", fieldHeader.timeStamp);
+                    wroteTimeStamp = true;
+                }
 
+                // Write the field variable to the active NetCDF file
+                gdc.writeNCNodeVariable(varName);
+            }
+            
             // Close the active NetCDF file
             gdc.closeNC();
         }
@@ -156,4 +184,48 @@ int main(int argc, char** argv)
     }*/
 
     return 0;
+}
+
+void parseCommandLine(int argc, char** argv)
+{
+    if (argc == 2)
+    {
+        jsonFile = argv[1];
+    }
+    else if (argc == 3)
+    {
+        jsonFile = argv[1];
+        writeOneFile = atoi(argv[2]);
+        if (strcmp(argv[2], "0") && strcmp(argv[2], "1"))
+        {
+            string arg(argv[2]);
+            GString msg = "Invalid command line argument: " + arg;
+            Logger::error(__FILE__, __FUNCTION__, msg);
+            usage(argv[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        GString progName(argv[0]);
+        GString msg = "Missing command line arguments.";
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        usage(argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    cout << "Using JSON file: " << jsonFile << endl;
+    cout << "Writing field variables to one file (0=no, 1=yes)? " 
+         << writeOneFile << endl;
+}
+
+void usage(char programName[])
+{
+    GString progName(programName);
+    GString msg = "Usage: " + 
+                  progName + 
+                  " <JSON_FILENAME> " \
+                  "[0|1] (optional: 0=default=write separate files, 1=write " \
+                  "one file)";
+    Logger::error(__FILE__, __FUNCTION__, msg);
 }
