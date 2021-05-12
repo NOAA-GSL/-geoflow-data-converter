@@ -161,7 +161,7 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
     exit(EXIT_FAILURE);
 }
 
-void GToNetCDF::writeVariableAttribute(const GString& varName)
+void GToNetCDF::writeVariableAttributes(const GString& varName)
 {
     cout << "Writing NetCDF variable attributes for: " << varName << endl;
 

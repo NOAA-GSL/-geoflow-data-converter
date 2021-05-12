@@ -24,11 +24,14 @@ TODO ACROSS PROJECT
   dependency?
 - Is custom g_to_netcdf::putAttribute() method actually needed?
   - Check attribute values: some ints are set as strings and then converted?
+  - See Fill Value for mesh_face_nodes (what should it's type be?)
 - Documentation:
   - Write min requirements template for JSON file
   - Write assumptions (i.e., everything goes in/out of in/out dirs specified
     in JSON file, including grid files); Define property tree = json file
   - Doxygen comments for GFileReader
+- Fill in missing values for variable attributes in json file
+- Confirm timestamp
 */
 
 #include "gdata_converter.h"
@@ -52,14 +55,22 @@ int main(int argc, char** argv)
     // NetCDF-UGRID files
     GDataConverter<GDATATYPE> gdc(jsonFile);
   
-    //////////////////////////
-    ////// CONVERT GRID //////
-    //////////////////////////
+    ///////////////////////////////////
+    //// READ COORDINATE VARIABLES ////
+    ///////////////////////////////////
 
-    // Read the x,y,z GeoFLOW grid files specified in the JSON file into a 
-    // collection of nodes
-    GHeaderInfo gridHeader = gdc.readGFGrid();
+    // Read the x,y,z GeoFLOW grid files (i.e., coordinate variables) 
+    // specified in the JSON file into a collection of nodes
+    GHeaderInfo gridHeader = gdc.readGFGridToNodes();
     gridHeader.printHeader();
+
+    // Set any 0-valued dimensions in the JSON file with the info read in from 
+    // the header of a GeoFLOW grid file
+    map<GString, GSIZET> dims;
+    dims["nMeshNodes"] = gridHeader.nNodesPer2DLayer;
+    dims["nMeshFaces"] = gridHeader.nFacesPer2DLayer;
+    dims["meshLayers"] = gridHeader.n2DLayers;
+    gdc.setDimensions(dims);
 
     // Convert the x,y,z values to lat,lon,radius and store in nodes. The 
     // arguments passed in correspond to the variable names in the JSON file 
@@ -67,20 +78,68 @@ int main(int argc, char** argv)
     // corresponds to the grid's latitude values)
     gdc.xyzToLatLonRadius("mesh_node_x", "mesh_node_y", "mesh_depth");
 
-    // Set any 0-valued dimensions in the JSON file with the info read in from 
-    // the header of a GeoFLOW file
-    map<GString, GSIZET> dims;
-    dims["nMeshNodes"] = gridHeader.nNodesPer2DLayer;
-    dims["nMeshFaces"] = gridHeader.nFacesPer2DLayer;
-    dims["meshLayers"] = gridHeader.n2DLayers;
-    gdc.setDimensions(dims);
+    //////////////////////////////
+    //// READ FIELD VARIABLES ////
+    //////////////////////////////
+
+    // Read the field variables specified in the JSON file into the collection 
+    // of nodes. Save the headers for each timestep (the headers for all 
+    // variables of one timestep will be the same)
+    map<GString, GHeaderInfo> timeMap;
+
+    // For each timestep...
+    for (auto i = 0u; i < gdc.numTimesteps(); ++i)
+    {
+        // Get timestep as a string
+        stringstream ss;
+        ss << std::setfill('0') << std::setw(6) << i;
+        GString timestep = ss.str();
+
+        // For each variable at this timestep...
+        for (auto varName : gdc.varNames())
+        {
+            cout << "Reading GeoFLOW variable: " << varName << " for " 
+                 << "timestep: " << timestep << endl;
+
+            // Read the GeoFLOW variable into the collection of nodes
+            GString gfFilename = varName + "." + timestep + ".out";
+            timeMap[timestep] = gdc.readGFVariableToNodes(gfFilename, 
+                                                          varName);
+        }
+    }
+
+    ////////////////////
+    //// SORT NODES ////
+    ////////////////////
+
+    // Sort the nodes into ascending order of element ids
+    gdc.sortNodesByElemID();
+
+    // Sort the nodes into ascending order of 2D mesh layers
+    gdc.sortNodesBy2DMeshLayer();
+
+    // Create a list of face to node mappings for one mesh layer (all mesh 
+    // layers have the same mapping)
+    gdc.faceToNodes();
+    vector<GUINT> faceList;
+    for (auto f : gdc.faces())
+    {
+        for (auto i : f.indices())
+        {
+          faceList.push_back(i);
+        }
+    }
+
+    ////////////////////////////////////
+    //// WRITE COORDINATE VARIABLES ////
+    ////////////////////////////////////
 
     // Initialize a NetCDF file to store all time-invariant grid variables
     gdc.initNC("grid.nc", NcFile::FileMode::replace);
     gdc.writeNCDimensions();
 
     // Write the grid variables to the active NetCDF file
-    //gdc.writeNCVariable("mesh_face_nodes"); // TODO
+    gdc.writeNCVariable("mesh_face_nodes", faceList);
     gdc.writeNCNodeVariable("mesh_node_x");
     gdc.writeNCNodeVariable("mesh_node_y");
     gdc.writeNCNodeVariable("mesh_depth");
@@ -88,20 +147,17 @@ int main(int argc, char** argv)
     // Close the active NetCDF file
     gdc.closeNC();
 
-    ///////////////////////////////
-    ////// CONVERT VARIABLES //////
-    ///////////////////////////////
+    ///////////////////////////////////
+    ////// WRITE FIELD VARIABLES //////
+    ///////////////////////////////////
 
     // If writing field variables to separate files...
     if (!writeOneFile)
     {
         // For each timestep...
-        for (auto i = 0u; i < gdc.numTimesteps(); ++i)
+        for (auto t : timeMap)
         {
-            // Get timestep as a string
-            stringstream ss;
-            ss << std::setfill('0') << std::setw(6) << i;
-            GString timestep = ss.str();
+            GString timestep = t.first;
 
             // For each variable at this timestep...
             for (auto varName : gdc.varNames())
@@ -115,13 +171,8 @@ int main(int argc, char** argv)
                 gdc.initNC(ncFilename, NcFile::FileMode::replace);
                 gdc.writeNCDimensions();
 
-                // Read the GeoFLOW variable into the collection of nodes
-                GString gfFilename = varName + "." + timestep + ".out";
-                GHeaderInfo fieldHeader = gdc.readGFNodeVariable(gfFilename, 
-                                                                 varName);
-
                 // Write the time stamp variable to the active NetCDF file
-                gdc.writeNCVariable("time", fieldHeader.timeStamp);
+                gdc.writeNCVariable("time", (t.second).timeStamp);
 
                 // Write the field variable to the active NetCDF file
                 gdc.writeNCNodeVariable(varName);
@@ -134,13 +185,11 @@ int main(int argc, char** argv)
     else // write all field variables to the same file
     {
         // For each timestep...
-        for (auto i = 0u; i < gdc.numTimesteps(); ++i)
+        for (auto t : timeMap)
         {
             // Get timestep as a string
             GBOOL wroteTimeStamp = false;
-            stringstream ss;
-            ss << std::setfill('0') << std::setw(6) << i;
-            GString timestep = ss.str();
+            GString timestep = t.first;
 
             // Initialize a NetCDF file for this timestep to store all the  
             // field variables
@@ -154,17 +203,12 @@ int main(int argc, char** argv)
                 cout << "Converting GeoFLOW variable: " << varName << " for " \
                      << "timestep: " << timestep << endl;
 
-                // Read the GeoFLOW variable into the collection of nodes
-                GString gfFilename = varName + "." + timestep + ".out";
-                GHeaderInfo fieldHeader = gdc.readGFNodeVariable(gfFilename, 
-                                                                 varName);
-
                 if (!wroteTimeStamp)
                 {
                     // Write the time stamp variable to the active NetCDF 
                     // file; since all vars getting written to the same file, 
                     // only want to write the time stamp variable once
-                    gdc.writeNCVariable("time", fieldHeader.timeStamp);
+                    gdc.writeNCVariable("time", (t.second).timeStamp);
                     wroteTimeStamp = true;
                 }
 
@@ -178,10 +222,10 @@ int main(int argc, char** argv)
     }
 
     // For debugging
-    /*for (auto n : gdc.nodes())
-    {
+    for (auto n : gdc.nodes())
+    {    
         n.printNode();
-    }*/
+    }
 
     return 0;
 }

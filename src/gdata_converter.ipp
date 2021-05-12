@@ -7,6 +7,7 @@
 #include <fstream>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <algorithm>
 
 #include "gfile_reader.h"
 #include "math_util.h"
@@ -77,7 +78,7 @@ GDataConverter<T>::~GDataConverter()
 }
 
 template <class T>
-GHeaderInfo GDataConverter<T>::readGFGrid()
+GHeaderInfo GDataConverter<T>::readGFGridToNodes()
 {
     cout << "Reading GeoFLOW grid files" << endl;
 
@@ -91,15 +92,15 @@ GHeaderInfo GDataConverter<T>::readGFGrid()
     z = _inputDir + "/" + z;
 
     // Read the GeoFLOW x,y,z grid values into a collection of nodes
-    GHeaderInfo header = readGFGrid(x, y, z);
+    GHeaderInfo header = readGFGridToNodes(x, y, z);
 
     return header;
 }
 
 template <class T>
-GHeaderInfo GDataConverter<T>::readGFGrid(const GString& gfXFilename,
-                                          const GString& gfYFilename,
-                                          const GString& gfZFilename)
+GHeaderInfo GDataConverter<T>::readGFGridToNodes(const GString& gfXFilename,
+                                                 const GString& gfYFilename,
+                                                 const GString& gfZFilename)
 {
     // Read the GeoFLOW x,y,z grid files (header and data)
     GFileReader<T> x(gfXFilename);
@@ -122,7 +123,8 @@ GHeaderInfo GDataConverter<T>::readGFGrid(const GString& gfXFilename,
     // Read each x,y,z location value and element layer ID into a collection 
     // of nodes. The IDs/header are the same for each x,y,z triplet so just 
     // use the IDs/header from the x grid.
-    vector<GNode<T>> nodes;
+    _nodes.clear();
+    _nodes.shrink_to_fit();
     for (auto i = 0u; i < (x.header()).nNodesPerVolume; ++i)
     {
         GNode<T> node(x.data()[i],
@@ -134,12 +136,15 @@ GHeaderInfo GDataConverter<T>::readGFGrid(const GString& gfXFilename,
         _nodes.push_back(node);
     }
 
+    // Save header
+    _header = x.header();
+
     return x.header();
 }
 
 template <class T>
-GHeaderInfo GDataConverter<T>::readGFNodeVariable(const GString& gfFilename,
-                                                  const GString& varName)
+GHeaderInfo GDataConverter<T>::readGFVariableToNodes(const GString& gfFilename,
+                                                     const GString& varName)
 {
     // Get full output path
     GString filename = _inputDir + "/" + gfFilename;
@@ -181,6 +186,97 @@ void GDataConverter<T>::xyzToLatLonRadius(const GString& latVarName,
         n.var(lonVarName, p[1]);
         n.var(radVarName, p[2]);
     } 
+}
+
+template <class T>
+void GDataConverter<T>::sortNodesByElemID()
+{
+    // Use stable sort to rmake sure the same order of objects is retained for 
+    // for two objects with equal keys
+    stable_sort(_nodes.begin(), _nodes.end());
+}
+
+template <class T>
+void GDataConverter<T>::sortNodesBy2DMeshLayer()
+{
+    // Sort the nodes by 2D mesh layer. For 3D elements, there are multiple 
+    // 2D layers (x,y ref dir) in the radial direction
+
+    vector<GNode<T>> temp;
+    GUINT nX = _header.polyOrder[0] + 1; // num nodes in x ref dir
+    GUINT nY = _header.polyOrder[1] + 1; // num nodes in y ref dir
+    GUINT nZ = 1; // default num nodes in z ref dir for a 2D dataset
+    if (_header.polyOrder.size() == 3) // 3D dataset
+    {
+        nZ = _header.polyOrder[2] + 1; // num nodes in z ref dir
+    }
+    GUINT nXY = nX * nY; // num nodes per element in x,y ref dir
+    GUINT nXYZ = nX * nY * nZ; // num nodes per element in x,y,z dir
+    GUINT nNodesPerElemLayer = _header.nElemPerElemLayer * nXYZ;
+
+    // For each GeoFLOW element layer...
+    for (auto i = 0u; i < _header.nElemLayers; ++i)
+    {
+        // For each 2D layer (x,y ref dir) in the element
+        for (auto k = 0u; k < nZ; ++k)
+        {
+            // For each element in the GeoFLOW element layer...
+            for (auto j = 0u; j < _header.nElemPerElemLayer; ++j)
+            {
+                typename vector<GNode<T>>::iterator start = 
+                    _nodes.begin() + (i * nNodesPerElemLayer) + (j * nXYZ) + (k * nXY);
+                typename vector<GNode<T>>::iterator end = start + nXY;
+                temp.insert(temp.end(), start, end);
+            }
+        }
+    }
+
+    // Swap the sorted temp nodes with the class member nodes
+    _nodes.swap(temp);
+}
+
+template <class T>
+void GDataConverter<T>::faceToNodes()
+{
+    // Create a mapping of face to nodes for the first 2D mesh layer. This 
+    // mapping is the same for each layer. The assumption here is the nodes 
+    // are already sorted in ascending order by 2D mesh layer, each 2D element 
+    // (i.e., all the nodes for one element in the x,y ref dir) is grouped 
+    // together, and the faces for one 2D element are listed left to right, 
+    // top to bottom
+
+    GUINT nX = _header.polyOrder[0] + 1; // num nodes in x ref dir
+    GUINT nY = _header.polyOrder[1] + 1; // num nodes in y ref dir
+    GUINT nXY = nX * nY; // num nodes per element in x,y ref dir
+
+    _faces.clear();
+    _faces.shrink_to_fit();
+
+    // For each 2D element in the first layer...
+    for (auto i = 0u; i < _header.nNodesPer2DLayer; i += nXY)
+    {
+        // Get all the faces in the 2D element. Nodes for a face must be 
+        // specified in counter-clockwise direction. Here we use the top-left 
+        // node as the starting point for each face
+
+        // For each row of faces in the element...
+        for (auto x = 0u; x < nX - 1; ++x)
+        {
+            // For each column of faces in the element...
+            for (auto y = 0u; y < nY - 1; ++y)
+            {
+                // Get the indices of the face
+                vector<GSIZET> indices;
+                indices.push_back(i + (x * nY) + y);             // top left
+                indices.push_back(i + ((x + 1) * nY) + y);       // bot left
+                indices.push_back(i + ((x + 1) * nY) + (y + 1)); // bot right
+                indices.push_back(i + (x * nY) + (y + 1));       // top right
+
+                // Add the face to the list
+                _faces.push_back(GFace(indices));
+            }
+        } 
+    }
 }
 
 template <class T>
@@ -256,13 +352,9 @@ void GDataConverter<T>::writeNCDimensions()
 template <class T>
 void GDataConverter<T>::writeNCNodeVariable(const GString& varName)
 {
-    // Write variable definition
+    // Write the contents of a node variable to the NetCDF file
     _nc->writeVariableDefinition(varName);
-
-    // Write variable attributes
-    _nc->writeVariableAttribute(varName);
-
-    // Write variable data
+    _nc->writeVariableAttributes(varName);
     _nc->writeVariableData<T>(varName, _nodes);
 }
 
@@ -271,12 +363,19 @@ template <typename U>
 void GDataConverter<T>::writeNCVariable(const GString& varName, 
                                         const U& varValue)
 {
-    // Write variable definition
+    // Write a single valued variable to the NetCDF file
     _nc->writeVariableDefinition(varName);
-
-    // Write variable attributes
-    _nc->writeVariableAttribute(varName);
-
-    // Write variable data
+    _nc->writeVariableAttributes(varName);
     _nc->writeVariableData<U>(varName, varValue);
+}
+
+template <class T>
+template <typename U>
+void GDataConverter<T>::writeNCVariable(const GString& varName, 
+                                        const vector<U>& values)
+{
+    // Write the contents of a vector to the NetCDF file
+    _nc->writeVariableDefinition(varName);
+    _nc->writeVariableAttributes(varName);
+    _nc->writeVariableData<U>(varName, values);
 }

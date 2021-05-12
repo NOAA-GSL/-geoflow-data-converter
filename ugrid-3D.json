@@ -124,7 +124,7 @@
     {
         "comment": "Face node coordinates: the indices of the corner nodes (in a cc direction) of each face in each mesh layer",
         "name": "mesh_face_nodes",
-        "type": "GINT",
+        "type": "GUINT",
         "args":
         [
             "nMeshFaces", 
@@ -144,7 +144,7 @@
             },
             {
                 "name": "_FillValue",
-                "type": "GINT",
+                "type": "GUINT",
                 "value": "-1",
                 "comment": "type should be same as the variable type"
             },

@@ -13,6 +13,7 @@
 
 #include "gheader_info.h"
 #include "gnode.h"
+#include "gface.h"
 #include "g_to_netcdf.h"
 #include "pt_util.h"
 
@@ -36,6 +37,7 @@ public:
 
     // Access
     const vector<GNode<T>>& nodes() const { return _nodes; }
+    const vector<GFace>& faces() const { return _faces; }
     vector<GString> varNames() const { return _varNames; }
     GUINT numTimesteps() const { return _numTimesteps; }
     GString outputDir() const { return _outputDir; }
@@ -58,12 +60,12 @@ public:
 
     /*!
      * Reads the GeoFLOW x,y,z grid filenames specified in the property tree 
-     * and passes the filenames to the parameterized readGrid(...) method.
+     * and passes the filenames to the parameterized method of the same name.
      * 
      * @return the header info for the grid files read in (the header should 
      *         be the same for each time-invariant x,y,z file)
      */
-   GHeaderInfo readGFGrid();
+   GHeaderInfo readGFGridToNodes();
 
     /*!
      * Read GeoFLOW x,y,z grid files and store data in a collection of nodes.  
@@ -76,9 +78,9 @@ public:
      * @return the header info for the grid files read in (the header is the 
      *         same for each time-invariant x,y,z file)
      */
-   GHeaderInfo readGFGrid(const GString& gfXFilename,
-                          const GString& gfYFilename,
-                          const GString& gfZFilename);
+   GHeaderInfo readGFGridToNodes(const GString& gfXFilename,
+                                 const GString& gfYFilename,
+                                 const GString& gfZFilename);
 
     /*!
      * Read GeoFLOW variable file and store data in nodes. Assumes the 
@@ -89,8 +91,8 @@ public:
      * @param varName name of variable in nodes to store the data into
      * @return the header info for the file read in
      */
-    GHeaderInfo readGFNodeVariable(const GString& gfFilename,
-                                   const GString& varName);
+    GHeaderInfo readGFVariableToNodes(const GString& gfFilename,
+                                      const GString& varName);
 
     /*!
      * Compute a lat,lon,radius for each node. A new variable for each 
@@ -104,6 +106,13 @@ public:
     void xyzToLatLonRadius(const GString& latVarName,
                            const GString& lonVarName,
                            const GString& radVarName);
+
+    /*
+     *
+     */
+    void sortNodesByElemID();
+    void sortNodesBy2DMeshLayer();
+    void faceToNodes();
 
     /*!
      * Replace any 0-valued dimensions in the property tree with the matching 
@@ -166,12 +175,25 @@ public:
     template <typename U>
     void writeNCVariable(const GString& varName, const U& varValue);
 
+    /*!
+     * Write the variable definition, variable attributes, and variable data 
+     * to the active NetCDF file.
+     * 
+     * @param varName name of variable in the property tree
+     * @param values vector of values to write for the variable
+     */
+    template<typename U>
+    void writeNCVariable(const GString& varName, const vector<U>& values);
+
 private:
     GString _ptFilename;     // filename that contains the property tree
     pt::ptree _ptRoot;       // root of property tree
     GToNetCDF *_nc;          // handle to NetCDF writer 
+    GHeaderInfo _header;     // header of a GeoFLOW grid file
     vector<GNode<T>> _nodes; // location and variable data for every node in 
                              // the GeoFLOW dataset
+    vector<GFace> _faces;    // the faces that make up one 2D layer (x,y ref 
+                             // dir) of the GeoFLOW dataset
     GString _inputDir;       // directory name that holds input GeoFLOW files
     GString _outputDir;      // directory name that holds output NetCDF files
     GUINT _numTimesteps;     // number of timesteps to convert

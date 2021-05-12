@@ -12,83 +12,47 @@
 #include <iostream>
 #include <vector>
 
-#include "gnode.h"
-#include "logger.h"
+#include <gtypes.h>
 
 using namespace std;
 
-template <class T>
 class GFace
 {
 public:
-     /*!
-     * Constructor for initializeing a GeoFLOW face.
-     * 
-     * @param nNodes number of nodes that enclose the face
-     */
-    GFace(GUINT nNodes) { _nNodes = nNodes; }
+    /*!
+     * Constructor for initializing a GeoFLOW face.
+     *
+     * @param indices an ordered list of indices that make up a face; the 
+     *                indices index into a list of nodes
+     */ 
+    GFace(const vector<GSIZET>& indices)
+    {
+        _indices = indices;
+    }
+
     ~GFace() {}
 
     // Access
-    vector<GNode<T>> nodes() const { return _nodes; }
-
-    /*!
-     * Sets the nodes that enclose this face using an index into the global
-     * node list and the number of face nodes as assigned in the constructor.
-     * 
-     * @param nodes global list of all nodes
-     * @param first starting index 
-     */
-    void nodes(const vector<GNode<T>>& nodes, GUINT first)
+    vector<GSIZET> indices() const { return _indices; }
+    void indices(const vector<GSIZET> indices)
     {
-        // Get last node index
-        GUINT last = first + _nNodes - 1;
-        if (first > (nodes.size() - 1u) || last > (nodes.size() - 1u))
-        {
-            string msg = "Node access (" + to_string(first) + " to " + \
-                         to_string(last) + ") exceeds count of incoming " \
-                         "nodes (" + to_string(nodes.size()) + ").";
-            Logger::error(__FILE__, __FUNCTION__, msg);
-            exit(EXIT_FAILURE);
-        }
-
-        // Copy specified interval of nodes from first to first + nNodes
-        typename vector<GNode<T>>::const_iterator it = nodes.begin() + first;
-        copy(it, it + _nNodes, back_inserter(_nodes));
-
-        // Copy specified interval of node indices
-        for (auto i = first; i <= last; ++i)
-        {
-            _indices.push_back(i);
-        }
+        _indices.clear();
+        _indices.shrink_to_fit();
+        _indices = indices;
     }
 
-    // Print
-    void printFaces()
+    void printFace()
     {
-        printIndices();
-
-        cout << "Face nodes" << endl;
-        for (auto n : _nodes)
-        {
-            n.printNode();
-        }
-    }
-
-    void printIndices()
-    {
-        cout << "Face indices: ";
+        cout << "Face: (";
         for (auto i : _indices)
         {
-            cout << i << ", ";
+            cout << i << ",";
         }
-        cout << endl;
+        cout << ")" << endl;
     }
 
 private:
-    vector<GNode<T>> _nodes; // set of nodes that enclose the face
-    vector<GINT> _indices;   // indices of nodes from global node list
-    GUINT _nNodes;           // number of nodes that enclose the face
+    vector<GSIZET> _indices;   // indices of nodes from a global node list
 };
 
 #endif

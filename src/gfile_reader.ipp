@@ -17,7 +17,7 @@ GFileReader<T>::GFileReader(const GString& filename)
     // Read data
     readData(filename);
 
-    // Set layer ID for each data value
+    // Set GeoFLOW element layer ID for each data value
     setElementLayerIDs();
 }
 
@@ -40,7 +40,6 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
     ifs.read((char*)&h.version, sizeof(h.version));
     ifs.read((char*)&h.dim, sizeof(h.dim));
     ifs.read((char*)&h.nElems, sizeof(h.nElems));
-
     h.polyOrder.resize(h.dim); // each ref dir has its own poly order
     for (auto& p : h.polyOrder)
     {
@@ -134,7 +133,7 @@ void GFileReader<T>::readData(const GString& filename)
 template <class T>
 void GFileReader<T>::setElementLayerIDs()
 {
-    // Use header's element ID array to set an element layer ID for each data
+    // Use header's element ID array to set an element layer ID for each data 
     // value
     for (auto i = 0u; i < _data.size(); ++i)
     {

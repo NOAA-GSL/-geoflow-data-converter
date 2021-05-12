@@ -39,6 +39,8 @@ public:
     ~GNode() {}
 
     // Access
+    GSIZET elemLayerID() const { return _elemLayerID; }
+    void elemLayerID(GSIZET id) { _elemLayerID = id; }
     array<T, 3> pos() const { return _pos; }
     void pos(const array<T, 3>& pos) { _pos = pos; }
     T var(const GString& varName) const
@@ -60,16 +62,24 @@ public:
         _varMap[varName] = value;
     }
 
+    /*
+     *
+     */
+    bool operator < (const GNode<T>& node) const
+    {
+        return (_elemLayerID < node.elemLayerID());
+    }
+
     // Print
     void printNode()
     {
         // Print position and layer info
         cout << "Node: ";
-        cout << "x, y, z: (" << _pos[0] << ", " << _pos[1] << ", " << _pos[2] 
-             << ") | " << "elemLayerID: (" << _elemLayerID << ") | ";
+        cout << "x,y,z: (" << _pos[0] << ", " << _pos[1] << ", " << _pos[2] 
+             << ") | " << "elem ID: (" << _elemLayerID << ") | ";
 
         // Print all variables in the node
-        typename map<GString, T>::const_iterator it;
+        typename map<GString, T>::const_iterator it; 
         for (it = _varMap.begin(); it != _varMap.end(); ++it)
         {
             cout << it->first << ": (" << it->second << ") | ";
@@ -79,7 +89,8 @@ public:
 
 private:
     array<T, 3> _pos;        // x,y,z cartesian coordinate of node
-    GSIZET _elemLayerID;     // element layer index the node resides on
+    GSIZET _elemLayerID;     // GeoFLOW element layer # node resides on
+    GSIZET _meshLayerID;     // 2D mesh layer # in GeoFLOW element node resides on
     map<GString, T> _varMap; // pairs of variable names and their values
 };
 

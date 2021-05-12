@@ -33,8 +33,7 @@ struct GHeaderInfo
     GUINT         nNodesPer2DElem;   // num nodes per 2D (x,y ref dir only) 
                                      // GeoFLOW element
     GSIZET        nNodesPer2DLayer;  // num nodes per 2D mesh layer
-    GSIZET        nFacesPer2DLayer;  // num faces (incl. sub faces) per 2D mesh 
-                                     // layer
+    GSIZET        nFacesPer2DLayer;  // num faces per 2D mesh layer
     GSIZET        n2DLayers;         // num 2D mesh layers in entire volume
     GSIZET        nElemLayers;       // num GeoFLOW element layers
     GSIZET        nElemPerElemLayer; // num GeoFLOW elements per GeoFLOW
@@ -73,7 +72,7 @@ struct GHeaderInfo
        cout << "Num elements per layer: " << nElemPerElemLayer << endl;
        cout << "Num 2D mesh layers: " << n2DLayers << endl;
        cout << "Num nodes per 2D mesh layer: " << nNodesPer2DLayer << endl;
-       cout << "Num sub-faces per 2D mesh layer: " << nFacesPer2DLayer << endl;
+       cout << "Num faces per 2D mesh layer: " << nFacesPer2DLayer << endl;
        cout << endl;
    }
 };
