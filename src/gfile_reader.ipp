@@ -5,6 +5,7 @@
 //==============================================================================
 
 #include <fstream>
+#include <set>
 
 #include "logger.h"
 
@@ -61,15 +62,25 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
     ifs.read((char*)&h.timeStamp, sizeof(h.timeStamp));
     ifs.read((char*)&h.hasMultVars, sizeof(h.hasMultVars));
 
+    h.elemIDs.resize(h.nElems);
+    for (auto& e : h.elemIDs)
+    {
+        ifs.read((char*)&e, sizeof(h.elemIDs[0]));
+    }
+
     // Get total byte size of header
     h.nHeaderBytes = ifs.tellg(); // curr pos in file stream
     
-    // Get num nodes in volume (x,y,z ref dir)
-    h.nNodesPerVolume = h.nElems;
+    // Get num nodes per GeoFLOW element (2D or 3D). Num nodes in one 
+    // reference direction of one element = (poly order + 1)
+    h.nNodesPerElem = 1;
     for (const auto& p : h.polyOrder)
     {
-        h.nNodesPerVolume *= (p + 1);
+        h.nNodesPerElem *= (p+1);
     }
+
+    // Get num nodes in volume
+    h.nNodesPerVolume = h.nElems * h.nNodesPerElem;
 
     // Get num nodes per 2D element (x,y ref dir). Num nodes in one reference 
     // direction of one element = (poly order + 1)
@@ -79,8 +90,9 @@ GHeaderInfo GFileReader<T>::readHeader(const GString& filename)
         h.nNodesPer2DElem *= (h.polyOrder[i] + 1);
     }
 
-    // TODO: Get num GeoFLOW element layers
-    h.nElemLayers = 1;
+    // Get num GeoFLOW element layers
+    set<GSIZET> uniqueIDs(h.elemIDs.begin(), h.elemIDs.end());
+    h.nElemLayers = uniqueIDs.size();
 
     // Get num GeoFLOW elments per GeoFLOW element layer
     h.nElemPerElemLayer = h.nElems / h.nElemLayers;
@@ -135,9 +147,12 @@ void GFileReader<T>::setElementLayerIDs()
 {
     // Use header's element ID array to set an element layer ID for each data 
     // value
-    for (auto i = 0u; i < _data.size(); ++i)
+    for (auto i = 0u; i < _header.nElems; ++i)
     {
-        _elemLayerIDs.push_back(0);
+        for (auto j = 0u; j < _header.nNodesPerElem; ++j)
+        {
+            _elemLayerIDs.push_back(GET_LOWORD(_header.elemIDs[i]));
+        }
     }
 }
 

@@ -18,26 +18,27 @@ using namespace std;
 struct GHeaderInfo
 {
     // Data stored in GeoFLOW file header
-    GUINT         version;       // version num
-    GUINT         dim;           // dimension of elements (2 or 3)
-    GSIZET        nElems;        // number of elements
-    vector<GUINT> polyOrder;     // poly order of each dim, array of sz dim
-    GUINT         gridType;      // grid type of GeoFLOW type GElemType
-    GSIZET        timeCycle;     // output time loop index
-    GDOUBLE       timeStamp;     // output time
-    GUINT         hasMultVars;   // multiple fields in file?
+    GUINT          version;       // version num
+    GUINT          dim;           // dimension of elements (2 or 3)
+    GSIZET         nElems;        // number of elements
+    vector<GUINT>  polyOrder;     // poly order of each dim, array of sz dim
+    GUINT          gridType;      // grid type of GF type GElemType
+    GSIZET         timeCycle;     // output time loop index
+    GDOUBLE        timeStamp;     // output time
+    GUINT          hasMultVars;   // multiple fields in file?
+    vector<GSIZET> elemIDs;       // layer IDs for each element
 
     // Auxiliary data derived from GeoFLOW header
-    GSIZET        nHeaderBytes;      // total byte size of GeoFLOW header
+    GSIZET        nHeaderBytes;      // total byte size of GF header
     GSIZET        nNodesPerVolume;   // num nodes in volume
+    GSIZET        nNodesPerElem;     // num nodes per GF element (2D or 3D)
     GUINT         nNodesPer2DElem;   // num nodes per 2D (x,y ref dir only) 
-                                     // GeoFLOW element
+                                     // GF element
     GSIZET        nNodesPer2DLayer;  // num nodes per 2D mesh layer
     GSIZET        nFacesPer2DLayer;  // num faces per 2D mesh layer
     GSIZET        n2DLayers;         // num 2D mesh layers in entire volume
-    GSIZET        nElemLayers;       // num GeoFLOW element layers
-    GSIZET        nElemPerElemLayer; // num GeoFLOW elements per GeoFLOW
-                                     // element layer
+    GSIZET        nElemLayers;       // num GF element layers
+    GSIZET        nElemPerElemLayer; // num GF elements per GF element layer
 
     void printHeader()
     {
@@ -65,6 +66,7 @@ struct GHeaderInfo
        cout << "Derived Info from Header" << endl;
        cout << "------------------------" << endl;
        cout << "Num header bytes: " << nHeaderBytes << endl;
+       cout << "Num nodes per element: " << nNodesPerElem << endl;
        cout << "Num nodes per volume: " << nNodesPerVolume << endl;
        cout << "Num nodes per 2D (x,y ref dir only) element: " 
             << nNodesPer2DElem << endl;
