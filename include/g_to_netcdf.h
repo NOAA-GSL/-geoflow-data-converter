@@ -106,24 +106,27 @@ public:
     /*!
      * Write varName's data stored in nodes to the NetCDF file.
      *
-     * @param varName name of a variable in the NetCDF file
+     * @param rootVarName name of a variable in the NetCDF file
+     * @param fullVarName name of the variable (i.e., rootVarName.timestep) in 
+     *                    the list of nodes 
      * @param nodes list of nodes that contains the variable data to write
      */
     template <typename T>
-    void writeVariableData(const GString& varName,
+    void writeVariableData(const GString& rootVarName, 
+                           const GString& fullVarName,
                            const vector<GNode<T>>& nodes)
     {
         cout << "Writing NetCDF variable data from nodes for variable: "
-             << varName << endl;
+             << fullVarName << endl;
 
         // Get the NcVar associated with this variable
-        NcVar ncVar = _nc.getVar(varName);
+        NcVar ncVar = _nc.getVar(rootVarName);
 
         // Allocate memory and fill values
         T *data = new T[nodes.size()];
         for (auto i = 0u; i < nodes.size(); ++i)
         {
-            data[i] = nodes[i].var(varName);
+            data[i] = nodes[i].var(fullVarName);
         }
 
         // Write the data to the NetCDF file

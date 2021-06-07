@@ -37,6 +37,8 @@ TODO ACROSS PROJECT
 #include "gdata_converter.h"
 
 #define GDATATYPE GDOUBLE
+#define G_FILE_EXT ".out"
+#define NC_FILE_EXT ".nc"
 
 // Global variables
 GString jsonFile;
@@ -83,29 +85,21 @@ int main(int argc, char** argv)
     //////////////////////////////
 
     // Read the field variables specified in the JSON file into the collection 
-    // of nodes. Save the headers for each timestep (the headers for all 
-    // variables of one timestep will be the same)
-    map<GString, GHeaderInfo> timeMap;
+    // of nodes. Save the headers for each timestep so time stamp can be 
+    // extracted later on. The full variable names are of the form 
+    // rootVarName.timestep
+    map<GString, GHeaderInfo> timeHeaderMap;
 
-    // For each timestep...
-    for (auto i = 0u; i < gdc.numTimesteps(); ++i)
+    // For each GeoFLOW variable...
+    for (auto fullVarName : gdc.fullVarNames())
     {
-        // Get timestep as a string
-        stringstream ss;
-        ss << std::setfill('0') << std::setw(6) << i;
-        GString timestep = ss.str();
+        cout << "Reading GeoFLOW variable: " << fullVarName << endl;
 
-        // For each variable at this timestep...
-        for (auto varName : gdc.varNames())
-        {
-            cout << "Reading GeoFLOW variable: " << varName << " for " 
-                 << "timestep: " << timestep << endl;
-
-            // Read the GeoFLOW variable into the collection of nodes
-            GString gfFilename = varName + "." + timestep + ".out";
-            timeMap[timestep] = gdc.readGFVariableToNodes(gfFilename, 
-                                                          varName);
-        }
+        // Read the variable into the collection of nodes
+        GString gfFilename = fullVarName + G_FILE_EXT;
+        GString timestep = gdc.extractTimestep(fullVarName);
+        timeHeaderMap[timestep] = gdc.readGFVariableToNodes(gfFilename, 
+                                                            fullVarName);
     }
 
     ////////////////////
@@ -140,9 +134,9 @@ int main(int argc, char** argv)
 
     // Write the grid variables to the active NetCDF file
     gdc.writeNCVariable("mesh_face_nodes", faceList);
-    gdc.writeNCNodeVariable("mesh_node_x");
-    gdc.writeNCNodeVariable("mesh_node_y");
-    gdc.writeNCNodeVariable("mesh_depth");
+    gdc.writeNCNodeVariable("mesh_node_x", "mesh_node_x");
+    gdc.writeNCNodeVariable("mesh_node_y", "mesh_node_y");
+    gdc.writeNCNodeVariable("mesh_depth", "mesh_depth");
 
     // Close the active NetCDF file
     gdc.closeNC();
@@ -151,41 +145,36 @@ int main(int argc, char** argv)
     ////// WRITE FIELD VARIABLES //////
     ///////////////////////////////////
 
-    // If writing field variables to separate files...
+    // For a given timestep, write each field variable to a separate file
     if (!writeOneFile)
     {
-        // For each timestep...
-        for (auto t : timeMap)
+        // For each field variable...
+        for (auto fullVarName : gdc.fullVarNames())
         {
-            GString timestep = t.first;
+            cout << "Converting GeoFLOW variable: " << fullVarName << endl;
 
-            // For each variable at this timestep...
-            for (auto varName : gdc.varNames())
-            {
-                cout << "Converting GeoFLOW variable: " << varName << " for " \
-                     << "timestep: " << timestep << endl;
+            // Initialize a NetCDF file for this timestep to store this field 
+            // variable
+            GString ncFilename = fullVarName + NC_FILE_EXT;
+            gdc.initNC(ncFilename, NcFile::FileMode::replace);
+            gdc.writeNCDimensions();
 
-                // Initialize a NetCDF file for this timestep to store this 
-                // field variable
-                GString ncFilename = varName + "." + timestep + ".nc";
-                gdc.initNC(ncFilename, NcFile::FileMode::replace);
-                gdc.writeNCDimensions();
+            // Write the time stamp variable to the active NetCDF file
+            GString timestep = gdc.extractTimestep(fullVarName);
+            gdc.writeNCVariable("time", timeHeaderMap[timestep].timeStamp);
 
-                // Write the time stamp variable to the active NetCDF file
-                gdc.writeNCVariable("time", (t.second).timeStamp);
-
-                // Write the field variable to the active NetCDF file
-                gdc.writeNCNodeVariable(varName);
-
-                // Close the active NetCDF file
-                gdc.closeNC();
-            }
+            // Write the field variable to the active NetCDF file
+            GString rootVarName = gdc.extractRootVarName(fullVarName);
+            gdc.writeNCNodeVariable(rootVarName, fullVarName);
+   
+            // Close the active NetCDF file
+            gdc.closeNC();
         }
-    } // end if writing separate files
-    else // write all field variables to the same file
+    }
+    else // for a given timestep, write all field variables to the same file
     {
         // For each timestep...
-        for (auto t : timeMap)
+        for (auto t : timeHeaderMap)
         {
             // Get timestep as a string
             GBOOL wroteTimeStamp = false;
@@ -198,22 +187,27 @@ int main(int argc, char** argv)
             gdc.writeNCDimensions();
 
             // For each variable at this timestep...
-            for (auto varName : gdc.varNames())
+            for (auto fullVarName : gdc.fullVarNames())
             {
-                cout << "Converting GeoFLOW variable: " << varName << " for " \
-                     << "timestep: " << timestep << endl;
-
-                if (!wroteTimeStamp)
+                if (fullVarName.find(timestep) != string::npos)
                 {
-                    // Write the time stamp variable to the active NetCDF 
-                    // file; since all vars getting written to the same file, 
-                    // only want to write the time stamp variable once
-                    gdc.writeNCVariable("time", (t.second).timeStamp);
-                    wroteTimeStamp = true;
-                }
+                    cout << "Converting GeoFLOW variable: " << fullVarName 
+                         << endl;
 
-                // Write the field variable to the active NetCDF file
-                gdc.writeNCNodeVariable(varName);
+                    if (!wroteTimeStamp)
+                    {
+                        // Write the time stamp variable to the active NetCDF 
+                        // file; since all vars getting written to the same 
+                        // file, only want to write the time stamp variable 
+                        // once
+                        gdc.writeNCVariable("time", (t.second).timeStamp);
+                        wroteTimeStamp = true;
+                    }
+
+                    // Write the field variable to the active NetCDF file
+                    GString rootVarName = gdc.extractRootVarName(fullVarName);
+                    gdc.writeNCNodeVariable(rootVarName, fullVarName);
+                }
             }
             
             // Close the active NetCDF file

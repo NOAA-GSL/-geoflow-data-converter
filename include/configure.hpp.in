@@ -1,0 +1,100 @@
+/*
+ * configure.hpp
+ *
+ *  Created on: Oct 23, 2018
+ *      Author: bflynt
+ */
+#ifndef GEOFLOW_CONFIG_HPP_IN_
+#define GEOFLOW_CONFIG_HPP_IN_
+
+//
+// To be filled in by CMake
+//
+// SG: Commented out section
+/*
+#define GDIM ${GDIM}
+#cmakedefine GEOFLOW_USE_MPI
+#cmakedefine GEOFLOW_USE_OPENMP
+#cmakedefine GEOFLOW_USE_CUDA
+#cmakedefine GEOFLOW_USE_CBLAS
+#cmakedefine GEOFLOW_USE_CUBLAS
+#cmakedefine GEOFLOW_USE_OPENACC
+#cmakedefine GEOFLOW_USE_GPTL
+#cmakedefine GEOFLOW_TRACER_USE_NVTX
+#cmakedefine GEOFLOW_TRACER_USE_PIO
+#cmakedefine GEOFLOW_TRACER_USE_GPTL
+#cmakedefine GEOFLOW_USE_NEUMANN_HACK
+
+#cmakedefine GEOFLOW_ASSERT_HANG
+#cmakedefine GEOFLOW_ASSERT_CORE
+#cmakedefine GEOFLOW_ASSERT_STACK
+*/
+
+#if defined(GEOFLOW_USE_CBLAS) && defined(GEOFLOW_USE_CUBLAS)
+#warning "Both CBLAS and cuBLAS Selected (Defaulted to CBLAS)"
+#undef GEOFLOW_USE_CUBLAS
+#endif
+
+//
+// GIT Configure/Compilation Records
+//
+#define GIT_LONG_HASH "${GIT_LONG_HASH}"
+#define GIT_SHORT_HASH "${GIT_SHORT_HASH}"
+#define GIT_COMMIT_TIME "${GIT_COMMIT_TIME}"
+#define CONFIGURE_TIME "${CONFIGURE_TIME}"
+#define COMPILE_DATE __DATE__
+#define COMPILE_TIME __TIME__
+#define PROJECT_VERSION "${PROJECT_VERSION}"
+
+//====================================================
+//                    Debug Flags
+//====================================================
+
+// If the standard library flag is set then turn ON 
+#if !defined(NDEBUG)
+#define GEOFLOW_USE_STATIC_ASSERTIONS  // Turn on static assertions.
+#define GEOFLOW_USE_RUNTIME_ASSERTIONS // Turn on runtime assertions.
+#endif
+
+/** Insure empty loops are not optimized away
+ */
+#define GEOFLOW_INSURE_LOOP
+
+/** Insure unused variables do not report as errors
+ */
+#define GEOFLOW_INSURE_USE
+
+//====================================================
+//                    Clock Settings
+//====================================================
+
+// Clock mechanism
+//#define USE_POSIX_TIME
+//#define USE_BOOST_TIME
+//#define USE_C11_TIME
+#define USE_C_TIME
+
+//====================================================
+//           Voodoo set using other Flags
+//====================================================
+
+/** Turn on Tracer if its needed by another tool
+ */
+#if defined(GEOFLOW_TRACER_USE_NVTX) || defined(GEOFLOW_TRACER_USE_PIO) || defined(GEOFLOW_TRACER_USE_GPTL)
+#define GEOFLOW_USE_TRACER
+#endif
+
+// Constants to compare against
+#define CPP_INT_TWO 2
+#define CPP_INT_THREE 3
+
+#if GDIM == CPP_INT_TWO
+	#define _G_IS2D
+#elif GDIM == CPP_INT_THREE
+	#define _G_IS3D
+#else
+// SG: Commented out error
+//	#error Unrecognized GDIM Value
+#endif
+
+#endif /* GEOFLOW_CONFIG_HPP_IN_ */

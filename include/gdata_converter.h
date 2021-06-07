@@ -38,7 +38,8 @@ public:
     // Access
     const vector<GNode<T>>& nodes() const { return _nodes; }
     const vector<GFace>& faces() const { return _faces; }
-    vector<GString> varNames() const { return _varNames; }
+    vector<GString> rootVarNames() const { return _rootVarNames; }
+    vector<GString> fullVarNames() const { return _fullVarNames; }
     GUINT numTimesteps() const { return _numTimesteps; }
     GString outputDir() const { return _outputDir; }
     GString inputDir() const { return _inputDir; }
@@ -113,6 +114,8 @@ public:
     void sortNodesByElemID();
     void sortNodesBy2DMeshLayer();
     void faceToNodes();
+    GString extractTimestep(GString varName);
+    GString extractRootVarName(GString varName);
 
     /*!
      * Replace any 0-valued dimensions in the property tree with the matching 
@@ -160,10 +163,13 @@ public:
      * to the active NetCDF file. The data comes from the converter's 
      * collection of nodes that match the input varName.
      * 
-     * @param varName name of variable in the property tree (should be the 
-     *                same name as the variable name stored in the nodes)
+     * @param rootVarName root name of variable in the property tree
+     * @param fullVarName full name of variable (i.e., rootVarName.timestep) 
+     *                    (should be the same name as a variable name stored 
+     *                    in the nodes)
      */
-    void writeNCNodeVariable(const GString& varName);
+    void writeNCNodeVariable(const GString& rootVarName, 
+                             const GString& fullVarName);
 
     /*!
      * Write the variable definition, variable attributes, and a single data  
@@ -197,8 +203,10 @@ private:
     GString _inputDir;       // directory name that holds input GeoFLOW files
     GString _outputDir;      // directory name that holds output NetCDF files
     GUINT _numTimesteps;     // number of timesteps to convert
-    vector<GString> _varNames; // names of the variables (i.e., prefix of the 
-                               // variable filenames)
+    vector<GString> _rootVarNames; // root names of variables (i.e., prefix of 
+                                   // the variable filenames)
+    vector<GString> _fullVarNames; // full names of variables (i.e., 
+                                   // root.timestep) 
 };
 
 #include "../src/gdata_converter.ipp"

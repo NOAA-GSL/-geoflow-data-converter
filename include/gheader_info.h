@@ -68,7 +68,7 @@ struct GHeaderInfo
        cout << "Num header bytes: " << nHeaderBytes << endl;
        cout << "Num nodes per element: " << nNodesPerElem << endl;
        cout << "Num nodes per volume: " << nNodesPerVolume << endl;
-       cout << "Num nodes per 2D (x,y ref dir only) element: " 
+       cout << "Num nodes per 2D element (x,y ref dir only): " 
             << nNodesPer2DElem << endl;
        cout << "Num element layers: " << nElemLayers << endl;
        cout << "Num elements per layer: " << nElemPerElemLayer << endl;

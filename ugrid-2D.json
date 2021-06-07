@@ -11,7 +11,7 @@
     "y": "ygrid.000000.out",
     "z": "zgrid.000000.out"
 },
-"variable_names":
+"root_variable_names":
 [
     "dtotal",
     "T"

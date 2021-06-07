@@ -28,23 +28,86 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
     _outputDir = PTUtil::getValue<GString>(_ptRoot, "output_dir");
     makeDirectory(_outputDir);
 
-    // Get variable names
-    pt::ptree varsArr = PTUtil::getArray(_ptRoot, "variable_names");
-    _varNames = PTUtil::getValues<GString>(varsArr);
-
     // Get number of timesteps
     _numTimesteps = PTUtil::getValue<GUINT>(_ptRoot, "num_timesteps");
+
+    // Get the root names of the variables
+    pt::ptree varsArr = PTUtil::getArray(_ptRoot, "root_variable_names");
+    _rootVarNames = PTUtil::getValues<GString>(varsArr);
+    
+    // Create full variable names with timestep (i.e., rootVarName.timestep)
+    if (_numTimesteps == 0)
+    {
+        _fullVarNames = _rootVarNames;
+    }
+    else
+    {
+        // For each timestep...
+        for (auto i = 0u; i < _numTimesteps; ++i)
+        {
+            // Get timestep as a string
+            stringstream ss;
+            ss << std::setfill('0') << std::setw(6) << i;
+            GString timestep = ss.str();
+
+            // For each variable at this timestep...
+            for (auto rootVarName : _rootVarNames)
+            {
+               _fullVarNames.push_back(rootVarName + "." + timestep);
+            }
+        }
+    }
 
     // For debugging
     cout << "Input directory is: " << _inputDir << endl;
     cout << "Output directory is: " << _outputDir << endl;
     cout << "Num timestpes are: " << _numTimesteps << endl;
-    cout << "Variable names are: ";
-    for (auto f : _varNames)
+    cout << "Root variable names are: ";
+    for (auto f : _rootVarNames)
     {
         cout << f << ", "; 
     }
     cout << endl;
+    cout << "Full variable names are: ";
+    for (auto f : _fullVarNames)
+    {
+        cout << f << ", "; 
+    }
+    cout << endl;
+}
+
+template <class T>
+GString GDataConverter<T>::extractTimestep(GString varName)
+{
+    auto npos = varName.find('.');
+    if (npos != string::npos)
+    {
+        return varName.substr(npos + 1);
+    }
+    else
+    {
+        std::string msg = "Could not extract timestep from input name: " + \
+                          varName;
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);       
+    }
+}
+
+template <class T>
+GString GDataConverter<T>::extractRootVarName(GString varName)
+{
+    auto npos = varName.find('.');
+    if (npos != string::npos)
+    {
+        return varName.substr(0, npos);
+    }
+    else
+    {
+        std::string msg = "Could not extract root variable name from " \
+                          "input name: " + varName;
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);       
+    }
 }
 
 template <class T>
@@ -350,12 +413,13 @@ void GDataConverter<T>::writeNCDimensions()
 }
 
 template <class T>
-void GDataConverter<T>::writeNCNodeVariable(const GString& varName)
+void GDataConverter<T>::writeNCNodeVariable(const GString& rootVarName, 
+                                            const GString& fullVarName)
 {
     // Write the contents of a node variable to the NetCDF file
-    _nc->writeVariableDefinition(varName);
-    _nc->writeVariableAttributes(varName);
-    _nc->writeVariableData<T>(varName, _nodes);
+    _nc->writeVariableDefinition(rootVarName);
+    _nc->writeVariableAttributes(rootVarName);
+    _nc->writeVariableData<T>(rootVarName, fullVarName, _nodes);
 }
 
 template <class T>
