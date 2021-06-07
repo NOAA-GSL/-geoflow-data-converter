@@ -148,7 +148,7 @@
             {
                 "name": "_FillValue",
                 "type": "GUINT",
-                "value": "0",
+                "value": "-1",
                 "comment": "type should be same as the variable type"
             },
             {

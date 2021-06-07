@@ -182,7 +182,7 @@ int main(int argc, char** argv)
 
             // Initialize a NetCDF file for this timestep to store all the  
             // field variables
-            GString ncFilename = "vars." + timestep + ".nc";
+            GString ncFilename = "vars." + timestep + NC_FILE_EXT;
             gdc.initNC(ncFilename, NcFile::FileMode::replace);
             gdc.writeNCDimensions();
 
