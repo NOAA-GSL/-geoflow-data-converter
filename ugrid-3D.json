@@ -67,7 +67,7 @@
             },
             {
                 "name": "units",
-                "value": "",
+                "value": "second",
                 "comment": "TBD, but an example is: hours since YYYY-MM-DD HH:MM:SS"
             },
             {
@@ -273,7 +273,7 @@
             },
             {
                 "name": "standard_name",
-                "value": "",
+                "value": "elevation",
                 "comment": "optional attribute - should be consistent with the positive attribute"
             },
             {

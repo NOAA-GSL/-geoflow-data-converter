@@ -78,7 +78,8 @@ int main(int argc, char** argv)
     // arguments passed in correspond to the variable names in the JSON file 
     // that store lat,lon,radius values. (For example, "mesh_node_x" 
     // corresponds to the grid's latitude values)
-    gdc.xyzToLatLonRadius("mesh_node_x", "mesh_node_y", "mesh_depth");
+    //gdc.xyzToLatLonRadius("mesh_node_x", "mesh_node_y", "mesh_depth");
+    gdc.xyzToLatLonRadius("mesh_node_y", "mesh_node_x", "mesh_depth");
 
     //////////////////////////////
     //// READ FIELD VARIABLES ////
