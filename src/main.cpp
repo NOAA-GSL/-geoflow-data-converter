@@ -134,6 +134,7 @@ int main(int argc, char** argv)
     gdc.writeNCDimensions();
 
     // Write the grid variables to the active NetCDF file
+    gdc.writeNCDummyVariable("mesh");
     gdc.writeNCVariable("mesh_face_nodes", faceList);
     gdc.writeNCNodeVariable("mesh_node_x", "mesh_node_x");
     gdc.writeNCNodeVariable("mesh_node_y", "mesh_node_y");

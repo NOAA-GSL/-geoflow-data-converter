@@ -413,6 +413,14 @@ void GDataConverter<T>::writeNCDimensions()
 }
 
 template <class T>
+void GDataConverter<T>::writeNCDummyVariable(const GString& varName)
+{
+    // Write the contents of a dummy variable (has no data) to the NetCDF file
+    _nc->writeVariableDefinition(varName);
+    _nc->writeVariableAttributes(varName);
+}
+
+template <class T>
 void GDataConverter<T>::writeNCNodeVariable(const GString& rootVarName, 
                                             const GString& fullVarName)
 {

@@ -159,6 +159,15 @@ public:
     void writeNCDimensions();
 
     /*!
+     * Write the variable definition and variable attributes of a dummy  
+     * variable to the active NetCDF file. A dummy variable has no data 
+     * associated with it.
+     * 
+     * @param varName name of a variable in the property tree
+     */
+    void writeNCDummyVariable(const GString& varName);
+
+    /*!
      * Write the variable definition, variable attributes, and variable data 
      * to the active NetCDF file. The data comes from the converter's 
      * collection of nodes that match the input varName.
