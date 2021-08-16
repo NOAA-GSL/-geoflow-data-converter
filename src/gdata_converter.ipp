@@ -193,6 +193,7 @@ GHeaderInfo GDataConverter<T>::readGFGridToNodes(const GString& gfXFilename,
         GNode<T> node(x.data()[i],
                       y.data()[i], 
                       z.data()[i],
+                      i, // node ID
                       x.elementLayerIDs()[i]);
 
         // Save node
@@ -269,7 +270,7 @@ void GDataConverter<T>::sortNodesBy2DMeshLayer()
     vector<GNode<T>> temp;
     GUINT nX = _header.polyOrder[0] + 1; // num nodes in x ref dir
     GUINT nY = _header.polyOrder[1] + 1; // num nodes in y ref dir
-    GUINT nZ = 1; // default num nodes in z ref dir for a 2D dataset
+    GUINT nZ = 1; // 1 = default num nodes in z ref dir for a 2D dataset
     if (_header.polyOrder.size() == 3) // 3D dataset
     {
         nZ = _header.polyOrder[2] + 1; // num nodes in z ref dir

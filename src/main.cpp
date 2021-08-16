@@ -218,9 +218,12 @@ int main(int argc, char** argv)
     }
 
     // For debugging
+    GSIZET count = 0;
     for (auto n : gdc.nodes())
     {    
+        cout << count << " - ";
         n.printNode();
+        ++count;
     }
 
     return 0;
