@@ -64,7 +64,7 @@
             },
             {
                 "name": "units",
-                "value": "",
+                "value": "second",
                 "comment": "TBD, but an example is: hours since YYYY-MM-DD HH:MM:SS"
             },
             {
@@ -144,7 +144,7 @@
             },
             {
                 "name": "_FillValue",
-                "type": "GINT",
+                "type": "GUINT",
                 "value": "-1",
                 "comment": "type should be same as the variable type"
             },
@@ -296,6 +296,7 @@
         "type": "data_type",
         "args":
         [
+            "time",
             "meshLayers",
             "nMeshNodes"
         ],
@@ -323,7 +324,7 @@
             },
             {
                 "name": "coordinates",
-                "value": "mesh_node_x mesh_node_y",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
                 "comment": ""
             }
         ]
@@ -334,6 +335,7 @@
         "type": "data_type",
         "args":
         [
+            "time",
             "meshLayers",
             "nMeshNodes"
         ],
@@ -361,7 +363,7 @@
             },
             {
                 "name": "coordinates",
-                "value": "mesh_node_x mesh_node_y",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
                 "comment": ""
             }
         ]
