@@ -14,7 +14,6 @@
 "root_variable_names":
 [
     "dtotal",
-    "e",
     "v1",
     "v2",
     "v3"
@@ -299,6 +298,7 @@
         "type": "data_type",
         "args":
         [
+            "time",
             "meshLayers",
             "nMeshNodes"
         ],
@@ -326,7 +326,7 @@
             },
             {
                 "name": "coordinates",
-                "value": "mesh_node_x mesh_node_y",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
                 "comment": ""
             }
         ]
@@ -337,6 +337,7 @@
         "type": "data_type",
         "args":
         [
+            "time",
             "meshLayers",
             "nMeshNodes"
         ],
@@ -364,7 +365,7 @@
             },
             {
                 "name": "coordinates",
-                "value": "mesh_node_x mesh_node_y",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
                 "comment": ""
             }
         ]
@@ -375,6 +376,7 @@
         "type": "data_type",
         "args":
         [
+            "time",
             "meshLayers",
             "nMeshNodes"
         ],
@@ -402,7 +404,7 @@
             },
             {
                 "name": "coordinates",
-                "value": "mesh_node_x mesh_node_y",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
                 "comment": ""
             }
         ]
@@ -413,6 +415,7 @@
         "type": "data_type",
         "args":
         [
+            "time",
             "meshLayers",
             "nMeshNodes"
         ],
@@ -440,7 +443,7 @@
             },
             {
                 "name": "coordinates",
-                "value": "mesh_node_x mesh_node_y",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
                 "comment": ""
             }
         ]
@@ -451,6 +454,7 @@
         "type": "data_type",
         "args":
         [
+            "time",
             "meshLayers",
             "nMeshNodes"
         ],
@@ -478,7 +482,7 @@
             },
             {
                 "name": "coordinates",
-                "value": "mesh_node_x mesh_node_y",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
                 "comment": ""
             }
         ]
