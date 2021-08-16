@@ -254,8 +254,9 @@ void GDataConverter<T>::xyzToLatLonRadius(const GString& latVarName,
 template <class T>
 void GDataConverter<T>::sortNodesByElemID()
 {
-    // Use stable sort to rmake sure the same order of objects is retained for 
-    // for two objects with equal keys
+    // Use stable sort to make sure the same order of objects is retained for 
+    // two objects with equal keys (since the original order of nodes within 
+    // a GF element must be retained).
     stable_sort(_nodes.begin(), _nodes.end());
 }
 
@@ -330,10 +331,10 @@ void GDataConverter<T>::faceToNodes()
             {
                 // Get the indices of the face
                 vector<GSIZET> indices;
-                indices.push_back(i + (x * nY) + y);             // top left
-                indices.push_back(i + ((x + 1) * nY) + y);       // bot left
-                indices.push_back(i + ((x + 1) * nY) + (y + 1)); // bot right
-                indices.push_back(i + (x * nY) + (y + 1));       // top right
+                indices.push_back(i + (x * nY) + y);             // bottom left
+                indices.push_back(i + (x * nY) + (y + 1));       // bottom right
+                indices.push_back(i + ((x + 1) * nY) + (y + 1)); // top right
+                indices.push_back(i + ((x + 1) * nY) + y);       // top left
 
                 // Add the face to the list
                 _faces.push_back(GFace(indices));
