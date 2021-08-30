@@ -10,10 +10,6 @@
 TODO ACROSS PROJECT
 -------------------
 - Add error handling for NetCDF calls
-- When element IDs become available in the GeoFLOW header files:
-  - modify h.nElemLayers gfile_reader::readHeader (right now, only accounts
-    one layer of GeoFLOW elements)
-  - modify gfile_reader::setElementLayerIDs()
 - g_to_netcdf::writeVariableData is allocating all node data but this is not 
   needed for all vars since, for ex, mesh_nodes_x is the same for each layer;
   it is getting correctly written to the NetCDF file, I'm guessing b/c of the
@@ -30,8 +26,9 @@ TODO ACROSS PROJECT
   - Write assumptions (i.e., everything goes in/out of in/out dirs specified
     in JSON file, including grid files); Define property tree = json file
   - Doxygen comments for GFileReader
-- Fill in missing values for variable attributes in json file
-- Confirm timestamp
+- Optimize: don't need to read the element layer ids for all x, y, z files 
+  since they are the same, just need to read one file.
+- Wasting space by re-writing layer boundries that correspond to each other!
 */
 
 #include "gdata_converter.h"
@@ -218,13 +215,13 @@ int main(int argc, char** argv)
     }
 
     // For debugging
-    GSIZET count = 0;
+    /*GSIZET count = 0;
     for (auto n : gdc.nodes())
     {    
         cout << count << " - ";
         n.printNode();
         ++count;
-    }
+    }*/
 
     return 0;
 }
