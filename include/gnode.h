@@ -31,13 +31,12 @@ public:
      * @param nodeID original node ID when GF file was read in
      * @param elemLayerID element layer index the node resides on
      */
-    GNode(T x, T y, T z, GSIZET nodeID, GSIZET elemLayerID)
-    {
-        // Initialize
-        _pos = {{x, y, z}};
-        _nodeID = nodeID;
-        _elemLayerID = elemLayerID;
-    }
+    GNode(T x, T y, T z, GSIZET nodeID, GSIZET elemLayerID) 
+        : 
+        _pos({x,y,z}), 
+        _nodeID(nodeID), 
+        _elemLayerID(elemLayerID) 
+    {}
     ~GNode() {}
 
     // Access
@@ -91,8 +90,8 @@ public:
     }
 
 private:
-    GSIZET _nodeID;          // original GF node ID
     array<T, 3> _pos;        // x,y,z cartesian coordinate of node
+    GSIZET _nodeID;          // original GF node ID
     GSIZET _elemLayerID;     // GeoFLOW element layer # node resides on
     map<GString, T> _varMap; // pairs of variable names and their values
 
