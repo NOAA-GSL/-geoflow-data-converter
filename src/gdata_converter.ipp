@@ -12,6 +12,7 @@
 #include "gfile_reader.h"
 #include "math_util.h"
 #include "logger.h"
+#include "timer.h"
 
 template <class T>
 GDataConverter<T>::GDataConverter(const GString& ptFilename)
@@ -186,18 +187,35 @@ GHeaderInfo GDataConverter<T>::readGFGridToNodes(const GString& gfXFilename,
     // Read each x,y,z location value and element layer ID into a collection 
     // of nodes. The IDs/header are the same for each x,y,z triplet so just 
     // use the IDs/header from the x grid.
-    _nodes.clear();
-    _nodes.shrink_to_fit();
-    for (auto i = 0u; i < (x.header()).nNodesPerVolume; ++i)
-    {
-        GNode<T> node(x.data()[i],
-                      y.data()[i], 
-                      z.data()[i],
-                      i, // node ID
-                      x.elementLayerIDs()[i]);
 
-        // Save node
-        _nodes.push_back(node);
+    cout << "Reading GeoFLOW grid to nodes" << endl;
+
+    _nodes.clear(); // remove all elements from vector (i.e., size = 0)
+    _nodes.shrink_to_fit(); // reduce vectory capacity to vector size
+
+    // Set the vector capacity in advance
+    GSIZET numNodes = (x.header()).nNodesPerVolume;
+    try
+    {
+        _nodes.reserve(numNodes);
+    }
+    catch (const std::length_error& e) 
+    {
+        std::string msg = "Error setting capacity for list of nodes: " + \
+                          (x.header()).nNodesPerVolume + GString(e.what());
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+
+    // For each node in the volume...
+    for (auto i = 0u; i < numNodes; ++i)
+    {
+        // Add new node to list
+        _nodes.emplace_back(x.data()[i],
+                            y.data()[i], 
+                            z.data()[i],
+                            i, // node ID
+                            x.elementLayerIDs()[i]);
     }
 
     // Save header
@@ -210,6 +228,8 @@ template <class T>
 GHeaderInfo GDataConverter<T>::readGFVariableToNodes(const GString& gfFilename,
                                                      const GString& varName)
 {
+    cout << "Reading GF variable to nodes: " << varName << endl;
+
     // Get full output path
     GString filename = _inputDir + "/" + gfFilename;
 
@@ -227,7 +247,8 @@ GHeaderInfo GDataConverter<T>::readGFVariableToNodes(const GString& gfFilename,
     }
 
     // Store variable data into nodes
-    for (auto i = 0u; i < (var.header()).nNodesPerVolume; ++i)
+    GSIZET numNodes = (var.header()).nNodesPerVolume;
+    for (auto i = 0u; i < numNodes; ++i)
     {
         _nodes[i].var(varName, var.data()[i]);
     } 
@@ -255,6 +276,8 @@ void GDataConverter<T>::xyzToLatLonRadius(const GString& latVarName,
 template <class T>
 void GDataConverter<T>::sortNodesByElemID()
 {
+    cout << "Sorting nodes by element ID";
+
     // Use stable sort to make sure the same order of objects is retained for 
     // two objects with equal keys (since the original order of nodes within 
     // a GF element must be retained).
@@ -264,6 +287,8 @@ void GDataConverter<T>::sortNodesByElemID()
 template <class T>
 void GDataConverter<T>::sortNodesBy2DMeshLayer()
 {
+    cout << "Sorting nodes by 2D mesh layer";
+
     // Sort the nodes by 2D mesh layer. For 3D elements, there are multiple 
     // 2D layers (x,y ref dir) in the radial direction
 
@@ -303,6 +328,8 @@ void GDataConverter<T>::sortNodesBy2DMeshLayer()
 template <class T>
 void GDataConverter<T>::faceToNodes()
 {
+    cout << "Mapping faces to nodes (i.e., creating a list of GFace objects)";
+
     // Create a mapping of face to nodes for the first 2D mesh layer. This 
     // mapping is the same for each layer. The assumption here is the nodes 
     // are already sorted in ascending order by 2D mesh layer, each 2D element 
