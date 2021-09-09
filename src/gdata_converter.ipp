@@ -12,7 +12,6 @@
 #include "gfile_reader.h"
 #include "math_util.h"
 #include "logger.h"
-#include "timer.h"
 
 template <class T>
 GDataConverter<T>::GDataConverter(const GString& ptFilename)
