@@ -18,7 +18,7 @@ OBJ := $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 # -Wno-comment supresses backslash-newline warning after a // comment
 # -Llib_name, -L is a linker flag
 CPPFLAGS := -Iinclude -MMD -MP
-CFLAGS := -g -Wall -Wno-comment
+CFLAGS := -O3 -Wall -Wno-comment
 LDFLAGS := -L/usr/lib/x86_64-linux-gnu
 LDLIBS := -lnetcdf_c++4
 CC := g++
