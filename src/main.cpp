@@ -113,6 +113,8 @@ int main(int argc, char** argv)
     // Create a list of face to node mappings for one mesh layer (all mesh 
     // layers have the same mapping)
     gdc.faceToNodes();
+
+    cout << "Creating a single list of face indices";
     vector<GUINT> faceList;
     for (auto f : gdc.faces())
     {
@@ -121,6 +123,7 @@ int main(int argc, char** argv)
           faceList.push_back(i);
         }
     }
+    cout << "Done creating a single list of face indices";
 
     ////////////////////////////////////
     //// WRITE COORDINATE VARIABLES ////

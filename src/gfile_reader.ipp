@@ -15,6 +15,9 @@ GFileReader<T>::GFileReader(const GString& filename)
     // Read header
     _header = readHeader(filename);
 
+    // Print header
+    _header.printHeader();
+
     // Read data
     readData(filename);
 
