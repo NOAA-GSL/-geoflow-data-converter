@@ -32,6 +32,7 @@ TODO ACROSS PROJECT
 */
 
 #include "gdata_converter.h"
+#include "timer.h"
 
 #define GDATATYPE GDOUBLE
 #define G_FILE_EXT ".out"
@@ -40,6 +41,7 @@ TODO ACROSS PROJECT
 // Global variables
 GString jsonFile;
 GINT writeOneFile = 0;
+GDOUBLE startTime = 0, endTime = 0;
 
 void parseCommandLine(int argc, char** argv);
 void usage(char programName[]);
@@ -59,9 +61,16 @@ int main(int argc, char** argv)
     ///////////////////////////////////
 
     // Read the x,y,z GeoFLOW grid files (i.e., coordinate variables) 
-    // specified in the JSON file into a collection of nodes
-    GHeaderInfo gridHeader = gdc.readGFGridToNodes();
+    // specified in the JSON file, convert the x,y,z values to lat,lon,radius, 
+    // and store into a collection of nodes. The arguments passed in 
+    // correspond to the variable names in the JSON file that store 
+    // lat,lon,radius values. (For example, "mesh_node_x" corresponds to the 
+    // grid's longitude values)
+    startTime = Timer::getTime();
+    GHeaderInfo gridHeader = gdc.readGFGridToLatLonRadNodes("mesh_node_y", "mesh_node_x", "mesh_depth");
     gridHeader.printHeader();
+    endTime = Timer::getTime();
+    Timer::printElapsedTime(startTime, endTime);
 
     // Set any 0-valued dimensions in the JSON file with the info read in from 
     // the header of a GeoFLOW grid file
@@ -70,13 +79,6 @@ int main(int argc, char** argv)
     dims["nMeshFaces"] = gridHeader.nFacesPer2DLayer;
     dims["meshLayers"] = gridHeader.n2DLayers;
     gdc.setDimensions(dims);
-
-    // Convert the x,y,z values to lat,lon,radius and store in nodes. The 
-    // arguments passed in correspond to the variable names in the JSON file 
-    // that store lat,lon,radius values. (For example, "mesh_node_x" 
-    // corresponds to the grid's latitude values)
-    //gdc.xyzToLatLonRadius("mesh_node_x", "mesh_node_y", "mesh_depth");
-    gdc.xyzToLatLonRadius("mesh_node_y", "mesh_node_x", "mesh_depth");
 
     //////////////////////////////
     //// READ FIELD VARIABLES ////

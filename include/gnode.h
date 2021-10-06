@@ -22,29 +22,34 @@ template <class T>
 class GNode
 {
 public:
-     /*!
+    /*!
      * Constructor for initializeing a GeoFLOW node.
      * 
-     * @param x cartesian x coordinate
-     * @param y cartesian y coordinate
-     * @param z cartesian z coordinate
+     * @param lat latitude coordinate value
+     * @param lonVarName name of longitude variable in property tree
+     * @param lon longitude coordinate value
+     * @param radVarName name of radius variable in property tree
+     * @param rad radius coordinate value
      * @param nodeID original node ID when GF file was read in
      * @param elemLayerID element layer index the node resides on
      */
-    GNode(T x, T y, T z, GSIZET nodeID, GSIZET elemLayerID) 
-        : 
-        _pos({x,y,z}), 
-        _nodeID(nodeID), 
-        _elemLayerID(elemLayerID) 
-    {}
+    GNode(const GString& latVarName, const T& lat, 
+          const GString& lonVarName, const T& lon, 
+          const GString& radVarName, const T& rad,
+          GSIZET nodeID, GSIZET elemLayerID) 
+       {
+        _varMap[latVarName] = lat;
+        _varMap[lonVarName] = lon;
+        _varMap[radVarName] = rad;
+        //_nodeID(nodeID), 
+        _elemLayerID = elemLayerID;
+    }
     ~GNode() {}
 
     // Access
-    GSIZET nodeID() const { return _nodeID; }
+    //GSIZET nodeID() const { return _nodeID; }
     GSIZET elemLayerID() const { return _elemLayerID; }
     void elemLayerID(GSIZET id) { _elemLayerID = id; }
-    array<T, 3> pos() const { return _pos; }
-    void pos(const array<T, 3>& pos) { _pos = pos; }
     T var(const GString& varName) const
     {
         try
@@ -75,10 +80,9 @@ public:
     // Print
     void printNode()
     {
-        // Print position and layer info
-        cout << "Node: [" << _nodeID << "] - ";
-        cout << "x,y,z: (" << _pos[0] << ", " << _pos[1] << ", " << _pos[2] 
-             << ") | " << "elem ID: (" << _elemLayerID << ") | ";
+        // Print ID and layer info
+        //cout << "Node: [" << _nodeID << "] - ";
+        cout << "elem ID: (" << _elemLayerID << ") | ";
 
         // Print all variables in the node
         typename map<GString, T>::const_iterator it; 
@@ -90,11 +94,9 @@ public:
     }
 
 private:
-    array<T, 3> _pos;        // x,y,z cartesian coordinate of node
-    GSIZET _nodeID;          // original GF node ID
+    //GSIZET _nodeID;          // original GF node ID
     GSIZET _elemLayerID;     // GeoFLOW element layer # node resides on
     map<GString, T> _varMap; // pairs of variable names and their values
-
 };
 
 #endif

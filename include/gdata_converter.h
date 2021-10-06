@@ -60,28 +60,21 @@ public:
     bool fileExists(const GString& filename);
 
     /*!
-     * Reads the GeoFLOW x,y,z grid filenames specified in the property tree 
-     * and passes the filenames to the parameterized method of the same name.
+     * Reads the GeoFLOW x,y,z grid filenames specified in the property tree,  
+     * convert x,y,z to lat,lon,rad and store in a collection of nodes. A 
+     * GeoFLOW element layer ID is also set for each node based on data in the 
+     * header of the GeoFLOW file.
+     * 
+     * @param latVarName name of latitude variable in property tree
+     * @param lonVarName name of longitude variable in property tree
+     * @param radVarName name of radius variable in property tree
      * 
      * @return the header info for the grid files read in (the header should 
      *         be the same for each time-invariant x,y,z file)
      */
-   GHeaderInfo readGFGridToNodes();
-
-    /*!
-     * Read GeoFLOW x,y,z grid files and store data in a collection of nodes.  
-     * A GeoFLOW element layer ID is also set for each node based on data in 
-     * the header of the GeoFLOW file.
-     * 
-     * @param gfXFilename GeoFLOW x grid filename
-     * @param gfYFilename GeoFLOW y grid filename
-     * @param gfZFilename GeoFLOW z grid filename
-     * @return the header info for the grid files read in (the header is the 
-     *         same for each time-invariant x,y,z file)
-     */
-   GHeaderInfo readGFGridToNodes(const GString& gfXFilename,
-                                 const GString& gfYFilename,
-                                 const GString& gfZFilename);
+    GHeaderInfo readGFGridToLatLonRadNodes(const GString& latVarName,
+                                           const GString& lonVarName,
+                                           const GString& radVarName);
 
     /*!
      * Read GeoFLOW variable file and store data in nodes. Assumes the 
@@ -94,19 +87,6 @@ public:
      */
     GHeaderInfo readGFVariableToNodes(const GString& gfFilename,
                                       const GString& varName);
-
-    /*!
-     * Compute a lat,lon,radius for each node. A new variable for each 
-     * lat,lon,radius with the input varNames gets created in the node 
-     * if it does not exist.
-     * 
-     * @param latVarName name of latitude variable in property tree
-     * @param lonVarName name of longitude variable in property tree
-     * @param radVarName name of radius variable in property tree
-     */
-    void xyzToLatLonRadius(const GString& latVarName,
-                           const GString& lonVarName,
-                           const GString& radVarName);
 
     /*
      *

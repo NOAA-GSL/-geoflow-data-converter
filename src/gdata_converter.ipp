@@ -12,6 +12,7 @@
 #include "gfile_reader.h"
 #include "math_util.h"
 #include "logger.h"
+#include "timer.h"
 
 template <class T>
 GDataConverter<T>::GDataConverter(const GString& ptFilename)
@@ -141,34 +142,26 @@ GDataConverter<T>::~GDataConverter()
 }
 
 template <class T>
-GHeaderInfo GDataConverter<T>::readGFGridToNodes()
+GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
+                                                    const GString& latVarName, 
+                                                    const GString& lonVarName, 
+                                                    const GString& radVarName)
 {
     cout << "Reading GeoFLOW grid files" << endl;
 
     // Read the x,y,z GeoFLOW grid filenames from the property tree
-    GString x = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.x");
-    GString y = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.y");
-    GString z = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.z");
+    GString xFilename = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.x");
+    GString yFilename = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.y");
+    GString zFilename = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.z");
 
-    x = _inputDir + "/" + x;
-    y = _inputDir + "/" + y;
-    z = _inputDir + "/" + z;
+    xFilename = _inputDir + "/" + xFilename;
+    yFilename = _inputDir + "/" + yFilename;
+    zFilename = _inputDir + "/" + zFilename;
 
-    // Read the GeoFLOW x,y,z grid values into a collection of nodes
-    GHeaderInfo header = readGFGridToNodes(x, y, z);
-
-    return header;
-}
-
-template <class T>
-GHeaderInfo GDataConverter<T>::readGFGridToNodes(const GString& gfXFilename,
-                                                 const GString& gfYFilename,
-                                                 const GString& gfZFilename)
-{
-    // Read the GeoFLOW x,y,z grid files (header and data)
-    GFileReader<T> x(gfXFilename);
-    GFileReader<T> y(gfYFilename);
-    GFileReader<T> z(gfZFilename);
+    // Read the GeoFLOW x,y,z grid files (reader stores header and data)
+    GFileReader<T> x(xFilename);
+    GFileReader<T> y(yFilename);
+    GFileReader<T> z(zFilename);
 
     // Verify data size
     if (!(x.data().size() == y.data().size() && 
@@ -187,7 +180,8 @@ GHeaderInfo GDataConverter<T>::readGFGridToNodes(const GString& gfXFilename,
     // of nodes. The IDs/header are the same for each x,y,z triplet so just 
     // use the IDs/header from the x grid.
 
-    cout << "Reading GeoFLOW grid to nodes" << endl;
+    cout << "Converting x,y,z to lat,lon,r and reading GeoFLOW grid to nodes" \
+         << endl;
 
     _nodes.clear(); // remove all elements from vector (i.e., size = 0)
     _nodes.shrink_to_fit(); // reduce vectory capacity to vector size
@@ -207,12 +201,15 @@ GHeaderInfo GDataConverter<T>::readGFGridToNodes(const GString& gfXFilename,
     }
 
     // For each node in the volume...
+    array<T, 3> llr;
     for (auto i = 0u; i < numNodes; ++i)
     {
+        llr = MathUtil::xyzToLatLonRadius<T>({x.data()[i], y.data()[i], z.data()[i]});
+
         // Add new node to list
-        _nodes.emplace_back(x.data()[i],
-                            y.data()[i], 
-                            z.data()[i],
+        _nodes.emplace_back(latVarName, llr[0],
+                            lonVarName, llr[1],
+                            radVarName, llr[2],
                             i, // node ID
                             x.elementLayerIDs()[i]);
     }
@@ -256,26 +253,9 @@ GHeaderInfo GDataConverter<T>::readGFVariableToNodes(const GString& gfFilename,
 }
 
 template <class T>
-void GDataConverter<T>::xyzToLatLonRadius(const GString& latVarName,
-                                          const GString& lonVarName,
-                                          const GString& radVarName)
-{
-    cout << "For each node, computing lat,lon,radius from x,y,z" << endl;
-
-    // For each node, convert x,y,z to lat,lon,radius...
-    for (auto& n : _nodes)
-    {
-        array<T, 3> p = MathUtil::xyzToLatLonRadius<T>(n.pos());
-        n.var(latVarName, p[0]);
-        n.var(lonVarName, p[1]);
-        n.var(radVarName, p[2]);
-    } 
-}
-
-template <class T>
 void GDataConverter<T>::sortNodesByElemID()
 {
-    cout << "Sorting nodes by element ID";
+    cout << "Sorting nodes by element ID" << endl;
 
     // Use stable sort to make sure the same order of objects is retained for 
     // two objects with equal keys (since the original order of nodes within 
@@ -286,12 +266,27 @@ void GDataConverter<T>::sortNodesByElemID()
 template <class T>
 void GDataConverter<T>::sortNodesBy2DMeshLayer()
 {
-    cout << "Sorting nodes by 2D mesh layer";
+    cout << "Sorting nodes by 2D mesh layer" << endl;
 
     // Sort the nodes by 2D mesh layer. For 3D elements, there are multiple 
     // 2D layers (x,y ref dir) in the radial direction
 
     vector<GNode<T>> temp;
+
+    // Set the vector capacity in advance
+    GSIZET numNodes = _header.nNodesPerVolume;
+    try
+    {
+        temp.reserve(numNodes);
+    }
+    catch (const std::length_error& e) 
+    {
+        std::string msg = "Error setting capacity for list of temp nodes: " + \
+                          _header.nNodesPerVolume + GString(e.what());
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+
     GUINT nX = _header.polyOrder[0] + 1; // num nodes in x ref dir
     GUINT nY = _header.polyOrder[1] + 1; // num nodes in y ref dir
     GUINT nZ = 1; // 1 = default num nodes in z ref dir for a 2D dataset
@@ -327,7 +322,8 @@ void GDataConverter<T>::sortNodesBy2DMeshLayer()
 template <class T>
 void GDataConverter<T>::faceToNodes()
 {
-    cout << "Mapping faces to nodes (i.e., creating a list of GFace objects)";
+    cout << "Mapping faces to nodes (i.e., creating a list of GFace objects)" \
+         << endl;
 
     // Create a mapping of face to nodes for the first 2D mesh layer. This 
     // mapping is the same for each layer. The assumption here is the nodes 
