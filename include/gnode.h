@@ -30,24 +30,23 @@ public:
      * @param lon longitude coordinate value
      * @param radVarName name of radius variable in property tree
      * @param rad radius coordinate value
-     * @param nodeID original node ID when GF file was read in
      * @param elemLayerID element layer index the node resides on
      */
     GNode(const GString& latVarName, const T& lat, 
           const GString& lonVarName, const T& lon, 
           const GString& radVarName, const T& rad,
-          GSIZET nodeID, GSIZET elemLayerID) 
+          GSIZET elemLayerID) 
        {
         _varMap[latVarName] = lat;
         _varMap[lonVarName] = lon;
         _varMap[radVarName] = rad;
-        //_nodeID(nodeID), 
         _elemLayerID = elemLayerID;
     }
     ~GNode() {}
 
     // Access
-    //GSIZET nodeID() const { return _nodeID; }
+    GUINT sortKey() const { return _sortKey; }
+    void sortKey(GUINT key) { _sortKey = key; }
     GSIZET elemLayerID() const { return _elemLayerID; }
     void elemLayerID(GSIZET id) { _elemLayerID = id; }
     T var(const GString& varName) const
@@ -77,11 +76,19 @@ public:
         return (_elemLayerID < node.elemLayerID());
     }
 
+    /*
+     *
+     */
+    static bool sort_key_comp(GNode a, GNode b)
+    {
+        return (a._sortKey < b._sortKey);
+    }
+
     // Print
     void printNode()
     {
         // Print ID and layer info
-        //cout << "Node: [" << _nodeID << "] - ";
+        cout << "sort key: (" << _sortKey << ") | ";
         cout << "elem ID: (" << _elemLayerID << ") | ";
 
         // Print all variables in the node
@@ -94,8 +101,8 @@ public:
     }
 
 private:
-    //GSIZET _nodeID;          // original GF node ID
     GSIZET _elemLayerID;     // GeoFLOW element layer # node resides on
+    GUINT _sortKey;          // orig pos 
     map<GString, T> _varMap; // pairs of variable names and their values
 };
 

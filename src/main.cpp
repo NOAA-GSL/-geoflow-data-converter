@@ -29,6 +29,9 @@ TODO ACROSS PROJECT
 - Optimize: don't need to read the element layer ids for all x, y, z files 
   since they are the same, just need to read one file.
 - Wasting space by re-writing layer boundries that correspond to each other!
+- Confirm netcdf variable exists at beg. instead of waiting till after the 
+var is read from file - to avoid doing all the work and then prog. exiting 
+bc can't find var info in json file!
 */
 
 #include "gdata_converter.h"
@@ -91,6 +94,7 @@ int main(int argc, char** argv)
     map<GString, GHeaderInfo> timeHeaderMap;
 
     // For each GeoFLOW variable...
+    startTime = Timer::getTime();
     for (auto fullVarName : gdc.fullVarNames())
     {
         cout << "Reading GeoFLOW variable: " << fullVarName << endl;
@@ -101,22 +105,34 @@ int main(int argc, char** argv)
         timeHeaderMap[timestep] = gdc.readGFVariableToNodes(gfFilename, 
                                                             fullVarName);
     }
+    endTime = Timer::getTime();
+    Timer::printElapsedTime(startTime, endTime);
 
     ////////////////////
     //// SORT NODES ////
     ////////////////////
 
     // Sort the nodes into ascending order of element ids
+    startTime = Timer::getTime();
     gdc.sortNodesByElemID();
+    endTime = Timer::getTime();
+    Timer::printElapsedTime(startTime, endTime);
 
     // Sort the nodes into ascending order of 2D mesh layers
+    startTime = Timer::getTime();
     gdc.sortNodesBy2DMeshLayer();
+    endTime = Timer::getTime();
+    Timer::printElapsedTime(startTime, endTime);
 
     // Create a list of face to node mappings for one mesh layer (all mesh 
     // layers have the same mapping)
+    startTime = Timer::getTime();
     gdc.faceToNodes();
+    endTime = Timer::getTime();
+    Timer::printElapsedTime(startTime, endTime);
 
-    cout << "Creating a single list of face indices";
+    startTime = Timer::getTime();
+    cout << "Creating a single list of face indices" << endl;
     vector<GUINT> faceList;
     for (auto f : gdc.faces())
     {
@@ -125,12 +141,14 @@ int main(int argc, char** argv)
           faceList.push_back(i);
         }
     }
-    cout << "Done creating a single list of face indices";
+    endTime = Timer::getTime();
+    Timer::printElapsedTime(startTime, endTime);
 
     ////////////////////////////////////
     //// WRITE COORDINATE VARIABLES ////
     ////////////////////////////////////
 
+    startTime = Timer::getTime();
     // Initialize a NetCDF file to store all time-invariant grid variables
     gdc.initNC("grid.nc", NcFile::FileMode::replace);
     gdc.writeNCDimensions();
@@ -144,6 +162,8 @@ int main(int argc, char** argv)
 
     // Close the active NetCDF file
     gdc.closeNC();
+    endTime = Timer::getTime();
+    Timer::printElapsedTime(startTime, endTime);
 
     ///////////////////////////////////
     ////// WRITE FIELD VARIABLES //////

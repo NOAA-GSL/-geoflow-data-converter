@@ -210,7 +210,6 @@ GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
         _nodes.emplace_back(latVarName, llr[0],
                             lonVarName, llr[1],
                             radVarName, llr[2],
-                            i, // node ID
                             x.elementLayerIDs()[i]);
     }
 
@@ -271,22 +270,6 @@ void GDataConverter<T>::sortNodesBy2DMeshLayer()
     // Sort the nodes by 2D mesh layer. For 3D elements, there are multiple 
     // 2D layers (x,y ref dir) in the radial direction
 
-    vector<GNode<T>> temp;
-
-    // Set the vector capacity in advance
-    GSIZET numNodes = _header.nNodesPerVolume;
-    try
-    {
-        temp.reserve(numNodes);
-    }
-    catch (const std::length_error& e) 
-    {
-        std::string msg = "Error setting capacity for list of temp nodes: " + \
-                          _header.nNodesPerVolume + GString(e.what());
-        Logger::error(__FILE__, __FUNCTION__, msg);
-        exit(EXIT_FAILURE);
-    }
-
     GUINT nX = _header.polyOrder[0] + 1; // num nodes in x ref dir
     GUINT nY = _header.polyOrder[1] + 1; // num nodes in y ref dir
     GUINT nZ = 1; // 1 = default num nodes in z ref dir for a 2D dataset
@@ -297,6 +280,7 @@ void GDataConverter<T>::sortNodesBy2DMeshLayer()
     GUINT nXY = nX * nY; // num nodes per element in x,y ref dir
     GUINT nXYZ = nX * nY * nZ; // num nodes per element in x,y,z dir
     GUINT nNodesPerElemLayer = _header.nElemPerElemLayer * nXYZ;
+    GUINT start, end, count = 0;
 
     // For each GeoFLOW element layer...
     for (auto i = 0u; i < _header.nElemLayers; ++i)
@@ -307,16 +291,21 @@ void GDataConverter<T>::sortNodesBy2DMeshLayer()
             // For each element in the GeoFLOW element layer...
             for (auto j = 0u; j < _header.nElemPerElemLayer; ++j)
             {
-                typename vector<GNode<T>>::iterator start = 
-                    _nodes.begin() + (i * nNodesPerElemLayer) + (j * nXYZ) + (k * nXY);
-                typename vector<GNode<T>>::iterator end = start + nXY;
-                temp.insert(temp.end(), start, end);
+                start = (i * nNodesPerElemLayer) + (j * nXYZ) + (k * nXY);
+                end = start + nXY;
+
+                for (GUINT h = start; h < end; ++h)
+                {
+                    _nodes[h].sortKey(count);
+                }
+
+                ++count;
             }
         }
     }
 
-    // Swap the sorted temp nodes with the class member nodes
-    _nodes.swap(temp);
+    // Sort on sort keys
+    stable_sort(_nodes.begin(), _nodes.end(), GNode<T>::sort_key_comp);
 }
 
 template <class T>
