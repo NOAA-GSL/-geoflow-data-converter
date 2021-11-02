@@ -77,6 +77,24 @@ public:
                                            const GString& radVarName);
 
     /*!
+     * Read the GeoFLOW x,y,z grid filenames specified in the property tree  
+     * and store x,y,z into a collection of nodes. x,y corresponds to the 2D 
+     * horizontal mesh layer, and z corresponds to the upward/elevation axis.  
+     * A GeoFLOW element layer ID is also set for each node based on data in 
+     * the header of the GeoFLOW file.
+     * 
+     * @param xVarName name of x variable in property tree
+     * @param yVarName name of y variable in property tree
+     * @param zVarName name of z/elevation variable in property tree
+     * 
+     * @return the header info for the grid files read in (the header should 
+     *         be the same for each time-invariant x,y,z file)
+     */
+    GHeaderInfo readGFGridToBoxNodes(const GString& xVarName, 
+                                     const GString& yVarName, 
+                                     const GString& zVarName);
+
+    /*!
      * Read GeoFLOW variable file and store data in nodes. Assumes the 
      * correct number of nodes have already been initialized by the readGrid() 
      * method.

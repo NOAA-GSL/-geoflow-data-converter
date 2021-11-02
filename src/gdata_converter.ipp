@@ -181,7 +181,7 @@ GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
     // use the IDs/header from the x grid.
 
     cout << "Converting x,y,z to lat,lon,r and reading GeoFLOW grid to nodes" \
-         << endl;
+         << " (spherical coordinates)" << endl;
 
     _nodes.clear(); // remove all elements from vector (i.e., size = 0)
     _nodes.shrink_to_fit(); // reduce vectory capacity to vector size
@@ -210,6 +210,79 @@ GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
         _nodes.emplace_back(latVarName, llr[0],
                             lonVarName, llr[1],
                             radVarName, llr[2],
+                            x.elementLayerIDs()[i]);
+    }
+
+    // Save header
+    _header = x.header();
+
+    return x.header();
+}
+
+template <class T>
+GHeaderInfo GDataConverter<T>::readGFGridToBoxNodes(const GString& xVarName, 
+                                                    const GString& yVarName, 
+                                                    const GString& zVarName)
+{
+    cout << "Reading GeoFLOW grid files" << endl;
+
+    // Read the x,y,z GeoFLOW grid filenames from the property tree
+    GString xFilename = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.x");
+    GString yFilename = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.y");
+    GString zFilename = PTUtil::getValue<GString>(_ptRoot, "grid_filenames.z");
+
+    xFilename = _inputDir + "/" + xFilename;
+    yFilename = _inputDir + "/" + yFilename;
+    zFilename = _inputDir + "/" + zFilename;
+
+    // Read the GeoFLOW x,y,z grid files (reader stores header and data)
+    GFileReader<T> x(xFilename);
+    GFileReader<T> y(yFilename);
+    GFileReader<T> z(zFilename);
+
+    // Verify data size
+    if (!(x.data().size() == y.data().size() && 
+          y.data().size() == z.data().size()))
+    {
+        string msg = "The number of values in the x grid (" + \
+                     to_string(x.data().size()) + "), y grid (" + \
+                     to_string(y.data().size()) + ") and z grid (" + \
+                     to_string(z.data().size()) + ") differ.";
+
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+
+    // Read each x,y,z location value and element layer ID into a collection 
+    // of nodes. The IDs/header are the same for each x,y,z triplet so just 
+    // use the IDs/header from the x grid.
+
+    cout << "Reading GeoFLOW grid to nodes (box grid)" << endl;
+
+    _nodes.clear(); // remove all elements from vector (i.e., size = 0)
+    _nodes.shrink_to_fit(); // reduce vectory capacity to vector size
+
+    // Set the vector capacity in advance
+    GSIZET numNodes = (x.header()).nNodesPerVolume;
+    try
+    {
+        _nodes.reserve(numNodes);
+    }
+    catch (const std::length_error& e) 
+    {
+        std::string msg = "Error setting capacity for list of nodes: " + \
+                          (x.header()).nNodesPerVolume + GString(e.what());
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+
+    // For each node in the volume...
+    for (auto i = 0u; i < numNodes; ++i)
+    {
+        // Add new node to list
+        _nodes.emplace_back(xVarName, x.data()[i],
+                            yVarName, y.data()[i],
+                            zVarName, z.data()[i],
                             x.elementLayerIDs()[i]);
     }
 
