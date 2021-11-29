@@ -124,7 +124,7 @@
     {
         "comment": "Face node coordinates: the indices of the corner nodes (in a cc direction) of each face in each mesh layer",
         "name": "mesh_face_nodes",
-        "type": "GINT",
+        "type": "GUINT",
         "args":
         [
             "nMeshFaces", 
@@ -270,7 +270,7 @@
             },
             {
                 "name": "standard_name",
-                "value": "",
+                "value": "elevation",
                 "comment": "optional attribute - should be consistent with the positive attribute"
             },
             {
