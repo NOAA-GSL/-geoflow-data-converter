@@ -1,6 +1,6 @@
 {
 "output_format": "UGRID",
-"dataset_description": "Example of a single layer of 3D GeoFLOW elements.",
+"dataset_description": "Example of a 3D GeoFLOW dataset with multiple element layers.",
 "input_dir": "input-data-3D",
 "output_dir": "output-data",
 "data_type": "GDOUBLE",
@@ -11,7 +11,13 @@
     "y": "ygrid.000000.out",
     "z": "zgrid.000000.out"
 },
-"root_variable_names":
+"grid_variable_names":
+[
+    "mesh_node_x",
+    "mesh_node_y",
+    "mesh_depth"
+],
+"field_variable_root_names":
 [
     "dtotal",
     "v1",
@@ -295,45 +301,6 @@
     {
         "comment": "The total density field variable",
         "name": "dtotal",
-        "type": "data_type",
-        "args":
-        [
-            "time",
-            "meshLayers",
-            "nMeshNodes"
-        ],
-        "attributes":
-        [
-            {
-                "name": "units",
-                "value": "",
-                "comment": "required for all variables that represent dimensional quantities"
-            },
-            {
-                "name": "standard_name",
-                "value": "",
-                "comment": "optional attribute - should be consistent with the positive attribute"
-            },
-            {
-                "name": "mesh",
-                "value": "mesh",
-                "comment": ""
-            },
-            {
-                "name": "location",
-                "value": "node",
-                "comment": ""
-            },
-            {
-                "name": "coordinates",
-                "value": "mesh_node_x mesh_node_y mesh_depth",
-                "comment": ""
-            }
-        ]
-    },
-    {
-        "comment": "The internal energy field variable",
-        "name": "e",
         "type": "data_type",
         "args":
         [

@@ -1,10 +1,10 @@
 {
 "output_format": "UGRID",
-"dataset_description": "Example of a single layer of 2D GeoFLOW elements.",
-"input_dir": "input-data-2D",
+"dataset_description": "Example of a single layer of 3D GeoFLOW elements.",
+"input_dir": "input-data-box",
 "output_dir": "output-data",
 "data_type": "GDOUBLE",
-"num_timesteps": 2,
+"num_timesteps": 1,
 "grid_filenames":
 {
     "x": "xgrid.000000.out",
@@ -19,8 +19,11 @@
 ],
 "field_variable_root_names":
 [
-    "dtotal",
-    "T"
+    "d",
+    "e",
+    "v1",
+    "v2",
+    "v3"
 ],
 "dimensions": 
 [
@@ -184,7 +187,12 @@
             },
             {
                 "name": "units",
-                "value": "degrees_east",
+                "value": "meters",
+                "comment": ""
+            },
+            {
+                "name": "axis",
+                "value": "X",
                 "comment": ""
             }
         ]
@@ -211,7 +219,12 @@
             },
             {
                 "name": "units",
-                "value": "degrees_north",
+                "value": "meters",
+                "comment": ""
+            },
+            {
+                "name": "axis",
+                "value": "Y",
                 "comment": ""
             }
         ]
@@ -298,7 +311,7 @@
     },
     {
         "comment": "The total density field variable",
-        "name": "dtotal",
+        "name": "d",
         "type": "data_type",
         "args":
         [
@@ -336,8 +349,125 @@
         ]
     },
     {
-        "comment": "The temperature field variable",
-        "name": "T",
+        "comment": "The internal energy field variable",
+        "name": "e",
+        "type": "data_type",
+        "args":
+        [
+            "time",
+            "meshLayers",
+            "nMeshNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "units",
+                "value": "",
+                "comment": "required for all variables that represent dimensional quantities"
+            },
+            {
+                "name": "standard_name",
+                "value": "",
+                "comment": "optional attribute - should be consistent with the positive attribute"
+            },
+            {
+                "name": "mesh",
+                "value": "mesh",
+                "comment": ""
+            },
+            {
+                "name": "location",
+                "value": "node",
+                "comment": ""
+            },
+            {
+                "name": "coordinates",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
+                "comment": ""
+            }
+        ]
+    },
+    {
+        "comment": "The x velocity field variable",
+        "name": "v1",
+        "type": "data_type",
+        "args":
+        [
+            "time",
+            "meshLayers",
+            "nMeshNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "units",
+                "value": "",
+                "comment": "required for all variables that represent dimensional quantities"
+            },
+            {
+                "name": "standard_name",
+                "value": "",
+                "comment": "optional attribute - should be consistent with the positive attribute"
+            },
+            {
+                "name": "mesh",
+                "value": "mesh",
+                "comment": ""
+            },
+            {
+                "name": "location",
+                "value": "node",
+                "comment": ""
+            },
+            {
+                "name": "coordinates",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
+                "comment": ""
+            }
+        ]
+    },
+    {
+        "comment": "The y velocity field variable",
+        "name": "v2",
+        "type": "data_type",
+        "args":
+        [
+            "time",
+            "meshLayers",
+            "nMeshNodes"
+        ],
+        "attributes":
+        [
+            {
+                "name": "units",
+                "value": "",
+                "comment": "required for all variables that represent dimensional quantities"
+            },
+            {
+                "name": "standard_name",
+                "value": "",
+                "comment": "optional attribute - should be consistent with the positive attribute"
+            },
+            {
+                "name": "mesh",
+                "value": "mesh",
+                "comment": ""
+            },
+            {
+                "name": "location",
+                "value": "node",
+                "comment": ""
+            },
+            {
+                "name": "coordinates",
+                "value": "mesh_node_x mesh_node_y mesh_depth",
+                "comment": ""
+            }
+        ]
+    },
+    {
+        "comment": "The z velocity field variable",
+        "name": "v3",
         "type": "data_type",
         "args":
         [
