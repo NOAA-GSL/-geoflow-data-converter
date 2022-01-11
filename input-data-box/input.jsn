@@ -1,0 +1,152 @@
+{ 
+  "exp_order"         : [4, 4, 4],
+  "exp_order_type"    : "constant",
+  "do_dealiasing"     : false,
+  "qdealias_order"    : [8, 8, 8],
+  "grid_type"         : "grid_box",
+  "pde_name"          : "pde_mconv",
+  "initstate_block"   : "initstate_boxtgconv",
+  "initforce_block"   : "",
+  "use_forcing"       : false,
+  "initstate_type"    : "direct",
+  "initforce_type"    : "",
+  "restart_index"     : 0,
+  "benchmark"         : false,
+  "do_comparison"     : false,
+  "observer_list"     : ["gio_observer", "gmconv_diag"],
+  "IO_implementation" : "gio",
+  "terrain_type"      : "",
+  "initstate_boxtgconv": {
+    "d0"         : 1.0,
+    "p0"         : 1.0,
+    "kdn"        : 1,
+    "kup"        : 3
+  },
+  "periodic": {
+    "bdy_class"        : "uniform",
+    "base_type"        : ["GBDY_PERIODIC"],
+    "istate"           : [[0, 1, 2, 3]]
+  },
+  "pde_mconv": {
+    "dodry"           : true,
+    "domassonly"      : false,
+    "totalenergy"     : true,
+    "usebase_state"   : false,
+    "base_state_type" : "GMC_POLYTROPIC",
+    "gamma"           : 1.40,
+    "sigma"           : 1.0,
+    "dofallout"       : false,
+    "docoriolis"      : false,
+    "dogravity"       : false,
+    "doviscosity"     : true,
+    "doconduct"       : true,
+    "bconserved"      : false,
+    "divopcolloc"     : true,
+    "usebdydat"       : false,
+    "Stokeshyp"       : true,
+    "nliq"            : 0,
+    "nice"            : 0,
+    "use_forcing"     : false,
+    "forcing_comp"    : [],
+    "T_surf"          : 1.0,
+    "P0"              : 1.0,
+    "N"               : 0.0,
+    "filter_list"     : [],
+    "boyd_filter" : {
+      "filter_type" : "boyd_filter",
+      "strength"    : [1e-3, 1e-3, 1e-3],
+      "pdelta"      : [1, 1, 1],
+      "istate"      : [0, 1]
+    },
+    "proj_filter" : {
+      "filter_type" : "projection_filter",
+      "strength"    : [0.2 , 0.2 , 0.1 ],
+      "pdelta"      : [3, 3, 2],
+      "istate"      : [1]
+    }
+  },
+  "grid_box": {
+    "grid_name" : "grid_box",
+    "xyz0"      : [ 0, 0, 0],
+    "delxyz"    : [ 1, 1, 1],
+    "num_elems" : [16, 16, 16],
+    "bdy_x_0"   : "periodic",
+    "bdy_x_1"   : "periodic",
+    "bdy_y_0"   : "periodic",
+    "bdy_y_1"   : "periodic",
+    "bdy_z_0"   : "periodic",
+    "bdy_z_1"   : "periodic",
+    "treat_as_1d" : false,
+    "dir1d"     : 1,
+    "maxit"     : 4096,
+    "tol"       : 1.0e-4,
+    "norm_type" : "GCG_NORM_INF"
+  },
+  "stepper_props": {
+    "stepping_method"  : "GSTEPPER_EXRK",
+    "time_deriv_order" : 2,
+    "nstage"           : 2,
+    "stab_preserving"  : true,
+    "extrap_order"     : 2,
+    "variable_dt"      : false,
+    "courant"          : 0.5
+  },
+  "dissipation_traits": {
+    "mu"      : 5.0e-2,
+    "zeta"    : 5.0e-2,
+    "Pr"      : 1.0,
+    "nu_type" : "constant"
+  },
+  "gio": {
+    "ivers"    : 0,
+    "multivar" : false,
+    "io_type"  : "collective",
+    "wtime"    : 6,
+    "wtask"    : 5,
+    "wfile"    : 2048
+  },
+  "temp": {
+    "names"       : ["T"],
+    "mathop"      : "temp"
+  },
+  "cs": {
+    "names"       : ["cs"],
+    "mathop"      : "cs"
+  },
+  "press": {
+    "names"       : ["p"],
+    "mathop"      : "press"
+  },
+  "vel": {
+    "names"       : ["v1", "v2", "v3"],
+    "mathop"      : "vel"
+  },
+  "gio_observer": {
+    "observer_name"      : "gio_observer",
+    "idir"               : "outs",
+    "odir"               : "outs",
+    "cadence_type"       : "cycle",
+    "cycle_interval"     : 10,
+    "time_interval"      : 0.002,
+    "state_names"        : ["s1", "s2", "s3", "e", "d"],
+    "grid_names"         : ["xgrid", "ygrid", "zgrid"],
+    "agg_state_name"     : "u",
+    "agg_grid_name "     : "grid",
+    "derived_quantities"       : [],
+    "state_derived_quantities" : ["temp","press","vel","cs"]
+
+  },
+  "gmconv_diag": {
+    "observer_name"      : "gmconv_diag",
+    "idir"               : ".",
+    "odir"               : ".",
+    "interval_freq_fact" : 100.0
+  },
+  "time_integration": {
+    "integ_type" : "cycle",
+    "time_end"   : 0.201,
+    "cycle_end"  : 20,
+    "dt"         : 1.0e-4
+  }
+
+}
