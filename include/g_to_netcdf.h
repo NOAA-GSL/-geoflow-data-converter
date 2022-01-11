@@ -111,13 +111,18 @@ public:
      *                    the list of nodes 
      * @param nodes list of nodes that contains the variable data to write
      */
-    template <typename T>
+    /*template <typename T>
     void writeVariableData(const GString& rootVarName, 
                            const GString& fullVarName,
+                           const vector<GNode<T>>& nodes)*/
+    template <typename T>
+    void writeVariableData(const GString& rootVarName, 
+                           GUINT varNameIndex,
                            const vector<GNode<T>>& nodes)
     {
+        Logger::info(__FILE__, __FUNCTION__, "");
         cout << "Writing NetCDF variable data from nodes for variable: "
-             << fullVarName << endl;
+             << rootVarName << " at at var index: " << varNameIndex << endl;
 
         // Get the NcVar associated with this variable
         NcVar ncVar = _nc.getVar(rootVarName);
@@ -126,7 +131,7 @@ public:
         T *data = new T[nodes.size()];
         for (auto i = 0u; i < nodes.size(); ++i)
         {
-            data[i] = nodes[i].var(fullVarName);
+            data[i] = nodes[i].var(varNameIndex);
         }
 
         // Write the data to the NetCDF file
@@ -147,6 +152,7 @@ public:
     void writeVariableData(const GString& varName,
                            const T& varValue)
     {
+        Logger::info(__FILE__, __FUNCTION__, "");
         cout << "Writing NetCDF variable data from single-value for variable: "
              << varName << endl;
 
@@ -175,6 +181,7 @@ public:
     void writeVariableData(const GString& varName,
                            const vector<T>& values)
     {
+        Logger::info(__FILE__, __FUNCTION__, "");
         cout << "Writing NetCDF variable data from a list of values for "
              << "variable: " << varName << endl;
 

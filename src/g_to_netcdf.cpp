@@ -11,6 +11,8 @@ GToNetCDF::GToNetCDF(pt::ptree& ptRoot,
                      const GString& ncFilename,
                      NcFile::FileMode mode)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
+
     // Initialize
     _ptRoot = ptRoot;
 
@@ -84,6 +86,7 @@ NcType GToNetCDF::getVariableType(const GString& varName)
 
 void GToNetCDF::writeDimensions()
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Writing NetCDF dimensions" << endl;
 
     pt::ptree dimArr = PTUtil::getArray(_ptRoot, "dimensions");
@@ -107,6 +110,7 @@ void GToNetCDF::writeDimensions()
 
 void GToNetCDF::writeVariableDefinition(const GString& varName)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Writing NetCDF variable definition for: " << varName << endl;
 
     pt::ptree varArr = PTUtil::getArray(_ptRoot, "variables");
@@ -163,6 +167,7 @@ void GToNetCDF::writeVariableDefinition(const GString& varName)
 
 void GToNetCDF::writeVariableAttributes(const GString& varName)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Writing NetCDF variable attributes for: " << varName << endl;
 
     pt::ptree varArr = PTUtil::getArray(_ptRoot, "variables");

@@ -17,6 +17,8 @@
 template <class T>
 GDataConverter<T>::GDataConverter(const GString& ptFilename)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
+
     // Initialize
     _ptFilename = ptFilename;
     _nc = 0;
@@ -24,22 +26,39 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
     // Load the property tree
     PTUtil::readJSONFile(_ptFilename, _ptRoot);
 
-    // Get input and output directories
+    // Get directory names and create output directory
     _inputDir = PTUtil::getValue<GString>(_ptRoot, "input_dir");
     _outputDir = PTUtil::getValue<GString>(_ptRoot, "output_dir");
     makeDirectory(_outputDir);
+    cout << "Input directory is: " << _inputDir << endl;
+    cout << "Output directory is: " << _outputDir << endl;    
 
     // Get number of timesteps
     _numTimesteps = PTUtil::getValue<GUINT>(_ptRoot, "num_timesteps");
+    cout << "Num timestpes are: " << _numTimesteps << endl;
 
-    // Get the root names of the variables
-    pt::ptree varsArr = PTUtil::getArray(_ptRoot, "root_variable_names");
-    _rootVarNames = PTUtil::getValues<GString>(varsArr);
+    // Get all variable names
+    readVariableNames();
+}
+
+template <class T>
+void GDataConverter<T>::readVariableNames()
+{
+    Logger::info(__FILE__, __FUNCTION__, "");
+
+    // Get the names of the grid variables
+    pt::ptree gridArr = PTUtil::getArray(_ptRoot, "grid_variable_names");
+    vector<GString> gridVarNames = PTUtil::getValues<GString>(gridArr);
+
+    // Get the names of the field variables
+    pt::ptree varsArr = PTUtil::getArray(_ptRoot, "field_variable_root_names");
+    vector<GString> fieldVarNames = PTUtil::getValues<GString>(varsArr);
     
-    // Create full variable names with timestep (i.e., rootVarName.timestep)
+    // Create field variable names with timestep appended 
+    // (i.e., rootName.timestep)
     if (_numTimesteps == 0)
     {
-        _fullVarNames = _rootVarNames;
+        _fieldVarNames = fieldVarNames;
     }
     else
     {
@@ -52,28 +71,26 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
             GString timestep = ss.str();
 
             // For each variable at this timestep...
-            for (auto rootVarName : _rootVarNames)
+            for (auto rootVarName : fieldVarNames)
             {
-               _fullVarNames.push_back(rootVarName + "." + timestep);
+               _fieldVarNames.push_back(rootVarName + "." + timestep);
             }
         }
     }
 
+    // Create a single list of grid and (root) field variable names
+    _allVarNames = gridVarNames;
+    _allVarNames.insert(std::end(_allVarNames), 
+                        std::begin(_fieldVarNames), 
+                        std::end(_fieldVarNames));
+
     // For debugging
-    cout << "Input directory is: " << _inputDir << endl;
-    cout << "Output directory is: " << _outputDir << endl;
-    cout << "Num timestpes are: " << _numTimesteps << endl;
-    cout << "Root variable names are: ";
-    for (auto f : _rootVarNames)
-    {
-        cout << f << ", "; 
-    }
+    cout << "All variable names (grid and field) are: ";
+    for (auto n : _allVarNames) { cout << n << ", "; }
     cout << endl;
-    cout << "Full variable names are: ";
-    for (auto f : _fullVarNames)
-    {
-        cout << f << ", "; 
-    }
+
+    cout << "Timestepped field variable names are: ";
+    for (auto n : _fieldVarNames) { cout << n << ", "; }
     cout << endl;
 }
 
@@ -142,11 +159,30 @@ GDataConverter<T>::~GDataConverter()
 }
 
 template <class T>
+GUINT GDataConverter<T>::toVarIndex(const GString& varName)
+{
+    // Find the index of the input variable name
+    auto it = std::find(_allVarNames.begin(), _allVarNames.end(), varName);
+    if (it != _allVarNames.end())
+    {
+        return it - _allVarNames.begin();
+    }
+    else
+    {
+        string msg = "The variable name (" + varName + ") does not exist in " \
+                     "the variable name list.";
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
+    }
+}
+
+template <class T>
 GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
                                                     const GString& latVarName, 
                                                     const GString& lonVarName, 
                                                     const GString& radVarName)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Reading GeoFLOW grid files" << endl;
 
     // Read the x,y,z GeoFLOW grid filenames from the property tree
@@ -167,13 +203,7 @@ GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
     if (!(x.data().size() == y.data().size() && 
           y.data().size() == z.data().size()))
     {
-        string msg = "The number of values in the x grid (" + \
-                     to_string(x.data().size()) + "), y grid (" + \
-                     to_string(y.data().size()) + ") and z grid (" + \
-                     to_string(z.data().size()) + ") differ.";
 
-        Logger::error(__FILE__, __FUNCTION__, msg);
-        exit(EXIT_FAILURE);
     }
 
     // Read each x,y,z location value and element layer ID into a collection 
@@ -184,7 +214,7 @@ GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
          << " (spherical coordinates)" << endl;
 
     _nodes.clear(); // remove all elements from vector (i.e., size = 0)
-    _nodes.shrink_to_fit(); // reduce vectory capacity to vector size
+    _nodes.shrink_to_fit(); // reduce vector capacity to vector size
 
     // Set the vector capacity in advance
     GSIZET numNodes = (x.header()).nNodesPerVolume;
@@ -200,6 +230,8 @@ GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
         exit(EXIT_FAILURE);
     }
 
+    cout << "_allVarNames.size() is: " << _allVarNames.size() << endl;
+
     // For each node in the volume...
     array<T, 3> llr;
     for (auto i = 0u; i < numNodes; ++i)
@@ -207,9 +239,10 @@ GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
         llr = MathUtil::xyzToLatLonRadius<T>({x.data()[i], y.data()[i], z.data()[i]});
 
         // Add new node to list
-        _nodes.emplace_back(latVarName, llr[0],
-                            lonVarName, llr[1],
-                            radVarName, llr[2],
+        _nodes.emplace_back(_allVarNames.size(),
+                            toVarIndex(latVarName), llr[0],
+                            toVarIndex(lonVarName), llr[1],
+                            toVarIndex(radVarName), llr[2],
                             x.elementLayerIDs()[i]);
     }
 
@@ -224,6 +257,7 @@ GHeaderInfo GDataConverter<T>::readGFGridToBoxNodes(const GString& xVarName,
                                                     const GString& yVarName, 
                                                     const GString& zVarName)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Reading GeoFLOW grid files" << endl;
 
     // Read the x,y,z GeoFLOW grid filenames from the property tree
@@ -280,9 +314,10 @@ GHeaderInfo GDataConverter<T>::readGFGridToBoxNodes(const GString& xVarName,
     for (auto i = 0u; i < numNodes; ++i)
     {
         // Add new node to list
-        _nodes.emplace_back(xVarName, x.data()[i],
-                            yVarName, y.data()[i],
-                            zVarName, z.data()[i],
+        _nodes.emplace_back(_allVarNames.size(),
+                            toVarIndex(xVarName), x.data()[i],
+                            toVarIndex(yVarName), y.data()[i],
+                            toVarIndex(zVarName), z.data()[i],
                             x.elementLayerIDs()[i]);
     }
 
@@ -296,6 +331,7 @@ template <class T>
 GHeaderInfo GDataConverter<T>::readGFVariableToNodes(const GString& gfFilename,
                                                      const GString& varName)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Reading GF variable to nodes: " << varName << endl;
 
     // Get full output path
@@ -318,7 +354,7 @@ GHeaderInfo GDataConverter<T>::readGFVariableToNodes(const GString& gfFilename,
     GSIZET numNodes = (var.header()).nNodesPerVolume;
     for (auto i = 0u; i < numNodes; ++i)
     {
-        _nodes[i].var(varName, var.data()[i]);
+        _nodes[i].var(toVarIndex(varName), var.data()[i]);
     } 
 
     return var.header();  
@@ -327,6 +363,7 @@ GHeaderInfo GDataConverter<T>::readGFVariableToNodes(const GString& gfFilename,
 template <class T>
 void GDataConverter<T>::sortNodesByElemID()
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Sorting nodes by element ID" << endl;
 
     // Use stable sort to make sure the same order of objects is retained for 
@@ -338,6 +375,7 @@ void GDataConverter<T>::sortNodesByElemID()
 template <class T>
 void GDataConverter<T>::sortNodesBy2DMeshLayer()
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Sorting nodes by 2D mesh layer" << endl;
 
     // Sort the nodes by 2D mesh layer. For 3D elements, there are multiple 
@@ -358,17 +396,19 @@ void GDataConverter<T>::sortNodesBy2DMeshLayer()
     // For each GeoFLOW element layer...
     for (auto i = 0u; i < _header.nElemLayers; ++i)
     {
-        // For each 2D layer (x,y ref dir) in the element
+        // For each 2D layer (x,y ref dir) in the element...
         for (auto k = 0u; k < nZ; ++k)
         {
-            // For each element in the GeoFLOW element layer...
+            // For each 2D/3D element in the GeoFLOW element layer...
             for (auto j = 0u; j < _header.nElemPerElemLayer; ++j)
             {
                 start = (i * nNodesPerElemLayer) + (j * nXYZ) + (k * nXY);
                 end = start + nXY;
 
+                // For each node in the 2D element (x,y ref dir)...
                 for (GUINT h = start; h < end; ++h)
                 {
+                    // Assign a sort key to the node
                     _nodes[h].sortKey(count);
                 }
 
@@ -377,13 +417,16 @@ void GDataConverter<T>::sortNodesBy2DMeshLayer()
         }
     }
 
-    // Sort on sort keys
+    // Use stable sort to make sure the same order of objects is retained for 
+    // two objects with equal keys (since the original order of nodes within 
+    // a GF element must be retained).
     stable_sort(_nodes.begin(), _nodes.end(), GNode<T>::sort_key_comp);
 }
 
 template <class T>
 void GDataConverter<T>::faceToNodes()
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Mapping faces to nodes (i.e., creating a list of GFace objects)" \
          << endl;
 
@@ -431,6 +474,7 @@ void GDataConverter<T>::faceToNodes()
 template <class T>
 void GDataConverter<T>::setDimensions(const map<GString, GSIZET>& dims)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
     cout << "Setting mesh dimensions in the property tree from GeoFLOW data" 
          << endl;
 
@@ -470,6 +514,8 @@ template <class T>
 void GDataConverter<T>::initNC(const GString& ncFilename,
                                NcFile::FileMode mode)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
+
     // Clean memory
     closeNC();
 
@@ -494,6 +540,8 @@ void GDataConverter<T>::closeNC()
 template <class T>
 void GDataConverter<T>::writeNCDimensions()
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
+
     // Write the dataset dimensions to the NetCDF file
     _nc->writeDimensions();
 }
@@ -501,6 +549,8 @@ void GDataConverter<T>::writeNCDimensions()
 template <class T>
 void GDataConverter<T>::writeNCDummyVariable(const GString& varName)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
+
     // Write the contents of a dummy variable (has no data) to the NetCDF file
     _nc->writeVariableDefinition(varName);
     _nc->writeVariableAttributes(varName);
@@ -510,10 +560,12 @@ template <class T>
 void GDataConverter<T>::writeNCNodeVariable(const GString& rootVarName, 
                                             const GString& fullVarName)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
+
     // Write the contents of a node variable to the NetCDF file
     _nc->writeVariableDefinition(rootVarName);
     _nc->writeVariableAttributes(rootVarName);
-    _nc->writeVariableData<T>(rootVarName, fullVarName, _nodes);
+    _nc->writeVariableData<T>(rootVarName, toVarIndex(fullVarName), _nodes);
 }
 
 template <class T>
@@ -521,6 +573,8 @@ template <typename U>
 void GDataConverter<T>::writeNCVariable(const GString& varName, 
                                         const U& varValue)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
+
     // Write a single valued variable to the NetCDF file
     _nc->writeVariableDefinition(varName);
     _nc->writeVariableAttributes(varName);
@@ -532,6 +586,8 @@ template <typename U>
 void GDataConverter<T>::writeNCVariable(const GString& varName, 
                                         const vector<U>& values)
 {
+    Logger::info(__FILE__, __FUNCTION__, "");
+
     // Write the contents of a vector to the NetCDF file
     _nc->writeVariableDefinition(varName);
     _nc->writeVariableAttributes(varName);

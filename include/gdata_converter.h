@@ -25,24 +25,30 @@ class GDataConverter
 public:
     GDataConverter() {}
     /*!
-     * Reads a property tree file that contains metadata for a given GeoFLOW  
-     * dataset. Metadata includes the GeoFLOW x,y,z grid filenames and 
-     * variable filenames to read in, and other metadata needed to write to  
-     * NetCDF files.
+     * Constructor: Reads a property tree file that contains metadata for a 
+     * given GeoFLOW dataset. Metadata includes the GeoFLOW x,y,z grid 
+     * filenames and variable filenames to read in, and other metadata needed 
+     * to write to NetCDF files.
      * 
      * @param filename name of property tree; file format is JSON
      */
     GDataConverter(const GString& ptFilename);
+
     ~GDataConverter();
 
     // Access
-    const vector<GNode<T>>& nodes() const { return _nodes; }
-    const vector<GFace>& faces() const { return _faces; }
-    vector<GString> rootVarNames() const { return _rootVarNames; }
-    vector<GString> fullVarNames() const { return _fullVarNames; }
-    GUINT numTimesteps() const { return _numTimesteps; }
     GString outputDir() const { return _outputDir; }
     GString inputDir() const { return _inputDir; }
+    GUINT numTimesteps() const { return _numTimesteps; }
+    const vector<GString>& fieldVarNames() const { return _fieldVarNames; }
+    const vector<GString>& allVarNames() const { return _allVarNames; }
+    const vector<GNode<T>>& nodes() const { return _nodes; }
+    const vector<GFace>& faces() const { return _faces; }
+
+    /*!
+     * Get the names of the grid and timestepped variables.
+     */
+    void readVariableNames();
 
     /*!
      * Create a directory if it does not exist.
@@ -58,6 +64,14 @@ public:
      * @return true if file exists; false otherwise
      */
     bool fileExists(const GString& filename);
+
+    /*!
+     * Get the index corresponding to the variable name.
+     *
+     * @param varName name of the variable 
+     * @return index corresponding to variable name
+     */
+    GUINT toVarIndex(const GString& varName);
 
     /*!
      * Reads the GeoFLOW x,y,z grid filenames specified in the property tree,  
@@ -106,13 +120,37 @@ public:
     GHeaderInfo readGFVariableToNodes(const GString& gfFilename,
                                       const GString& varName);
 
-    /*
-     *
+    /*!
+     * Sort nodes by the nodes' GeoFLOW element IDs (bottom to top).
      */
     void sortNodesByElemID();
+
+    /*!
+     * Sort nodes by 2D mesh layers (bottom to top) based on the nodes' sort 
+     * keys.
+     */
     void sortNodesBy2DMeshLayer();
+
+    /*!
+     * Create a list of face to node mappings for one mesh layer (all mesh 
+     * layers have the same mapping).
+     */
     void faceToNodes();
+
+    /*!
+     * Get the timestep from the timestepped variable name.
+     *
+     * @param varName name of the variable
+     * @return timestep (e.g., 000001)
+     */
     GString extractTimestep(GString varName);
+
+    /*!
+     * Get the root variable name from the timestepped variable name.
+     *
+     * @param varName name of the timestepped variable (e.g., v1.000001)
+     * @return root variable name (e.g., v1)
+     */
     GString extractRootVarName(GString varName);
 
     /*!
@@ -207,13 +245,12 @@ private:
                              // the GeoFLOW dataset
     vector<GFace> _faces;    // the faces that make up one 2D layer (x,y ref 
                              // dir) of the GeoFLOW dataset
-    GString _inputDir;       // directory name that holds input GeoFLOW files
-    GString _outputDir;      // directory name that holds output NetCDF files
+    GString _inputDir;       // directory name of input GeoFLOW files
+    GString _outputDir;      // directory name of output NetCDF files
     GUINT _numTimesteps;     // number of timesteps to convert
-    vector<GString> _rootVarNames; // root names of variables (i.e., prefix of 
-                                   // the variable filenames)
-    vector<GString> _fullVarNames; // full names of variables (i.e., 
-                                   // root.timestep) 
+    vector<GString> _allVarNames; // all var names (grid & timestepped field)
+    vector<GString> _fieldVarNames; // timestepped field variables names
+                                    // (i.e., root_name.timestep)    
 };
 
 #include "../src/gdata_converter.ipp"

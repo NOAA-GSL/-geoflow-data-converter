@@ -32,6 +32,7 @@ TODO ACROSS PROJECT
 - Confirm netcdf variable exists at beg. instead of waiting till after the 
 var is read from file - to avoid doing all the work and then prog. exiting 
 bc can't find var info in json file!
+- Timer: add a print argument for elapsed time.
 */
 
 #include "gdata_converter.h"
@@ -71,6 +72,8 @@ int main(int argc, char** argv)
     // grid's longitude values)
     startTime = Timer::getTime();
     GHeaderInfo gridHeader = gdc.readGFGridToLatLonRadNodes("mesh_node_y", "mesh_node_x", "mesh_depth");
+    //GHeaderInfo gridHeader = gdc.readGFGridToBoxNodes("mesh_node_x", "mesh_node_y", "mesh_depth");
+
     gridHeader.printHeader();
     endTime = Timer::getTime();
     Timer::printElapsedTime(startTime, endTime);
@@ -95,7 +98,7 @@ int main(int argc, char** argv)
 
     // For each GeoFLOW variable...
     startTime = Timer::getTime();
-    for (auto fullVarName : gdc.fullVarNames())
+    for (auto fullVarName : gdc.fieldVarNames())
     {
         cout << "Reading GeoFLOW variable: " << fullVarName << endl;
 
@@ -173,7 +176,7 @@ int main(int argc, char** argv)
     if (!writeOneFile)
     {
         // For each field variable...
-        for (auto fullVarName : gdc.fullVarNames())
+        for (auto fullVarName : gdc.fieldVarNames())
         {
             cout << "Converting GeoFLOW variable: " << fullVarName << endl;
 
@@ -211,7 +214,7 @@ int main(int argc, char** argv)
             gdc.writeNCDimensions();
 
             // For each variable at this timestep...
-            for (auto fullVarName : gdc.fullVarNames())
+            for (auto fullVarName : gdc.fieldVarNames())
             {
                 if (fullVarName.find(timestep) != string::npos)
                 {
@@ -240,13 +243,13 @@ int main(int argc, char** argv)
     }
 
     // For debugging
-    /*GSIZET count = 0;
+    GSIZET count = 0;
     for (auto n : gdc.nodes())
     {    
         cout << count << " - ";
-        n.printNode();
+        n.printNode(gdc.allVarNames());
         ++count;
-    }*/
+    }
 
     return 0;
 }
