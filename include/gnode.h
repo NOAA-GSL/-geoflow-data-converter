@@ -153,7 +153,11 @@ public:
         return (a._sortKey < b._sortKey);
     }
 
-    // Print node values
+    /*!
+     * Print the node's sort key, element ID, and all of its variables.
+     *
+     * @param varNames variable names corresponding to the variable list values
+     */
     void printNode(const vector<GString>& varNames)
     {
         // Print ID and layer info

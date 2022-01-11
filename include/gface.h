@@ -41,6 +41,9 @@ public:
         _indices = indices;
     }
 
+    /*!
+     * Print the node indices of the face.
+     */
     void printFace()
     {
         cout << "Face: (";

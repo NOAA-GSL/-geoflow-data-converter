@@ -40,6 +40,10 @@ struct GHeaderInfo
     GSIZET        nElemLayers;       // num GF element layers
     GSIZET        nElemPerElemLayer; // num GF elements per GF element layer
 
+    /*!
+     * Print the header info extracted from the GeoFLOW file, along with the 
+     * derived header info.
+     */
     void printHeader()
     {
        cout << endl;

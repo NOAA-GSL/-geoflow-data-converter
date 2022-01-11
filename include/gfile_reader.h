@@ -19,8 +19,20 @@ public:
     GFileReader(const GString& filename);
     ~GFileReader() {}
 
-    // Read
+    /*!
+     * Read the header from the GeoFLOW file.
+     * 
+     * @param filename input GeoFLOW file name
+     * 
+     * return the GeoFLOW header
+     */
     static GHeaderInfo readHeader(const GString& filename);
+
+    /*!
+     * Read the data values from the GeoFLOW file.
+     *
+     * @param filename input GeoFLOW filename
+     */
     void readData(const GString& filename);
 
     // Access
@@ -28,10 +40,15 @@ public:
     const vector<T>& data() const { return _data; }
     const vector<GSIZET>& elementLayerIDs() const { return _elemLayerIDs; }
 
-    // Compute
+    /*!
+     * Use the header's element ID array to set an element layer ID for each data 
+     * value.
+     */
     void setElementLayerIDs();
 
-    // Print
+    /*!
+     * Print each data value on a new line.
+     */
     void printData();
 
 private:
