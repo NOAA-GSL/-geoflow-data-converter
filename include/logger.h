@@ -18,6 +18,18 @@ public:
     Logger() {}
     ~Logger() {}
 
+    /*!
+     * Print info message.
+     * 
+     * @param file name of source file
+     * @param func name of function
+     * @param msg info message description
+     */
+    static void info(const char* file, const char* func, string msg)
+    {
+        cout << "INFO [" << file << "::" << func << "()] " << msg << endl;
+    }
+
      /*!
      * Print errror message.
      * 
