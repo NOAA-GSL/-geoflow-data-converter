@@ -1,7 +1,7 @@
 {
 "output_format": "UGRID",
 "dataset_description": "Example of a 3D GeoFLOW dataset with multiple element layers.",
-"input_dir": "input-data-3D",
+"input_dir": "test-data/input-data-3D",
 "output_dir": "output-data",
 "data_type": "GDOUBLE",
 "num_timesteps": 2,
