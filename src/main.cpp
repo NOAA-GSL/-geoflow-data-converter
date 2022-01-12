@@ -5,32 +5,6 @@
 //                All rights reserved.
 //==============================================================================
 
-/*
--------------------
-TODO ACROSS PROJECT
--------------------
-- Add error handling for NetCDF calls
-- g_to_netcdf::writeVariableData is allocating all node data but this is not 
-  needed for all vars since, for ex, mesh_nodes_x is the same for each layer;
-  it is getting correctly written to the NetCDF file, I'm guessing b/c of the
-  dimensions that were alreay assigned to the variable; Writing of the single
-  variable seems hacky - update.
-- Implement MathUtil::essentiallyEqual() method
-- Add custom enum in place of second param for NcFile mode to remove Nc
-  dependency?
-- Is custom g_to_netcdf::putAttribute() method actually needed?
-  - Check attribute values: some ints are set as strings and then converted?
-  - See Fill Value for mesh_face_nodes (what should it's type be?)
-- Documentation:
-  - Write min requirements template for JSON file
-  - Write assumptions (i.e., everything goes in/out of in/out dirs specified
-    in JSON file, including grid files); Define property tree = json file
-- Optimize: don't need to read the element layer ids for all x, y, z files 
-  since they are the same, just need to read one file.
-- Wasting space by re-writing layer boundries that correspond to each other!
-(i.e. many nodes are being duplicated)
-*/
-
 #include "gdata_converter.h"
 #include "timer.h"
 
