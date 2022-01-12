@@ -30,25 +30,15 @@ public:
     }
 
     /*!
-     * Get elapsed time in seconds.
-     * 
-     * @param start starting value of the timer
-     * @param end ending value of the timer
-    */
-    static double getElapsedTime(double start, double end)
-    {
-        return end - start;
-    }
-
-    /*!
      * Print elapsed time in seconds.
      * 
      * @param start starting value of the timer
      * @param end ending value of the timer
     */
-    static void printElapsedTime(double start, double end)
+    static void printElapsedTime(double start, double end, string msg="")
     {
-        cout << "Elapsed time is: " << (end - start) << " s" << endl;
+        cout << "*** Elapsed time (" << msg << "): " << (end - start) << " s" 
+             << endl << endl;
     }
 };
 

@@ -25,10 +25,10 @@ TODO ACROSS PROJECT
   - Write min requirements template for JSON file
   - Write assumptions (i.e., everything goes in/out of in/out dirs specified
     in JSON file, including grid files); Define property tree = json file
-  - Doxygen comments for GFileReader
 - Optimize: don't need to read the element layer ids for all x, y, z files 
   since they are the same, just need to read one file.
 - Wasting space by re-writing layer boundries that correspond to each other!
+(i.e. many nodes are being duplicated)
 - Confirm netcdf variable exists at beg. instead of waiting till after the 
 var is read from file - to avoid doing all the work and then prog. exiting 
 bc can't find var info in json file!
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 
     gridHeader.printHeader();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime);
+    Timer::printElapsedTime(startTime, endTime, "After reading GF grid to nodes");
 
     // Set any 0-valued dimensions in the JSON file with the info read in from 
     // the header of a GeoFLOW grid file
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
                                                             fullVarName);
     }
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime);
+    Timer::printElapsedTime(startTime, endTime, "After reading all GF field variables to nodes");
 
     ////////////////////
     //// SORT NODES ////
@@ -119,20 +119,20 @@ int main(int argc, char** argv)
     startTime = Timer::getTime();
     gdc.sortNodesByElemID();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime);
+    Timer::printElapsedTime(startTime, endTime, "After sorting nodes by element ID");
 
     // Sort the nodes into ascending order of 2D mesh layers
     startTime = Timer::getTime();
     gdc.sortNodesBy2DMeshLayer();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime);
+    Timer::printElapsedTime(startTime, endTime, "After sorting nodes by 2D mesh layer");
 
     // Create a list of face to node mappings for one mesh layer (all mesh 
     // layers have the same mapping)
     startTime = Timer::getTime();
     gdc.faceToNodes();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime);
+    Timer::printElapsedTime(startTime, endTime, "After creating a list of face to nodes mappings");
 
     startTime = Timer::getTime();
     cout << "Creating a single list of face indices" << endl;
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
         }
     }
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime);
+    Timer::printElapsedTime(startTime, endTime, "After creating a single list of face indices");
 
     ////////////////////////////////////
     //// WRITE COORDINATE VARIABLES ////
@@ -166,19 +166,21 @@ int main(int argc, char** argv)
     // Close the active NetCDF file
     gdc.closeNC();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime);
+    Timer::printElapsedTime(startTime, endTime, "After writing the grid variables to an nc file");
 
     ///////////////////////////////////
     ////// WRITE FIELD VARIABLES //////
     ///////////////////////////////////
 
+    startTime = Timer::getTime();
     // For a given timestep, write each field variable to a separate file
     if (!writeOneFile)
     {
         // For each field variable...
         for (auto fullVarName : gdc.fieldVarNames())
         {
-            cout << "Converting GeoFLOW variable: " << fullVarName << endl;
+            cout << "Converting GeoFLOW variable to nc file: " << fullVarName 
+                 << endl;
 
             // Initialize a NetCDF file for this timestep to store this field 
             // variable
@@ -218,8 +220,8 @@ int main(int argc, char** argv)
             {
                 if (fullVarName.find(timestep) != string::npos)
                 {
-                    cout << "Converting GeoFLOW variable: " << fullVarName 
-                         << endl;
+                    cout << "Converting GeoFLOW variable to nc file: " 
+                         << fullVarName << endl;
 
                     if (!wroteTimeStamp)
                     {
@@ -241,8 +243,12 @@ int main(int argc, char** argv)
             gdc.closeNC();
         }
     }
+    endTime = Timer::getTime();
+    Timer::printElapsedTime(startTime, endTime, "After writing all field variables to (an) nc file(s)");
 
     // For debugging
+    cout << "Node list: #=sorted node pos | sortID=orig node pos | eID=GF element layer ID | grid and field vars\n"
+         << "---------------------------------------------------------------------------------------------------\n";
     GSIZET count = 0;
     for (auto n : gdc.nodes())
     {    
