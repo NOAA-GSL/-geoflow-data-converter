@@ -92,6 +92,43 @@ void GDataConverter<T>::readVariableNames()
     cout << "Timestepped field variable names are: ";
     for (auto n : _fieldVarNames) { cout << n << ", "; }
     cout << endl;
+
+    cout << "Verifying nc vars corresponding to grid and field variables "
+         << "exist in the property tree." << endl;
+
+    vector<GString> rootVarNames = gridVarNames;
+    rootVarNames.insert(std::end(rootVarNames), 
+                        std::begin(fieldVarNames), 
+                        std::end(fieldVarNames));
+    pt::ptree varArr = PTUtil::getArray(_ptRoot, "variables");
+
+    // For each variable in the root var names list...
+    for (auto var : rootVarNames)
+    {
+        GBOOL found = false;
+        // For each variable in the property tree variables array...
+        for (pt::ptree::iterator it = varArr.begin(); it != varArr.end(); ++it)
+        {
+            // Get the value of the specified key
+            GString name = PTUtil::getValue<GString>(it->second, "name");
+
+            // If the input variable is found...
+            if (name == var)
+            {
+                cout << "Found variable: " << name << endl;
+                found = true;
+                continue;
+            }
+        }
+        
+        if (found == false)
+        {
+            std::string msg = "Could not find root variable (" + var + \
+                              ") in property tree: " + _ptFilename;
+            Logger::error(__FILE__, __FUNCTION__, msg);
+            exit(EXIT_FAILURE); 
+        }
+    }
 }
 
 template <class T>

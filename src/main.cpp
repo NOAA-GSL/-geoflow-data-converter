@@ -29,10 +29,6 @@ TODO ACROSS PROJECT
   since they are the same, just need to read one file.
 - Wasting space by re-writing layer boundries that correspond to each other!
 (i.e. many nodes are being duplicated)
-- Confirm netcdf variable exists at beg. instead of waiting till after the 
-var is read from file - to avoid doing all the work and then prog. exiting 
-bc can't find var info in json file!
-- Timer: add a print argument for elapsed time.
 */
 
 #include "gdata_converter.h"
@@ -76,7 +72,7 @@ int main(int argc, char** argv)
 
     gridHeader.printHeader();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime, "After reading GF grid to nodes");
+    Timer::printElapsedTime(startTime, endTime, "after reading GF grid to nodes");
 
     // Set any 0-valued dimensions in the JSON file with the info read in from 
     // the header of a GeoFLOW grid file
@@ -109,7 +105,7 @@ int main(int argc, char** argv)
                                                             fullVarName);
     }
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime, "After reading all GF field variables to nodes");
+    Timer::printElapsedTime(startTime, endTime, "after reading all GF field variables to nodes");
 
     ////////////////////
     //// SORT NODES ////
@@ -119,20 +115,20 @@ int main(int argc, char** argv)
     startTime = Timer::getTime();
     gdc.sortNodesByElemID();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime, "After sorting nodes by element ID");
+    Timer::printElapsedTime(startTime, endTime, "after sorting nodes by element ID");
 
     // Sort the nodes into ascending order of 2D mesh layers
     startTime = Timer::getTime();
     gdc.sortNodesBy2DMeshLayer();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime, "After sorting nodes by 2D mesh layer");
+    Timer::printElapsedTime(startTime, endTime, "after sorting nodes by 2D mesh layer");
 
     // Create a list of face to node mappings for one mesh layer (all mesh 
     // layers have the same mapping)
     startTime = Timer::getTime();
     gdc.faceToNodes();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime, "After creating a list of face to nodes mappings");
+    Timer::printElapsedTime(startTime, endTime, "after creating a list of face to nodes mappings");
 
     startTime = Timer::getTime();
     cout << "Creating a single list of face indices" << endl;
@@ -145,11 +141,11 @@ int main(int argc, char** argv)
         }
     }
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime, "After creating a single list of face indices");
+    Timer::printElapsedTime(startTime, endTime, "after creating a single list of face indices");
 
-    ////////////////////////////////////
-    //// WRITE COORDINATE VARIABLES ////
-    ////////////////////////////////////
+    ///////////////////////////////////////////
+    //// WRITE GRID / COORDINATE VARIABLES ////
+    ///////////////////////////////////////////
 
     startTime = Timer::getTime();
     // Initialize a NetCDF file to store all time-invariant grid variables
@@ -166,7 +162,7 @@ int main(int argc, char** argv)
     // Close the active NetCDF file
     gdc.closeNC();
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime, "After writing the grid variables to an nc file");
+    Timer::printElapsedTime(startTime, endTime, "after writing the grid variables to an nc file");
 
     ///////////////////////////////////
     ////// WRITE FIELD VARIABLES //////
@@ -244,10 +240,10 @@ int main(int argc, char** argv)
         }
     }
     endTime = Timer::getTime();
-    Timer::printElapsedTime(startTime, endTime, "After writing all field variables to (an) nc file(s)");
+    Timer::printElapsedTime(startTime, endTime, "after writing all field variables to (an) nc file(s)");
 
     // For debugging
-    cout << "Node list: #=sorted node pos | sortID=orig node pos | eID=GF element layer ID | grid and field vars\n"
+    cout << "Node List: #=sorted node pos | sortID=orig node pos | eID=GF element layer ID | grid and field vars\n"
          << "---------------------------------------------------------------------------------------------------\n";
     GSIZET count = 0;
     for (auto n : gdc.nodes())
