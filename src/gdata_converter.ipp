@@ -240,7 +240,13 @@ GHeaderInfo GDataConverter<T>::readGFGridToLatLonRadNodes(
     if (!(x.data().size() == y.data().size() && 
           y.data().size() == z.data().size()))
     {
+        string msg = "The number of values in the x grid (" + \
+                     to_string(x.data().size()) + "), y grid (" + \
+                     to_string(y.data().size()) + ") and z grid (" + \
+                     to_string(z.data().size()) + ") differ.";
 
+        Logger::error(__FILE__, __FUNCTION__, msg);
+        exit(EXIT_FAILURE);
     }
 
     // Read each x,y,z location value and element layer ID into a collection 
