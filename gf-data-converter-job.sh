@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
-# Job script used for running on Hera. Replace the program's command line 
-# argument with your JSON file.
+# Job script used for running on Hera. Remember to replace the program's 
+# command line argument below with your JSON file.
 
 # Set the SLURM batch options
 #SBATCH --account=gsd-hpcs   # account job should run on
@@ -22,7 +22,7 @@ module load gcc hdf5 netcdf-c netcdf-cxx
 # Compile
 make -f Makefile-hera
 
-# Run the program (replace ugrid-3D.json with your json file)
+# Run the program (replace ugrid-3D.json with your JSON file)
 ./bin/main ugrid-3D.json
 
 # Get the max amount of memory used up to this point in the job
