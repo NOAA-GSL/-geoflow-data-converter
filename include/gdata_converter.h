@@ -40,6 +40,9 @@ public:
     GString outputDir() const { return _outputDir; }
     GString inputDir() const { return _inputDir; }
     GUINT numTimesteps() const { return _numTimesteps; }
+    GBOOL is_spherical() const;
+    GBOOL do_print_nodes() const;
+    GBOOL do_write_separate_var_files() const;
     const vector<GString>& fieldVarNames() const { return _fieldVarNames; }
     const vector<GString>& allVarNames() const { return _allVarNames; }
     const vector<GNode<T>>& nodes() const { return _nodes; }

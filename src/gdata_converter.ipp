@@ -42,6 +42,24 @@ GDataConverter<T>::GDataConverter(const GString& ptFilename)
 }
 
 template <class T>
+GBOOL GDataConverter<T>::is_spherical() const
+{
+    return PTUtil::getValue<GBOOL>(_ptRoot, "is_spherical");
+}
+
+template <class T>
+GBOOL GDataConverter<T>::do_write_separate_var_files() const
+{
+    return PTUtil::getValue<GBOOL>(_ptRoot, "write_separate_var_files");
+}
+
+template <class T>
+GBOOL GDataConverter<T>::do_print_nodes() const
+{
+    return PTUtil::getValue<GBOOL>(_ptRoot, "print_nodes");
+}
+
+template <class T>
 void GDataConverter<T>::readVariableNames()
 {
     Logger::info(__FILE__, __FUNCTION__, "");

@@ -14,7 +14,6 @@
 
 // Global variables
 GString jsonFile;
-GINT writeOneFile = 0;
 GDOUBLE startTime = 0, endTime = 0;
 
 void parseCommandLine(int argc, char** argv);
@@ -35,15 +34,23 @@ int main(int argc, char** argv)
     ///////////////////////////////////
 
     // Read the x,y,z GeoFLOW grid files (i.e., coordinate variables) 
-    // specified in the JSON file, convert the x,y,z values to lat,lon,radius, 
-    // and store into a collection of nodes. The arguments passed in 
-    // correspond to the variable names in the JSON file that store 
-    // lat,lon,radius values. (For example, "mesh_node_x" corresponds to the 
-    // grid's longitude values)
+    // specified in the JSON file, and store in a collection of nodes. The 
+    // args passed in correspond to the grid variable names in the JSON file 
+    // that will store grid values.
     startTime = Timer::getTime();
-    GHeaderInfo gridHeader = gdc.readGFGridToLatLonRadNodes("mesh_node_y", "mesh_node_x", "mesh_depth");
-    //GHeaderInfo gridHeader = gdc.readGFGridToBoxNodes("mesh_node_x", "mesh_node_y", "mesh_depth");
-
+    GHeaderInfo gridHeader;
+    if (gdc.is_spherical())
+    {
+        // Dataset is a spherical grid. x,y,z values will get converted to 
+        // lat,lon,radius. (mesh_node_x=lon, mesh_node_y=lat, mesh_depth=radius)
+        gridHeader = gdc.readGFGridToLatLonRadNodes("mesh_node_y", "mesh_node_x", "mesh_depth");
+    }
+    else
+    {
+        // Dataset is a box grid. No conversion of x,y,z value occurs.
+        // (mesh_node_x=x-axis, mesh_node_y=y-axis, mesh_depth=radius) 
+        gridHeader = gdc.readGFGridToBoxNodes("mesh_node_x", "mesh_node_y", "mesh_depth");
+    }
     gridHeader.printHeader();
     endTime = Timer::getTime();
     Timer::printElapsedTime(startTime, endTime, "after reading GF grid to nodes");
@@ -144,7 +151,7 @@ int main(int argc, char** argv)
 
     startTime = Timer::getTime();
     // For a given timestep, write each field variable to a separate file
-    if (!writeOneFile)
+    if (gdc.do_write_separate_var_files())
     {
         // For each field variable...
         for (auto fullVarName : gdc.fieldVarNames())
@@ -217,14 +224,17 @@ int main(int argc, char** argv)
     Timer::printElapsedTime(startTime, endTime, "after writing all field variables to (an) nc file(s)");
 
     // For debugging
-    cout << "Node List: #=sorted node pos | sortID=orig node pos | eID=GF element layer ID | grid and field vars\n"
-         << "---------------------------------------------------------------------------------------------------\n";
-    GSIZET count = 0;
-    for (auto n : gdc.nodes())
-    {    
-        cout << count << " - ";
-        n.printNode(gdc.allVarNames());
-        ++count;
+    if (gdc.do_print_nodes())
+    {
+        cout << "Node List: #=sorted node pos | sortID=orig node pos | eID=GF element layer ID | grid and field vars\n"
+             << "---------------------------------------------------------------------------------------------------\n";
+        GSIZET count = 0;
+        for (auto n : gdc.nodes())
+        {    
+            cout << count << " - ";
+            n.printNode(gdc.allVarNames());
+            ++count;
+        }
     }
 
     return 0;
@@ -236,19 +246,6 @@ void parseCommandLine(int argc, char** argv)
     {
         jsonFile = argv[1];
     }
-    else if (argc == 3)
-    {
-        jsonFile = argv[1];
-        writeOneFile = atoi(argv[2]);
-        if (strcmp(argv[2], "0") && strcmp(argv[2], "1"))
-        {
-            string arg(argv[2]);
-            GString msg = "Invalid command line argument: " + arg;
-            Logger::error(__FILE__, __FUNCTION__, msg);
-            usage(argv[0]);
-            exit(EXIT_FAILURE);
-        }
-    }
     else
     {
         GString progName(argv[0]);
@@ -259,17 +256,11 @@ void parseCommandLine(int argc, char** argv)
     }
 
     cout << "Using JSON file: " << jsonFile << endl;
-    cout << "Writing field variables to one file (0=no, 1=yes)? " 
-         << writeOneFile << endl;
 }
 
 void usage(char programName[])
 {
     GString progName(programName);
-    GString msg = "Usage: " + 
-                  progName + 
-                  " <JSON_FILENAME> " \
-                  "[0|1] (optional: 0=default=write separate files, 1=write " \
-                  "one file)";
+    GString msg = "Usage: " + progName + " <JSON_FILENAME>";
     Logger::error(__FILE__, __FUNCTION__, msg);
 }

@@ -5,6 +5,9 @@
 "output_dir": "output-data",
 "data_type": "GDOUBLE",
 "num_timesteps": 1,
+"is_spherical": false,
+"print_nodes": false,
+"write_separate_var_files": true,
 "grid_filenames":
 {
     "x": "xgrid.000000.out",
