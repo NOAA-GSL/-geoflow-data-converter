@@ -15,7 +15,7 @@ For the purposes of this converter, a GeoFLOW dataset consists of grid variable 
 - `README.md`: Installation and usage instructions
 - `README-json.md`: How to configure the input `.json` that contains spefications for various meta-data needed to run the converter
 - `README-vapor.md`: How to use NCAR's Vapor tool to read GeoFLOW UGRID files
-- `test-data`: Example test datasets for 2D and 3D spherical data, and for box grid data (for each example, contains the UGRID JSON configuration file, the input GeoFLOW dataset folder and an expected output folder with the converted NetCDF UGRID files)
+- `test-data`: Example test datasets for 2D and 3D spherical data and for box grid data. For each example, there is an input `.json` file, an input folder with the GeoFLOW-formatted data files, and an expected output folder with the converted NetCDF UGRID-compliant `.nc` files.
 - `TODO.md`: A list of future improvements to the code
 
 # Installation and Usage
@@ -66,12 +66,13 @@ Tested on NOAA's Hera supercomputer. For instructions on logging onto Hera and o
 
 ### Install Libraries
 
-1. Once logged into your user account on Hera, set up a path to the custom module files created by the GeoFLOW team that they regularly use. There are two different ways to do this:
-- Option A: From a terminal, each time you log in and get a new shell:
+1. Once logged into your user account on Hera, set up a path to the custom module files used by the GeoFLOW project. There are two different ways to do this:
+
+- **Option A**: From a terminal, each time you log in and get a new shell:
 ```
 module use /scratch2/BMC/gsd-hpcs/modman/modulefiles/base
 ```
-- Option B: Place the module path inside your `~/.bashrc` file so the path setup only needs to be done once:
+- **Option B**: Place the module path inside your `~/.bashrc` file so the path setup only needs to be done once:
 ```
 export HERA_MODULEPATH_ROOT="/scratch2/BMC/gsd-hpcs/modman/modulefiles/base"
 module use ${HERA_MODULEPATH_ROOT}
@@ -118,7 +119,7 @@ git clone https://github.com/NOAA-GSL/geoflow-data-converter.git
 cd geoflow-data-converter
 ```
 
-2. Edit your UGRID JSON file as described in the `README-json.md` file.
+2. Edit your input `.json` file as described in the `README-json.md` file.
 
 3. Edit the batch job script `gf-data-converter.sh` to point to your input `.json` file by replacing the filename `ugrid-3D.json` in the following line:
 ```
