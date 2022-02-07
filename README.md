@@ -11,7 +11,7 @@ The following assumptions must hold true for the input GeoFLOW files read in by 
 - There are a total of 3 grid variable files - one each for x,y,z coordinate variable.
 - Each field variable lives in a separate file.
 - If a field variable has multiple timesteps, each timestep worth of data must live in a separate file.
-- Each GeoFLOW data file starts with a header that contains the information described in the `GHeaderInfo` struct (not including the derived auxiliary data), followed by the data values for that variable. The location of each data value in a field variable file corresponds to the x,y,z data values at the same location in the grid files.
+- Each GeoFLOW file starts with a header that contains the information described in the `GHeaderInfo` struct (not including the derived auxiliary data), followed by the data values for that variable. The location of each data value in a field variable file corresponds to the x,y,z data values at the same location in the grid files.
 - Each field variable file is of the format `name.xxxxxx.out` where `name` is the name of the variable and `xxxxxx` is a number identifying the timestep of the variable. The timesteps must start with `000000` and must increase in increments of 1. The following shows an example list of GeoFLOW dataset files. This dataset has 3 grid files and 2 field variables. Each field variable has 2 timesteps.
 ```
 xgrid.000000.out
@@ -60,15 +60,9 @@ make
 
 3. Edit your UGRID JSON file as specified in the `README-ugrid.md` file.
 
-4. Run program (replace `JSON_FILENAME` with your UGRID JSON filename):
+4. Run program (replace `JSON_FILENAME` with your UGRID `.json` filename):
 ```
 ./bin/main JSON_FILENAME
-```
-
-### Extra: View ASCII Version of NetCDF File
-To view a human-readable version of a NetCDF file, run the following command (replace `NETCDF_FILENAME` with your `.nc` filename):
-```
-ncdump NETCDF_FILENAME
 ```
 
 ## Option B: Running on a NOAA RDHPCS (Research & Development HPC System) System
@@ -130,7 +124,7 @@ cd geoflow-data-converter
 
 2. Edit your UGRID JSON file as specified in the `README-ugrid.md` file.
 
-3. Edit the batch job script `gf-data-converter.sh` to point to your UGRID JSON file by replacing the filename `ugrid-3D.json` with your UGRID JSON in the following line:
+3. Edit the batch job script `gf-data-converter.sh` to point to your UGRID JSON file by replacing the filename `ugrid-3D.json` with your UGRID `.json` filename in the following line:
 ```
 ./bin/main ugrid-3D.json
 ```
@@ -145,7 +139,32 @@ cd geoflow-data-converter
 sbatch gf-data-converter-job.sh
 ```
 
-### Extra: Useful Commands on Hera
+# Running Test Data
+
+A set of simple test datasets are available in the `test-data` folder. In each case, the output `.nc` files will be placed in a folder called `output`. The expected output for each test are located separate folders in the `test-data` folder (each folder starts with the name `expected-output-data-`).
+
+- To test the 2D spherical dataset on a Desktop system, run:
+```
+./bin/main test-data/ugrid-2D.json
+```
+
+- To test the 3D spherical dataset on a Desktop sysstem, run:
+```
+./bin/main test-data/ugrid-3D.json
+```
+
+- To test the box dataset on a Desktop system, run:
+```
+./bin/main test-data/ugrid-box.json
+```
+
+# Appendix A: View ASCII Version of NetCDF File
+To view a human-readable version of a NetCDF file, run the following command (replace `NETCDF_FILENAME` with your `.nc` filename):
+```
+ncdump NETCDF_FILENAME
+```
+
+# Appendix B: Useful Commands on Hera
 
 - Submitting a job (your `~/.bashrc` environment will automatically be used):
 ```
@@ -176,23 +195,4 @@ report-mem -j JOB_ID
 sacct -S YYYY-MM-DD -u USER_NAME
 
 Example: sacct -S 2020-01-01 -u Shilpi.Gupta
-```
-
-# Running Test Data
-
-A set of simple test datasets are available in the `test-data` folder. In each case, the output `.nc` files will be placed in a folder called `output`. The expected output for each test are located in the `test-data` folder in separate folders starting with the name `expected-output-data-`.
-
-- To test the 2D spherical dataset on a Desktop system, run:
-```
-./bin/main test-data/ugrid-2D.json
-```
-
-- To test the 3D spherical dataset on a Desktop sysstem, run:
-```
-./bin/main test-data/ugrid-3D.json
-```
-
-- To test the box dataset on a Desktop system, run:
-```
-./bin/main test-data/ugrid-box.json
 ```
