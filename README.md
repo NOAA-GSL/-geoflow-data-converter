@@ -6,13 +6,24 @@ Convert [GeoFLOW](https://github.com/NOAA-GSL/GeoFLOW) (Geo FLuid Object Workben
 
 For the purposes of this converter, a GeoFLOW dataset consists of grid variable files (x-axis, y-axis, z-axis) and field variable files structured in the GeoFLOW data format. The GeoFLOW data converter reads in each of these files and converts them into a set of NetCDF UGRID `.nc` files.
 
+### Repo Contents
+- gf-data-converter-job.sh: The batch job script used when running the program on the Hera supercomputer
+- include/src: Source code for the project
+- Makefile: Makefile used when compiling on a Desktop system
+- Makefile-heara: Makefile used when compiling on the Hera supercomputer
+- README.md: Installation and usage instructions
+- README-ugrid.md: How to configure the ugrid `.json` file used as input to the converter program
+- README-vapor.md: How to use NCAR's Vapor tool to read GeoFLOW UGRID files
+- test-data: Example test datasets for 2D and 3D spherical data, and for box grid data (for each example, contains the UGRID JSON configuration file, the input GeoFLOW dataset folder and an expected output folder with the converted NetCDF UGRID files)
+- TODO.md: A list of future improvements to the code
+
 # GeoFLOW Dataset Assumptions
 The following assumptions must hold true for the input GeoFLOW files read in by the data converter.
-- There are a total of 3 grid variable files - one each for x,y,z coordinate variable.
+- There are a total of 3 separate grid variable files - one each for x,y,z coordinate variable.
 - Each field variable lives in a separate file.
-- If a field variable has multiple timesteps, each timestep worth of data must live in a separate file.
+- If a field variable has multiple timesteps, each timestep worth of data lives in a separate file.
 - Each GeoFLOW file starts with a header that contains the information described in the `GHeaderInfo` struct (not including the derived auxiliary data), followed by the data values for that variable. The location of each data value in a field variable file corresponds to the x,y,z data values at the same location in the grid files.
-- Each field variable file is of the format `name.xxxxxx.out` where `name` is the name of the variable and `xxxxxx` is a number identifying the timestep of the variable. The timesteps must start with `000000` and must increase in increments of 1. The following shows an example list of GeoFLOW dataset files. This dataset has 3 grid files and 2 field variables. Each field variable has 2 timesteps.
+- Each field variable file is of the format `name.xxxxxx.out` where `name` is the name of the variable and `xxxxxx` is a number identifying the timestep of the variable. The timesteps start with `000000` and increase in increments of 1. The following shows an example list of GeoFLOW dataset files. This dataset has 3 grid variables and 2 field variables (with 2 timesteps each).
 ```
 xgrid.000000.out
 ygrid.000000.out
