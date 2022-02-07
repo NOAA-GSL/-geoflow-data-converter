@@ -2,43 +2,28 @@
 
 ### Overview
 
-Convert [GeoFLOW](https://github.com/NOAA-GSL/GeoFLOW) (Geo FLuid Object Workbench) data to other data formats like [NetCDF-CF](http://cfconventions.org/) and [NetCDF UGRID](https://github.com/ugrid-conventions/ugrid-conventions).
+Convert [GeoFLOW](https://github.com/NOAA-GSL/GeoFLOW) (Geo FLuid Object Workbench) data files to other data formats like [NetCDF-CF](http://cfconventions.org/) and [NetCDF UGRID](https://github.com/ugrid-conventions/ugrid-conventions).
 
-For the purposes of this converter, a GeoFLOW dataset consists of grid variable files (x-axis, y-axis, z-axis) and field variable files structured in the GeoFLOW data format. The GeoFLOW data converter reads in each of these files and converts them into a set of NetCDF UGRID `.nc` files.
+For the purposes of this converter, a GeoFLOW dataset consists of grid variable files (x-axis, y-axis, z-axis) and field variable files structured in the GeoFLOW data format. The GeoFLOW data converter reads in each of these files and converts them into a set of NetCDF UGRID-compliant `.nc` files. See the Appendix below for more info on GeoFLOW data files.
 
 ### Repo Contents
-- gf-data-converter-job.sh: The batch job script used when running the program on the Hera supercomputer
-- include/src: Source code for the project
-- Makefile: Makefile used when compiling on a Desktop system
-- Makefile-heara: Makefile used when compiling on the Hera supercomputer
-- README.md: Installation and usage instructions
-- README-ugrid.md: How to configure the ugrid `.json` file used as input to the converter program
-- README-vapor.md: How to use NCAR's Vapor tool to read GeoFLOW UGRID files
-- test-data: Example test datasets for 2D and 3D spherical data, and for box grid data (for each example, contains the UGRID JSON configuration file, the input GeoFLOW dataset folder and an expected output folder with the converted NetCDF UGRID files)
-- TODO.md: A list of future improvements to the code
 
-# GeoFLOW Dataset Assumptions
-The following assumptions must hold true for the input GeoFLOW files read in by the data converter.
-- There are a total of 3 separate grid variable files - one each for x,y,z coordinate variable.
-- Each field variable lives in a separate file.
-- If a field variable has multiple timesteps, each timestep worth of data lives in a separate file.
-- Each GeoFLOW file starts with a header that contains the information described in the `GHeaderInfo` struct (not including the derived auxiliary data), followed by the data values for that variable. The location of each data value in a field variable file corresponds to the x,y,z data values at the same location in the grid files.
-- Each field variable file is of the format `name.xxxxxx.out` where `name` is the name of the variable and `xxxxxx` is a number identifying the timestep of the variable. The timesteps start with `000000` and increase in increments of 1. The following shows an example list of GeoFLOW dataset files. This dataset has 3 grid variables and 2 field variables (with 2 timesteps each).
-```
-xgrid.000000.out
-ygrid.000000.out
-zgrid.000000.out
-dtotal.000000.out
-dtotal.000001.out
-T.000000.out
-T.000001.out
-```
+- `gf-data-converter-job.sh`: The batch job script used when running on the Hera supercomputer
+- `include/src`: Source code for the project
+- `Makefile`: Makefile used when compiling on a Desktop system
+- `Makefile-hera`: Makefile used when compiling on the Hera supercomputer
+- `README.md`: Installation and usage instructions
+- `README-json.md`: How to configure the input `.json` that contains spefications for various meta-data needed to run the converter
+- `README-vapor.md`: How to use NCAR's Vapor tool to read GeoFLOW UGRID files
+- `test-data`: Example test datasets for 2D and 3D spherical data, and for box grid data (for each example, contains the UGRID JSON configuration file, the input GeoFLOW dataset folder and an expected output folder with the converted NetCDF UGRID files)
+- `TODO.md`: A list of future improvements to the code
 
 # Installation and Usage
 
 The GeoFLOW Data Converter can be run on a Desktop or on NOAA's Hera supercomputer. The latter must be used when converting GeoFLOW datasets with a large memory footprint.
 
 ## Option A: Running on a Desktop System
+
 Tested on Ubuntu 18.04.
 
 ### Install Libraries
@@ -69,9 +54,9 @@ cd geoflow-data-converter
 make
 ```
 
-3. Edit your UGRID JSON file as specified in the `README-ugrid.md` file.
+3. Edit your input `.json` file as described in the `README-json.md` file.
 
-4. Run program (replace `JSON_FILENAME` with your UGRID `.json` filename):
+4. Run program (replace `JSON_FILENAME` with your input `.json` filename):
 ```
 ./bin/main JSON_FILENAME
 ```
@@ -98,7 +83,7 @@ List the available modules. After running the above command that sets up the pat
 ```
 module avail
 ```
-This should output something similar to the following which confirms the custom module path has been loaded:
+This should output similar to the following which confirms the custom module path has been loaded:
 ```
 ---------------- /scratch2/BMC/gsd-hpcs/modman/modulefiles/base ----------------
    cmake/3.20.2 (D)    gcc/11.1.0    llvm/12.0.0    nvhpc/21.5    pgi/21.5
@@ -110,7 +95,7 @@ module load gcc/11.1.0
 module avail
 ```
 
-This should output something similar to:
+This should output similar to:
 ```
 -------------------------------------------------- /scratch2/BMC/gsd-hpcs/modman/modulefiles/compiler/gcc/11.1.0 --------------------------------------------------
    blis/0.8.1    boost/1.76.0    gptl/8.0.3    hdf5/1.12.1    hwloc/2.4.1    libevent/2.1.12    netcdf/4.8.1    openblas/0.3.15    openmpi/4.1.1    ucx/1.10.1
@@ -133,9 +118,9 @@ git clone https://github.com/NOAA-GSL/geoflow-data-converter.git
 cd geoflow-data-converter
 ```
 
-2. Edit your UGRID JSON file as specified in the `README-ugrid.md` file.
+2. Edit your UGRID JSON file as described in the `README-json.md` file.
 
-3. Edit the batch job script `gf-data-converter.sh` to point to your UGRID JSON file by replacing the filename `ugrid-3D.json` with your UGRID `.json` filename in the following line:
+3. Edit the batch job script `gf-data-converter.sh` to point to your input `.json` file by replacing the filename `ugrid-3D.json` in the following line:
 ```
 ./bin/main ugrid-3D.json
 ```
@@ -169,13 +154,30 @@ A set of simple test datasets are available in the `test-data` folder. In each c
 ./bin/main test-data/ugrid-box.json
 ```
 
-# Appendix A: View ASCII Version of NetCDF File
+# Appendix A: GeoFLOW Dataset Assumptions
+The following assumptions must hold true for the input GeoFLOW files read in by the data converter.
+- There are a total of 3 separate grid variable files - one each for x,y,z coordinate variable.
+- Each field variable lives in a separate file.
+- If a field variable has multiple timesteps, each timestep worth of data lives in a separate file.
+- Each GeoFLOW file starts with a header that contains the information described in the `GHeaderInfo` struct (not including the derived auxiliary data), followed by the data values for that variable. The location of each data value in a field variable file corresponds to the x,y,z data values at the same location in the grid files.
+- Each field variable file is of the format `name.xxxxxx.out` where `name` is the name of the variable and `xxxxxx` is a number identifying the timestep of the variable. The timesteps start with `000000` and increase in increments of 1. The following shows an example list of GeoFLOW dataset files. This dataset has 3 grid variables and 2 field variables (with 2 timesteps each).
+```
+xgrid.000000.out
+ygrid.000000.out
+zgrid.000000.out
+dtotal.000000.out
+dtotal.000001.out
+T.000000.out
+T.000001.out
+```
+
+# Appendix B: View ASCII Version of NetCDF File
 To view a human-readable version of a NetCDF file, run the following command (replace `NETCDF_FILENAME` with your `.nc` filename):
 ```
 ncdump NETCDF_FILENAME
 ```
 
-# Appendix B: Useful Commands on Hera
+# Appendix C: Useful Commands on Hera
 
 - Submitting a job (your `~/.bashrc` environment will automatically be used):
 ```
