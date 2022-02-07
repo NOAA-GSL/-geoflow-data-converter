@@ -4,16 +4,33 @@
 
 Convert [GeoFLOW](https://github.com/NOAA-GSL/GeoFLOW) (Geo FLuid Object Workbench) data to other data formats like [NetCDF-CF](http://cfconventions.org/) and [NetCDF UGRID](https://github.com/ugrid-conventions/ugrid-conventions).
 
-Note: As of 2021, UGRID has not been adopted into the official NetCDF specification.
+For the purposes of this converter, a GeoFLOW dataset consists of grid variable files (x-axis, y-axis, z-axis) and field variable files structured in the GeoFLOW data format. The GeoFLOW data converter reads in each of these files and converts them into a set of NetCDF UGRID `.nc` files.
+
+# GeoFLOW Dataset Assumptions
+The following assumptions must hold true for the input GeoFLOW files read in by the data converter.
+- There are a total of 3 grid variable files - one each for x,y,z coordinate variable.
+- Each field variable lives in a separate file.
+- If a field variable has multiple timesteps, each timestep worth of data must live in a separate file.
+- Each GeoFLOW data file starts with a header that contains the information described in the `GHeaderInfo` struct (not including the derived auxiliary data), followed by the data values for that variable. The location of each data value in a field variable file corresponds to the x,y,z data values at the same location in the grid files.
+- Each field variable file is of the format `name.xxxxxx.out` where `name` is the name of the variable and `xxxxxx` is a number identifying the timestep of the variable. The timesteps must start with `000000` and must increase in increments of 1. The following shows an example list of GeoFLOW dataset files. This dataset has 3 grid files and 2 field variables. Each field variable has 2 timesteps.
+```
+xgrid.000000.out
+ygrid.000000.out
+zgrid.000000.out
+dtotal.000000.out
+dtotal.000001.out
+T.000000.out
+T.000001.out
+```
 
 # Installation and Usage
 
 The GeoFLOW Data Converter can be run on a Desktop or on NOAA's Hera supercomputer. The latter must be used when converting GeoFLOW datasets with a large memory footprint.
 
-## Option A: Running on a Desktop
+## Option A: Running on a Desktop System
 Tested on Ubuntu 18.04.
 
-### Install
+### Install Libraries
 
 1. Install a C++ compiler, supporting the C++11 standard or newer.
 
@@ -24,39 +41,40 @@ sudo apt-get install libnetcdf-c++4-dev-1
 
 ### Get Code
 
-Download repository.
+Download repository:
 ```
 git clone https://github.com/NOAA-GSL/geoflow-data-converter.git
 ```
 
 ### Compile and Run
 
-1. Enter directory.
+1. Enter directory:
 ```
 cd geoflow-data-converter
 ```
 
-2. Build source.
+2. Build source:
 ```
 make
 ```
 
-3. Edit your UGRID JSON file as specified in the UGRID JSON File section.
+3. Edit your UGRID JSON file as specified in the `README-ugrid.md` file.
 
-4. Run program. Replace `JSON_FILENAME` with your UGRID JSON filename.
+4. Run program (replace `JSON_FILENAME` with your UGRID JSON filename):
 ```
 ./bin/main JSON_FILENAME
 ```
 
-### View ASCII Version of NetCDF File
-To view a human-readable version of a NetCDF file, run the following command. Replace `NETCDF_FILENAME` with your `.nc` filename.
+### Extra: View ASCII Version of NetCDF File
+To view a human-readable version of a NetCDF file, run the following command (replace `NETCDF_FILENAME` with your `.nc` filename):
 ```
 ncdump NETCDF_FILENAME
 ```
 
 ## Option B: Running on a NOAA RDHPCS (Research & Development HPC System) System
 Tested on NOAA's Hera supercomputer. For instructions on logging onto Hera and other Hera commands, see the [RDHPCS docs](https://rdhpcs-common-docs.rdhpcs.noaa.gov/wiki/index.php/Start).
-### Install
+
+### Install Libraries
 
 1. Once logged into your user account on Hera, set up a path to the custom module files created by the GeoFLOW team that they regularly use. There are two different ways to do this:
 - Option A: From a terminal, each time you log in and get a new shell:
@@ -98,36 +116,36 @@ This should output something similar to:
 
 ### Get Code
 
-Download the repository
+Download the repository:
 ```
 git clone https://github.com/NOAA-GSL/geoflow-data-converter.git
 ```
 
 ### Compile and Run
 
-1. Enter directory.
+1. Enter directory:
 ```
 cd geoflow-data-converter
 ```
 
-2. Edit your UGRID JSON file as specified in the UGRID JSON File section.
+2. Edit your UGRID JSON file as specified in the `README-ugrid.md` file.
 
 3. Edit the batch job script `gf-data-converter.sh` to point to your UGRID JSON file by replacing the filename `ugrid-3D.json` with your UGRID JSON in the following line:
 ```
 ./bin/main ugrid-3D.json
 ```
 
-4. Submit a batch job to Hera by running the job script which:
-- Specifies required sbatch arguments
-- Purges modules
-- Loads necessary modules needed for compilation
-- Compiles the application
-- Runs the program
+4. Submit a batch job to Hera by running the job script. The script 
+- specifies required sbatch arguments
+- purges all modules
+- loads modules needed for compilation
+- compiles the application
+- runs the application
 ```
 sbatch gf-data-converter-job.sh
 ```
 
-### Useful Commands on Hera
+### Extra: Useful Commands on Hera
 
 - Submitting a job (your `~/.bashrc` environment will automatically be used):
 ```
@@ -160,6 +178,21 @@ sacct -S YYYY-MM-DD -u USER_NAME
 Example: sacct -S 2020-01-01 -u Shilpi.Gupta
 ```
 
-# UGRID JSON FILE
+# Running Test Data
 
-# Using NCAR's VAPOR with GeoFLOW UGRID Files
+A set of simple test datasets are available in the `test-data` folder. In each case, the output `.nc` files will be placed in a folder called `output`. The expected output for each test are located in the `test-data` folder in separate folders starting with the name `expected-output-data-`.
+
+- To test the 2D spherical dataset on a Desktop system, run:
+```
+./bin/main test-data/ugrid-2D.json
+```
+
+- To test the 3D spherical dataset on a Desktop sysstem, run:
+```
+./bin/main test-data/ugrid-3D.json
+```
+
+- To test the box dataset on a Desktop system, run:
+```
+./bin/main test-data/ugrid-box.json
+```
