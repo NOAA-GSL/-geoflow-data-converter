@@ -1,6 +1,6 @@
 # GeoFLOW Data Converter
 
-## Overview
+### Overview
 
 Convert [GeoFLOW](https://github.com/NOAA-GSL/GeoFLOW) (Geo FLuid Object Workbench) data to other data formats like [NetCDF-CF](http://cfconventions.org/) and [NetCDF UGRID](https://github.com/ugrid-conventions/ugrid-conventions).
 
@@ -8,13 +8,12 @@ Note: As of 2021, UGRID has not been adopted into the official NetCDF specificat
 
 # Installation and Usage
 
-The GeoFLOW Data Converter can be run on a Desktop or on NOAA's Hera supercomputer. The latter must be used when converting large GeoFLOW datasets.
+The GeoFLOW Data Converter can be run on a Desktop or on NOAA's Hera supercomputer. The latter must be used when converting GeoFLOW datasets with a large memory footprint.
 
 ## Option A: Running on a Desktop
-
-### Requirements
-
 Tested on Ubuntu 18.04.
+
+### Install
 
 1. Install a C++ compiler, supporting the C++11 standard or newer.
 
@@ -56,17 +55,15 @@ ncdump NETCDF_FILENAME
 ```
 
 ## Option B: Running on a NOAA RDHPCS (Research & Development HPC System) System
-
-### Requirements
-
 Tested on NOAA's Hera supercomputer. For instructions on logging onto Hera and other Hera commands, see the [RDHPCS docs](https://rdhpcs-common-docs.rdhpcs.noaa.gov/wiki/index.php/Start).
+### Install
 
 1. Once logged into your user account on Hera, set up a path to the custom module files created by the GeoFLOW team that they regularly use. There are two different ways to do this:
 - Option A: From a terminal, each time you log in and get a new shell:
 ```
 module use /scratch2/BMC/gsd-hpcs/modman/modulefiles/base
 ```
-- Option B: Place the module path inside your ~/.bashrc file so the path setup only needs to be done once:
+- Option B: Place the module path inside your `~/.bashrc` file so the path setup only needs to be done once:
 ```
 export HERA_MODULEPATH_ROOT="/scratch2/BMC/gsd-hpcs/modman/modulefiles/base"
 module use ${HERA_MODULEPATH_ROOT}
@@ -78,7 +75,7 @@ List the available modules. After running the above command that sets up the pat
 ```
 module avail
 ```
-should output something similar to the following which confirms the custom module path has been loaded:
+This should output something similar to the following which confirms the custom module path has been loaded:
 ```
 ---------------- /scratch2/BMC/gsd-hpcs/modman/modulefiles/base ----------------
    cmake/3.20.2 (D)    gcc/11.1.0    llvm/12.0.0    nvhpc/21.5    pgi/21.5
@@ -101,7 +98,7 @@ This should output something similar to:
 
 ### Get Code
 
-1. Download the repository
+Download the repository
 ```
 git clone https://github.com/NOAA-GSL/geoflow-data-converter.git
 ```
@@ -165,4 +162,4 @@ Example: sacct -S 2020-01-01 -u Shilpi.Gupta
 
 # UGRID JSON FILE
 
-# Using NCAR's VAPOR with Converted GeoFLOW Files
+# Using NCAR's VAPOR with GeoFLOW UGRID Files
