@@ -80,7 +80,7 @@ module use ${HERA_MODULEPATH_ROOT}
 
 2. Load the modules manually. This step can be skipped as it is integrated into the job script described below. However, if you are running into any issues with compilation, this step is a good way to test if the required modules are installed.
 
-List the available modules. After running the above command that sets up the path pointing to custom modules, the command:
+After running the above command that sets up the path pointing to custom modules, run the following command to list the available modules:
 ```
 module avail
 ```
