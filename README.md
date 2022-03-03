@@ -2,7 +2,13 @@
 
 ### Overview
 
-Convert [GeoFLOW](https://github.com/NOAA-GSL/GeoFLOW) (Geo FLuid Object Workbench) data files to other data formats like [NetCDF-CF](http://cfconventions.org/) and [NetCDF UGRID](https://github.com/ugrid-conventions/ugrid-conventions).
+This project converts [GeoFLOW](https://github.com/NOAA-GSL/GeoFLOW) (Geo FLuid Object Workbench) data files to other data formats like [NetCDF UGRID](https://github.com/ugrid-conventions/ugrid-conventions). 
+
+GeoFLOW is an object-oriented software development effort in the High Performance Computing Branch of the Global Systems Laboratory (GSL) at NOAA that:
+- Used for evaluating different aspects of Dynamical Cores in regional and global weather prediction
+- Applies Spectral Element Methods (SEM) to the solution of partial differential equations relevant to geophysical sciences. SEM is a Finite Element Method (FEM) that uses high degree piecewise polynomials as basis functions
+- Examines in detail tradeoffs in accuracy vs. performance
+- Investigates the architectural, engineering and scientific challenges that arise with exascale computing
 
 For the purposes of this converter, a GeoFLOW dataset consists of grid variable files (x-axis, y-axis, z-axis) and field variable files structured in the GeoFLOW data format. The GeoFLOW data converter reads in each of these files and converts them into a set of NetCDF UGRID-compliant `.nc` files. See the Appendix below for more info on GeoFLOW data files.
 
@@ -13,7 +19,7 @@ For the purposes of this converter, a GeoFLOW dataset consists of grid variable 
 - `Makefile`: Makefile used when compiling on a Desktop system
 - `Makefile-hera`: Makefile used when compiling on the Hera supercomputer
 - `README.md`: Installation and usage instructions
-- `README-json.md`: How to configure the input `.json` that contains spefications for various meta-data needed to run the converter
+- `README-json.md`: How to configure the input `.json` that contains specifications for various meta-data needed to run the converter
 - `README-vapor.md`: How to use NCAR's Vapor tool to read GeoFLOW UGRID files
 - `test-data`: Example test datasets for 2D and 3D spherical data and for box grid data. For each example, there is an input `.json` file, an input folder with the GeoFLOW-formatted data files, and an expected output folder with the converted NetCDF UGRID-compliant `.nc` files.
 - `TODO.md`: A list of future improvements to the code
@@ -138,14 +144,14 @@ sbatch gf-data-converter-job.sh
 
 # Running Test Data
 
-A set of simple test datasets are available in the `test-data` folder. In each case, the output `.nc` files will be placed in a folder called `output`. The expected output for each test are located separate folders in the `test-data` folder (each folder starts with the name `expected-output-data-`).
+A set of simple test datasets are available in the `test-data` folder. In each case, the output `.nc` files will be placed in a folder called `output`. The expected output for each test are located in separate folders in the `test-data` folder (each folder starts with the name `expected-output-data-`).
 
 - To test the 2D spherical dataset on a Desktop system, run:
 ```
 ./bin/main test-data/ugrid-2D.json
 ```
 
-- To test the 3D spherical dataset on a Desktop sysstem, run:
+- To test the 3D spherical dataset on a Desktop system, run:
 ```
 ./bin/main test-data/ugrid-3D.json
 ```
