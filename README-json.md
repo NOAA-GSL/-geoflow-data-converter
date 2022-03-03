@@ -3,24 +3,24 @@
 ## Overview
 The GeoFLOW data converter application reads in a `.json` file that contains configuration information needed for running the converter. This information includes items like input and output directory names, how many timesteps to run, specs needed to write the UGRID `.nc` files and more. 
 
-Below is a template input `.json` file. In the template, the word `---EDIT---` has been pre-pended to any line that must be edited for your input file. All other lines should not be edited. A few notes:
+Below is a template input `.json` file. In the template, the word `---EDIT---` has been prepended to any line that must be edited for your input file. All other lines should not be edited. A few notes:
 - Although descriptions and comments don't actually need to be edited, they have been marked as such for correctness.
-- For the field variables (such as `dtotal` and `v1` in this example), the value for the key `units` can optionally be left as an empty string (i.e., in the `variables` array > `attributes` array > object starting with `"name": "units"`).
+- For the field variables (such as `dtotal` and `v1` in the template example), the value for the key `units` can optionally be left as an empty string (i.e., in the `variables` array > `attributes` array > object starting with `"name": "units"`).
 - For most spherical datasets, the grid variables `mesh_node_x`, `mesh_node_y`, `meshLayers` and `mesh_depth` can be left alone and only need to be edited if the units are different what is indicated in the template file.
 - For box datasets, the value of `units` for variables `mesh_node_x` and `mesh_node_y` should be changed from longitude and latitude to meters (or some other appropriate metric).
 
-Consdier making a copy of the template below, making the required edits, and then deleting all instances of the word `---EDIT---`. Alternatively, make a copy of one of the input `.json` files in the `test-data` directory and edit that file. To add another field variable, simply copy one of the field variables in the `variables` array and make edits to it.
+Consider making a copy of the template below, making the required edits, and then deleting all instances of the word `---EDIT---`. Alternatively, make a copy of one of the input `.json` files in the `test-data` directory and edit that file. To add another field variable, simply copy one of the field variables in the `variables` array and make edits to it.
 
 ## Definitions
-- **input_dir**: path to input directory containing the GeoFLOW-formatted grid and field variable files
-- **output_dir**: path to output directory where the resulting `.nc` files will be written
-- **data_type**: Data type, for example `GDOUBLE` or `GFLOAT`
+- **input_dir**: Path to input directory containing the GeoFLOW-formatted grid and field variable files
+- **output_dir**: Path to output directory where the resulting `.nc` files in the UGRID format will be written
+- **data_type**: Data type (for example `GDOUBLE` or `GFLOAT`)
 - **num_timesteps**: Number of timesteps to convert
 - **is_spherical**: True if dataset is spherical, False if dataset is box
 - **print_nodes**: Print a sorted list (from bottom to top wrt to GeoFLOW element ID and 2D mesh layers) of nodes where each node contains the x,y,z grid values and the corresponding field variable values).
-- **write_separate_var_files**: True if writing each field variable to a separate file, False if writing all field variables (for a given timestamp) to one file
+- **write_separate_var_files**: True if writing each field variable to a separate file, False if writing all field variables (for a given timestep) to one file
 - **grid_filenames**: Names of the x,y,z input GeoFLOW grid filenames
-- **field_variable_root_names**: Root names of the field variable files (for example, if a dataset contains field variable files for dtotal with `dtotal.000000.out` and `dtotal.000001.out`, the root name is `dtotal`)
+- **field_variable_root_names**: Root names of the field variable files (for example, if a dataset contains field variable files for `dtotal` with `dtotal.000000.out` and `dtotal.000001.out`, the root name is `dtotal`)
 
 ## Template
 ```
