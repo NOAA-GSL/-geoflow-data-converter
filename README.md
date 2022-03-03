@@ -4,7 +4,7 @@
 
 This project converts [GeoFLOW](https://github.com/NOAA-GSL/GeoFLOW) (Geo FLuid Object Workbench) data files to other data formats like [NetCDF UGRID](https://github.com/ugrid-conventions/ugrid-conventions). 
 
-GeoFLOW is an object-oriented software development effort in the High Performance Computing Branch of the Global Systems Laboratory (GSL) at NOAA that:
+GeoFLOW is an object-oriented software development effort by researchers in the High Performance Computing Branch of the Global Systems Laboratory (GSL) at NOAA that:
 - Used for evaluating different aspects of Dynamical Cores in regional and global weather prediction
 - Applies Spectral Element Methods (SEM) to the solution of partial differential equations relevant to geophysical sciences. SEM is a Finite Element Method (FEM) that uses high degree piecewise polynomials as basis functions
 - Examines in detail tradeoffs in accuracy vs. performance
